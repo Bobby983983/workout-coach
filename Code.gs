@@ -9,6 +9,8 @@
  */
 const APP_LINK = 'https://bobby983983.github.io/workout-coach/';
 const PLAN = {1:'Tag A', 2:'Kurztag', 3:'Tag B', 4:'Kurztag', 5:'Tag A', 6:'Kurztag'};
+// A und B wechseln wöchentlich (Woche ab 23.11.2026: A-B-A, danach B-A-B usw.)
+function planName_(t) { const n = PLAN[dow_(t)]; if (!n || n === 'Kurztag') return n; const wk = Math.round((new Date(weekKey_(t) + 'T12:00:00Z') - new Date('2026-11-23T12:00:00Z')) / 6048e5); return (((wk % 2) + 2) % 2 === 1) ? (n === 'Tag A' ? 'Tag B' : 'Tag A') : n; }
 const CH_START = '2026-12-01', CH_END = '2026-12-31';
 // Schummel-Schutz: Workouts zählen nur mit Start-/End-Meldung und Mindestdauer
 const MIN_SEC = { A: 810, B: 780, K: 360, C: 100 };
@@ -229,7 +231,7 @@ function dailyReminder() {
     if (!o.email || !o.start || t < o.start || me.done) return;
     const missedY = dow_(y) !== 0 && y >= o.start && !(me.days[y] && me.days[y].done);
     let body = 'Hey ' + o.name + ',\n\n' +
-      'dein Workout für heute (' + PLAN[dow] + ') ist noch offen! 😢\n' +
+      'dein Workout für heute (' + planName_(t) + ') ist noch offen! 😢\n' +
       (t < CH_START ? '🧪 Testphase – ab 1.12. zählt\'s richtig.\n' : 'Ausreden gibt\'s keine – sonst morgen −3 Punkte.\n');
     if (missedY) body += '\nGestern hast du auch verpasst. Heute nachholen holt 4 Punkte zurück (2 Einheiten machen).\n';
     body += '\n🏆 Ranking\n';
@@ -272,7 +274,7 @@ function morningReminder() {
   rank.forEach((me, i) => {
     const o = me.row.o;
     if (!o.email || !o.start || t < o.start) return;
-    const body = 'Guten Morgen ' + o.name + '! ☀️\n\nDenk an dein Workout heute: ' + PLAN[dow] + ' (max. 15 Minuten).\n' +
+    const body = 'Guten Morgen ' + o.name + '! ☀️\n\nDenk an dein Workout heute: ' + planName_(t) + ' (max. 15 Minuten).\n' +
       'Aktuell: Platz ' + (i + 1) + ' von ' + rank.length + ' mit ' + me.pts + ' Punkten, Serie 🔥 ' + me.streak + '.\n' +
       (t < CH_START ? '🧪 Testphase – ab 1.12. zählt\'s richtig.\n' : '') +
       '\nJetzt starten: ' + APP_LINK + '\n\nZieh durch! 💪';
