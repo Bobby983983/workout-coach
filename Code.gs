@@ -9,6 +9,7 @@
  */
 const APP_LINK = 'https://bobby983983.github.io/workout-coach/';
 const PLAN = {1:'Tag A', 2:'Kurztag', 3:'Tag B', 4:'Kurztag', 5:'Tag A', 6:'Kurztag'};
+const CH_START = '2026-12-01', CH_END = '2026-12-31';
 const HEAD = ['name','nameKey','pinHash','salt','token','email','start','data','created','updated'];
 
 function sheet_() {
@@ -29,6 +30,7 @@ function setup() {
   sheet_();
   ScriptApp.getProjectTriggers().forEach(t => ScriptApp.deleteTrigger(t));
   ScriptApp.newTrigger('dailyReminder').timeBased().everyDays(1).atHour(18).nearMinute(0).inTimezone('Europe/Berlin').create();
+  ScriptApp.newTrigger('weeklySummary').timeBased().onWeekDay(ScriptApp.WeekDay.SUNDAY).atHour(18).nearMinute(0).inTimezone('Europe/Berlin').create();
   Logger.log('Fertig. Tabelle: ' + SpreadsheetApp.openById(PropertiesService.getScriptProperties().getProperty('SHEET_ID')).getUrl());
 }
 
@@ -120,10 +122,12 @@ function addDays_(k, n) {
 function dow_(k) { return new Date(k + 'T12:00:00Z').getUTCDay(); }
 
 // gleiche Punkte-Logik wie in der App
-function compute_(o, t) {
+function compute_(o, tt) {
+  const t = tt > CH_END ? CH_END : tt;
   let data = {}; try { data = JSON.parse(o.data || '{}'); } catch (e) {}
   const days = data.days || {}, ch = data.ch || {};
-  const start = o.start || '2026-11-23';
+  let start = o.start || '2026-11-23';
+  if (tt >= CH_START && start < CH_START) start = CH_START;
   let pts = 0, streak = 0, total = 0, weekRun = 0;
   for (let k = start; k <= t; k = addDays_(k, 1)) {
     const d = days[k], rest = dow_(k) === 0, past = k < t;
@@ -133,8 +137,8 @@ function compute_(o, t) {
     else if (past) { pts -= 3; streak = 0; weekRun = 0; st = 'miss'; }
     if (dow_(k) === 6) { if (weekRun >= 6 && st !== 'open') pts += 3; weekRun = 0; }
   }
-  Object.keys(ch).forEach(x => { pts += (ch[x] && ch[x].p) || 0; });
-  return { pts, streak, total, done: !!(days[t] && days[t].done), days };
+  Object.keys(ch).forEach(x => { const c = ch[x]; if (c && (c.at || '') >= start && (c.at || '') <= CH_END) pts += c.p || 0; });
+  return { pts, streak, total, done: !!(days[tt] && days[tt].done), days };
 }
 
 function ranking_(rows, t) {
@@ -145,7 +149,7 @@ function ranking_(rows, t) {
 function dailyReminder() {
   const t = today_();
   const dow = dow_(t);
-  if (dow === 0) return; // Sonntag Ruhetag
+  if (dow === 0 || t > CH_END) return; // Sonntag Ruhetag / Challenge vorbei
   const y = addDays_(t, -1);
   const { rows } = rows_();
   const rank = ranking_(rows, t);
@@ -156,7 +160,7 @@ function dailyReminder() {
     const missedY = dow_(y) !== 0 && y >= o.start && !(me.days[y] && me.days[y].done);
     let body = 'Hey ' + o.name + ',\n\n' +
       'dein Workout für heute (' + PLAN[dow] + ') ist noch offen! 😢\n' +
-      'Ausreden gibt\'s keine – sonst morgen −3 Punkte.\n';
+      (t < CH_START ? '🧪 Testphase – ab 1.12. zählt\'s richtig.\n' : 'Ausreden gibt\'s keine – sonst morgen −3 Punkte.\n');
     if (missedY) body += '\nGestern hast du auch verpasst. Heute nachholen bringt +2 zurück (2 Einheiten machen).\n';
     body += '\n🏆 Ranking\n';
     rank.slice(0, 3).forEach((r, j) => { body += medal[j] + ' ' + r.name + ' – ' + r.pts + ' Punkte (🔥 ' + r.streak + ')' + (r.done ? ' ✓ heute' : '') + '\n'; });
@@ -164,6 +168,28 @@ function dailyReminder() {
     if (i > 0) body += 'Bis Platz ' + i + ' fehlen dir ' + (rank[i - 1].pts - me.pts + 1) + ' Punkte.\n';
     body += '\nZum Coach: ' + APP_LINK + '\n\nZieh durch! 💪';
     MailApp.sendEmail({ to: o.email, subject: '😢 ' + o.name + ', dein Workout ist heute noch offen!', body: body, name: 'Workout-Coach' });
+  });
+}
+
+function weeklySummary() {
+  const t = today_();
+  if (t > addDays_(CH_END, 1)) return;
+  const { rows } = rows_();
+  const rank = ranking_(rows, t);
+  const medal = ['🥇', '🥈', '🥉'];
+  const mon = addDays_(t, -6);
+  let table = '';
+  rank.forEach((r, j) => { table += (medal[j] || (j + 1) + '.') + ' ' + r.name + ' – ' + r.pts + ' Punkte (🔥 ' + r.streak + ', ' + r.total + ' Workouts)\n'; });
+  rank.forEach((me, i) => {
+    const o = me.row.o;
+    if (!o.email) return;
+    let week = 0; for (let k = mon; k <= t; k = addDays_(k, 1)) if (me.days[k] && me.days[k].done) week++;
+    let body = 'Hey ' + o.name + ',\n\nhier deine Wochenübersicht 💪\n\n' +
+      (t < CH_START ? '🧪 Testphase – ab 1.12. startet die Challenge, dann beginnen alle bei 0 Punkten.\n\n' : '') +
+      'Diese Woche: ' + week + ' Workouts\nDu: Platz ' + (i + 1) + ' von ' + rank.length + ' mit ' + me.pts + ' Punkten, Serie 🔥 ' + me.streak + '\n' +
+      (i > 0 ? 'Bis Platz ' + i + ' fehlen dir ' + (rank[i - 1].pts - me.pts + 1) + ' Punkte.\n' : 'Du führst! Verteidige Platz 1. 🏆\n') +
+      '\n🏆 Gesamt-Ranking\n' + table + '\nNeue Woche, neue Chance: ' + APP_LINK + '\n\nZieh durch! 💪';
+    MailApp.sendEmail({ to: o.email, subject: '🏆 Workout-Challenge: deine Wochenübersicht', body: body, name: 'Workout-Coach' });
   });
 }
 
