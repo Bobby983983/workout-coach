@@ -465,7 +465,7 @@ chips("rate",[1,1.1,1.2],rate,v=>v===1?"normal":v===1.1?"zügig":"schnell",v=>{r
 // ---------- Audio (fertige Sprachaufnahmen) ----------
 const CLIPS=["n1","n2","n3","los","first","stop","next","in5","noch90","noch60","noch30","alles","paused","weiter","done","sA","sB","sK","test","ms","nach","bonus"]
  .concat(Object.keys(EX).flatMap(k=>["n_"+k,"c_"+k]))
- .concat([0,1,2,3,4].map(i=>"m10_"+i),[0,1,2,3].map(i=>"mm_"+i),[0,1,2,3,4,5].map(i=>"ml_"+i),[0,1,2].map(i=>"ms_"+i),[0,1,2,3,4].map(i=>"pr_"+i));
+ .concat([0,1,2,3,4].map(i=>"m10_"+i),[0,1,2].map(i=>"p5_"+i),[0,1,2,3].map(i=>"mm_"+i),[0,1,2,3,4,5].map(i=>"ml_"+i),[0,1,2].map(i=>"ms_"+i),[0,1,2,3,4].map(i=>"pr_"+i));
 const raw={},buf={};let ac=null,cur=null,queue=[];
 CLIPS.forEach(k=>fetch("a/"+k+".mp3").then(r=>r.ok?r.arrayBuffer():null).then(b=>{if(b)raw[k]=b}).catch(()=>{}));
 async function unlockAudio(){
@@ -568,6 +568,7 @@ function tick(){
     if(total>=40&&!e.long&&remain<=total/2)once("half",()=>say([e.hold?"mm_"+rnd(4):"ms_"+rnd(3)]));
     if(e.long)[90,60,30].forEach(t=>{if(total>t+5&&s===t)once("l"+t,()=>say(["noch"+t,"ml_"+rnd(6)]))});
     if(e.hold&&total>=20&&s===10)once("m10",()=>say(["m10_"+rnd(5)],true));
+    if(e.hold&&total>=15&&s===5)once("p5",()=>say(["p5_"+rnd(3)],true));
     if(st.ex==="burst"&&s===3)once("b",()=>say(["alles"],true));
     else if(total>=10&&s<=3&&s>=1)once("c"+s,()=>{beep(800,.12);say(["n"+s],true)});
   }else{
