@@ -3,12 +3,21 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Workout-Coach</title>
+<title>CYF – Challenge Your Friends by Machermax</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" href="favicon.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="theme-color" content="#0f1115">
+<meta name="apple-mobile-web-app-title" content="CYF Challenge">
+<meta name="application-name" content="CYF Challenge">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
 <style>
 :root{--bg:#0f1115;--card:#1a1d24;--fg:#f2f2f2;--mut:#9aa0aa;--acc:#3ddc84;--rest:#4aa3ff;--warn:#ffb020;--bad:#ff5c5c}
 *{box-sizing:border-box;margin:0;padding:0}
 body{background:var(--bg);color:var(--fg);font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;min-height:100vh;padding:16px;max-width:520px;margin:0 auto}
 h1{font-size:22px;margin:6px 0 4px}
+.brand{display:flex;align-items:center;gap:12px;margin:4px 0 8px}.brand img{width:52px;height:52px;border-radius:13px}.brand div{font-size:17px;font-weight:700;line-height:1.2}.brand b{font-size:24px;color:var(--acc);margin-right:4px}.brand small{display:block;font-size:12px;color:var(--mut);font-weight:400}
 h3{font-size:16px;margin-bottom:10px}
 .sub{color:var(--mut);font-size:14px;margin-bottom:14px}
 .card{background:var(--card);border-radius:14px;padding:16px;margin-bottom:12px}
@@ -94,7 +103,7 @@ select.txt{appearance:auto}
 </head>
 <body>
 <div id="menu">
-  <h1>💪 Workout-Coach</h1>
+  <div class="brand"><img src="icon-192.png" alt=""><div><b>CYF</b> Challenge Your Friends<small>by Machermax</small></div></div>
   <div class="row" style="justify-content:space-between;margin-bottom:8px"><div id="sync" style="margin:0">…</div><button class="chip" id="bHelp">❓ Anleitung</button></div>
   <div class="stats">
     <div class="stat"><b id="sPts">0</b><span>Punkte</span></div>
@@ -162,7 +171,7 @@ select.txt{appearance:auto}
 </div>
 
 <div id="login" style="display:none;position:fixed;inset:0;background:var(--bg);overflow:auto;padding:20px;z-index:5"><div style="max-width:400px;margin:30px auto">
-<h1>💪 Workout-Coach</h1><p class="sub" style="margin-bottom:18px">Trainieren, Punkte sammeln, gegeneinander antreten.</p>
+<h1>❓ CYF – So geht's</h1><p class="sub" style="margin-bottom:18px">Trainieren, Punkte sammeln, gegeneinander antreten.</p>
 <div class="tabs"><button id="lgIn" class="on">Anmelden</button><button id="lgReg">Registrieren</button></div>
 <div class="card">
 <label>Benutzername</label><input class="txt" id="lgName" maxlength="20" autocomplete="username" placeholder="z. B. MacherMax">
