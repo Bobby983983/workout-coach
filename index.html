@@ -100,7 +100,7 @@ input.txt{width:100%;padding:12px;border-radius:10px;border:1px solid #333;backg
   <div id="banners"></div>
   <div class="tabs"><button data-t="train" class="on">🏋️ Training</button><button data-t="chal">⚡ Challenges</button><button data-t="rank">🏆 Ranking</button></div>
   <div id="tab-chal" style="display:none"><div id="chalBox"></div><div class="note">Challenges sind zum Punkte-Aufholen. Jede zählt einmal pro Tag bzw. Woche. Ehrlich bleiben – Ausreden und Schummeln gibt's nicht. Über den Tag verteilt ist erlaubt, Liegestütze auch auf den Knien.</div></div>
-  <div id="tab-rank" style="display:none"><div class="card"><h3>🏆 Ranking</h3><div id="rankList"></div></div><div class="note" id="rankNote">Freunde einladen: einfach den Link zu dieser Seite schicken. Jede/r registriert sich mit Benutzername + PIN.</div><button class="wbtn" id="bAcc" style="text-align:center;margin-top:12px"><b>⚙️ Mein Konto (E-Mail, Abmelden)</b></button>
+  <div id="tab-rank" style="display:none"><div class="card"><h3>🏆 Ranking</h3><div id="rankList"></div></div><div class="note" id="rankNote">Freunde einladen: einfach den Link zu dieser Seite schicken. Jede/r registriert sich mit Benutzername + PIN.</div><button class="wbtn" id="bAcc" style="text-align:center;margin-top:12px"><b>⚙️ Mein Konto (E-Mail, Abmelden)</b></button></div>
   <div id="tab-train">
 
   <button class="wbtn" data-w="A"><b>Tag A · Mo + Fr</b><span>Liegestütz halten · Ausfallschritt halten · Glute Bridge · Plank · ca. 13 Min.</span></button>
@@ -285,7 +285,8 @@ $("lgGo").onclick=async()=>{
   if(!/^\d{4}$/.test(pin)){$("lgErr").textContent="PIN = 4 Ziffern";return}
   if(regMode&&!$("lgOk").checked){$("lgErr").textContent="Bitte Einverständnis bestätigen";return}
   $("lgErr").textContent="…";
-  try{const r=await api(regMode?"register":"login",{name,pin,email:mail});
+  try{let r=await api(regMode?"register":"login",{name,pin,email:mail});
+    if(regMode&&!r.ok&&/vergeben/.test(r.err||"")){r=await api("login",{name,pin});if(!r.ok)r={ok:false,err:"Name ist schon vergeben – falls du das bist: PIN prüfen und oben auf „Anmelden“ tippen."}}
     if(!r.ok){$("lgErr").textContent=(!regMode&&/falsch/.test(r.err||""))?"Name oder PIN falsch. Noch nicht registriert? Oben auf „Registrieren“ tippen.":(r.err||"Fehler");return}
     lsSet("hadLogin",1);
     token=r.token;lsSet("token",token);$("login").style.display="none";if(regMode||!ls("helpSeen",0))showHelp();applyServer(r);online=true;setSync("☁️ synchronisiert");loadRank();
