@@ -113,26 +113,63 @@ function doPost(e) {
   }
 }
 
+function addDays_(k, n) {
+  const d = new Date(k + 'T12:00:00Z'); d.setUTCDate(d.getUTCDate() + n);
+  return d.toISOString().slice(0, 10);
+}
+function dow_(k) { return new Date(k + 'T12:00:00Z').getUTCDay(); }
+
+// gleiche Punkte-Logik wie in der App
+function compute_(o, t) {
+  let data = {}; try { data = JSON.parse(o.data || '{}'); } catch (e) {}
+  const days = data.days || {}, ch = data.ch || {};
+  const start = o.start || '2026-11-23';
+  let pts = 0, streak = 0, total = 0, weekRun = 0;
+  for (let k = start; k <= t; k = addDays_(k, 1)) {
+    const d = days[k], rest = dow_(k) === 0, past = k < t;
+    let st = 'open';
+    if (d && d.done) { total++; pts += (d.at === k) ? 1 : -1; st = 'done'; if (!rest) { streak++; weekRun++; } }
+    else if (rest) st = 'rest';
+    else if (past) { pts -= 3; streak = 0; weekRun = 0; st = 'miss'; }
+    if (dow_(k) === 6) { if (weekRun >= 6 && st !== 'open') pts += 3; weekRun = 0; }
+  }
+  Object.keys(ch).forEach(x => { pts += (ch[x] && ch[x].p) || 0; });
+  return { pts, streak, total, done: !!(days[t] && days[t].done), days };
+}
+
+function ranking_(rows, t) {
+  return rows.filter(r => r.o.name).map(r => Object.assign({ row: r }, compute_(r.o, t), { name: r.o.name }))
+    .sort((a, b) => b.pts - a.pts || b.streak - a.streak);
+}
+
 function dailyReminder() {
   const t = today_();
-  const d = new Date(Utilities.formatDate(new Date(), 'Europe/Berlin', "yyyy-MM-dd'T'12:00:00"));
-  const dow = d.getDay();
+  const dow = dow_(t);
   if (dow === 0) return; // Sonntag Ruhetag
-  const yDate = new Date(d.getTime() - 86400000);
-  const y = Utilities.formatDate(yDate, 'Europe/Berlin', 'yyyy-MM-dd');
+  const y = addDays_(t, -1);
   const { rows } = rows_();
-  rows.forEach(r => {
-    const o = r.o;
-    if (!o.email || !o.start || t < o.start) return;
-    let data = {}; try { data = JSON.parse(o.data || '{}'); } catch (e) {}
-    const days = data.days || {};
-    if (days[t] && days[t].done) return;
-    const missedY = yDate.getDay() !== 0 && y >= o.start && !(days[y] && days[y].done);
+  const rank = ranking_(rows, t);
+  const medal = ['🥇', '🥈', '🥉'];
+  rank.forEach((me, i) => {
+    const o = me.row.o;
+    if (!o.email || !o.start || t < o.start || me.done) return;
+    const missedY = dow_(y) !== 0 && y >= o.start && !(me.days[y] && me.days[y].done);
     let body = 'Hey ' + o.name + ',\n\n' +
       'dein Workout für heute (' + PLAN[dow] + ') ist noch offen! 😢\n' +
       'Ausreden gibt\'s keine – sonst morgen −3 Punkte.\n';
     if (missedY) body += '\nGestern hast du auch verpasst. Heute nachholen bringt +2 zurück (2 Einheiten machen).\n';
+    body += '\n🏆 Ranking\n';
+    rank.slice(0, 3).forEach((r, j) => { body += medal[j] + ' ' + r.name + ' – ' + r.pts + ' Punkte (🔥 ' + r.streak + ')' + (r.done ? ' ✓ heute' : '') + '\n'; });
+    body += '\nDu: Platz ' + (i + 1) + ' von ' + rank.length + ' mit ' + me.pts + ' Punkten.\n';
+    if (i > 0) body += 'Bis Platz ' + i + ' fehlen dir ' + (rank[i - 1].pts - me.pts + 1) + ' Punkte.\n';
     body += '\nZum Coach: ' + APP_LINK + '\n\nZieh durch! 💪';
     MailApp.sendEmail({ to: o.email, subject: '😢 ' + o.name + ', dein Workout ist heute noch offen!', body: body, name: 'Workout-Coach' });
   });
+}
+
+// Test: zeigt die Mail im Ausführungsprotokoll, ohne etwas zu senden
+function testMailVorschau() {
+  const t = today_();
+  const rank = ranking_(rows_().rows, t);
+  Logger.log(rank.map((r, i) => (i + 1) + '. ' + r.name + ' ' + r.pts + ' Pkt, Serie ' + r.streak).join('\n') || 'noch keine Benutzer');
 }
