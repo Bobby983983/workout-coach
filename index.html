@@ -263,7 +263,7 @@ const EX={
  tpull:{n:"Handtuch auseinanderziehen",c:"Handtuch schulterbreit vor der Brust greifen und mit voller Kraft auseinanderziehen. Schulterblätter zusammen.",hold:true}
 };
 const W={
- A:{t:"Tag A",chair:true,towel:true,s:[["push",30,35],["push",30,35],["palms",20,30],["dips",20,40],["tpull",25,40],["pike",20,35],["wallsit",40,40],["splitL",30,15],["splitR",30,40],["bridge",30,30],["bridge1L",25,15],["bridge1R",25,40],["revplank",20,40],["plank",120,0]]},
+ A:{t:"Tag A",chair:true,towel:true,s:[["push",30,35],["wallsit",40,40],["push",30,35],["splitL",30,15],["splitR",30,40],["palms",20,30],["bridge",30,30],["dips",20,40],["bridge1L",25,15],["bridge1R",25,40],["tpull",25,40],["pike",20,35],["revplank",20,40],["plank",120,0]]},
  B:{t:"Tag B",towel:true,s:[["burst",5,15],["burst",5,15],["burst",5,15],["burst",5,15],["burst",5,40],["row",30,40],["trow",30,40],["trow",30,40],["yhold",20,30],["wy",20,30],["curl",25,40],["hollow",20,30],["deadbug",20,40],["sideL",25,15],["sideR",25,40],["birddogL",20,10],["birddogR",20,40],["plank",120,0]]},
  K:{t:"Kurztag",s:[["plank",120,20],["squat",30,15],["calf",30,15],["hipL",45,12],["hipR",45,12],["chest",45,0]]}
 };
@@ -276,7 +276,7 @@ const START="2026-11-23";
 const CH_START="2026-12-01",CH_END="2026-12-31";
 let todayW="K",curChal=null,easy=0,noPts=false;
 const XMAS=k=>k>="2026-12-24"&&k<="2026-12-26";
-const DESC={A:"🪑 Stuhl + 🧻 Handtuch (ca. 1 m) · Liegestütz · Hände pressen · Dips · Handtuch ziehen · Pike · Wandsitzen · Ausfallschritt · Bridge · Reverse Plank · Plank · ca. 15 Min.",B:"🧻 Handtuch (ca. 1 m) · Bursts · Ellbogen-Drücken · Handtuch-Rudern · Y/W-Halten · Bizeps · Hollow · Dead Bug · Seitstütz · Bird-Dog · Plank · ca. 15 Min.",K:"Plank · Kniebeuge · Waden · Hüftbeuger- und Brustdehnung · ca. 7 Min."};
+const DESC={A:"🪑 Stuhl + 🧻 Handtuch (ca. 1 m) · Oberkörper und Beine im Wechsel: Liegestütz · Wandsitzen · Ausfallschritt · Hände pressen · Bridge · Dips · Handtuch ziehen · Pike · Reverse Plank · Plank · ca. 15 Min.",B:"🧻 Handtuch (ca. 1 m) · Bursts · Ellbogen-Drücken · Handtuch-Rudern · Y/W-Halten · Bizeps · Hollow · Dead Bug · Seitstütz · Bird-Dog · Plank · ca. 15 Min.",K:"Plank · Kniebeuge · Waden · Hüftbeuger- und Brustdehnung · ca. 7 Min."};
 const MYS=()=>state.start||START;
 const rnd=n=>Math.floor(Math.random()*n);
 const $=id=>document.getElementById(id);
@@ -748,7 +748,7 @@ const INFO={
   lv:"Leichter: auf den Knien oder 4 × 30 s statt am Stück. Schwerer: länger halten, ein Bein anheben."},
  burst:{so:["In den Türrahmen stellen, stabil schulterbreit stehen.","Hände oder Unterarme auf Schulterhöhe innen an beide Seiten des Rahmens legen.","Auf ‚Los': <b>in ca. 1 Sekunde von 0 auf 100 %</b> – explosiv mit maximaler Kraft nach außen drücken, als wolltest du den Rahmen sprengen.","Die volle Kraft 3–5 Sekunden halten, dann komplett locker lassen."],
   key:"Es geht um <b>maximale Kraft, so schnell wie möglich</b> – nicht um langsames Hochfahren. Jeder Burst ist ein 100-%-Versuch.",
-  wi:["Beim Drücken kräftig ausatmen – nicht pressen, nie die Luft anhalten","Bauch fest, Knie leicht gebeugt, sicherer Stand","Pause zwischen den Bursts voll nutzen"],
+  wi:["Beim Drücken kräftig ausatmen – nicht pressen, nie die Luft anhalten","Bauch fest, Knie leicht gebeugt, sicherer Stand","Pause zwischen den Bursts voll nutzen","Tür zu eng für deine Arme? Ellbogen anwinkeln und mit Unterarmen oder Ellbogen nach außen drücken – eine breitere Tür brauchst du nicht"],
   fe:["Kraft langsam aufbauen (dann ist es nur Halten)","Mit halber Kraft drücken"],
   lv:"Alternative ohne Türrahmen: Handtuch mit beiden Händen explosiv auseinanderreißen. Bei Bluthochdruck vorher ärztlich abklären."},
  hollow:{so:["Rückenlage, Arme Richtung Füße strecken.","Unteren Rücken fest in den Boden drücken.","Schultern und Kopf leicht anheben, Beine anheben – Knie angewinkelt für den Anfang.","So halten."],
@@ -800,9 +800,13 @@ function renderExList(){const seen={};$("exList").innerHTML=Object.keys(EX).filt
   $("exList").querySelectorAll("div[data-k]").forEach(el=>el.onclick=()=>showDetail(el.dataset.k))}
 const li=a=>a.map(x=>'<li>'+x+'</li>').join("");
 let exdLoop=0;
+function exTimes(k){const fam=SKMAP[k],out=[];["A","B","K"].forEach(w=>{const s=W[w].s,hit=[];s.forEach((x,i)=>{if(SKMAP[x[0]]===fam)hit.push({sec:x[1],rest:i<s.length-1?x[2]:0,side:/[LR]$/.test(x[0])})});if(!hit.length)return;
+  const side=hit[0].side,n=side?hit.length/2:hit.length,secs=[...new Set(hit.map(x=>x.sec))].join("/"),rs=[...new Set(hit.map(x=>x.rest).filter(r=>r>0))];
+  out.push("<li><b>"+W[w].t+":</b> "+(n>1?n+" × ":"")+secs+" s"+(side?" pro Seite":"")+(rs.length?" · danach "+rs.join(" bzw. ")+" s Pause":" · letzte Übung, danach Schluss")+"</li>")});
+  return out.length?'<h4>Dauer im Workout</h4><ul>'+out.join("")+'</ul><p class="note" style="font-size:13px">Leichte Variante: kürzer halten, länger Pause. Extra-Sekunden kommen obendrauf.</p>':""}
 function showDetail(k){const I=INFO[SKMAP[k]],e=EX[k];if(!I)return;
   $("exdBody").innerHTML='<h2>'+e.n.replace(/ – .*/,"")+'</h2><svg class="sk" id="exdSk" viewBox="0 0 200 110"></svg><div class="note" style="text-align:center">hell = vorderer Arm/Bein · dunkel = hinterer · Nase = Blickrichtung</div>'+
-   '<div class="key">💡 '+I.key+'</div><h4>So geht\'s</h4><ol>'+li(I.so)+'</ol><h4>Darauf kommt es an</h4><ul>'+li(I.wi)+'</ul><h4>Typische Fehler</h4><ul>'+li(I.fe)+'</ul>'+(I.lv?'<h4>Varianten</h4><p class="note" style="font-size:14px">'+I.lv+'</p>':'');
+   '<div class="key">💡 '+I.key+'</div>'+exTimes(k)+'<h4>So geht\'s</h4><ol>'+li(I.so)+'</ol><h4>Darauf kommt es an</h4><ul>'+li(I.wi)+'</ul><h4>Typische Fehler</h4><ul>'+li(I.fe)+'</ul>'+(I.lv?'<h4>Varianten</h4><p class="note" style="font-size:14px">'+I.lv+'</p>':'');
   $("exd").style.display="block";$("exd").scrollTop=0;
   cancelAnimationFrame(exdLoop);const P=POSE[SKMAP[k]],t0=performance.now();
   const f=now=>{if($("exd").style.display==="none")return;const x=loopX(now-t0);$("exdSk").innerHTML=skDraw(P,lerpP(P.s,P.e,x),x>.99);exdLoop=requestAnimationFrame(f)};exdLoop=requestAnimationFrame(f)}
