@@ -99,13 +99,12 @@ input.txt{width:100%;padding:12px;border-radius:10px;border:1px solid #333;backg
   </div>
   <div id="banners"></div>
   <div class="tabs"><button data-t="train" class="on">🏋️ Training</button><button data-t="chal">⚡ Challenges</button><button data-t="rank">🏆 Ranking</button></div>
-  <div id="tab-chal" style="display:none"><div id="chalBox"></div><div class="note">Challenges sind zum Punkte-Aufholen. Jede zählt einmal pro Tag bzw. Woche. Ehrlich bleiben – Ausreden und Schummeln gibt's nicht. Über den Tag verteilt ist erlaubt, Liegestütze auch auf den Knien.</div></div>
+  <div id="tab-chal" style="display:none"><div id="chalBox"></div><div class="note">Challenges laufen wie ein Workout: starten, komplett durchziehen, Punkte kassieren. Kein Abhaken von Hand.</div></div>
   <div id="tab-rank" style="display:none"><div class="card"><h3>🏆 Ranking</h3><div id="rankList"></div></div><div class="note" id="rankNote">Freunde einladen: einfach den Link zu dieser Seite schicken. Jede/r registriert sich mit Benutzername + PIN.</div><button class="wbtn" id="bAcc" style="text-align:center;margin-top:12px"><b>⚙️ Mein Konto (E-Mail, Abmelden)</b></button></div>
   <div id="tab-train">
 
-  <button class="wbtn" data-w="A"><b>Tag A · Mo + Fr</b><span>Liegestütz halten · Ausfallschritt halten · Glute Bridge · Plank · ca. 13 Min.</span></button>
-  <button class="wbtn" data-w="B"><b>Tag B · Mi</b><span>5 Bursts · Hollow Body · Seitstütz · Y-Halten · Plank · ca. 13 Min.</span></button>
-  <button class="wbtn" data-w="K"><b>Kurztag · Di, Do, Sa</b><span>Plank · Hüftbeuger-Dehnung · Brustdehnung · ca. 5 Min.</span></button>
+  <button class="wbtn today" id="bToday"><b id="bTodayT">▶ Heutiges Workout starten</b><span id="bTodayS"></span></button>
+  <div class="note" style="margin:-2px 0 12px">Wochenplan: Mo + Fr = Tag A · Mi = Tag B · Di, Do, Sa = Kurztag · So = Ruhetag (freiwillig, +1)</div>
 
   <div class="card">
     <div class="cal-h"><button id="calPrev">‹</button><h3 id="calTitle" style="margin:0"></h3><button id="calNext">›</button></div>
@@ -171,7 +170,7 @@ input.txt{width:100%;padding:12px;border-radius:10px;border:1px solid #333;backg
 <div id="help"><div style="max-width:480px;margin:0 auto">
 <div class="row" style="justify-content:space-between"><h1>❓ Erste Schritte</h1><button class="chip" id="helpX">Schließen ✕</button></div>
 <h2>1. Anmelden</h2><ul><li>Benutzername + 4-stellige PIN wählen – fertig. Kein Konto, kein Passwort.</li><li>E-Mail ist freiwillig: Dann kommt um 18 Uhr eine Erinnerung, falls du noch nicht trainiert hast. 😢</li><li>Tipp: Seite zum Startbildschirm hinzufügen (Browser-Menü ⋮ → „Zum Startbildschirm“). Dann ist sie wie eine App.</li></ul>
-<h2>2. Trainieren</h2><ol><li><b>Ton laut</b> machen, Handy hinlegen.</li><li>Das Workout für heute ist grün umrandet – antippen.</li><li>Der Coach sagt alles an: Übung, Ausführung, Countdown, Pausen. Die Skizze zeigt die Haltung.</li><li>Am Ende wird der Tag automatisch im Kalender abgehakt.</li></ol>
+<h2>2. Trainieren</h2><ol><li><b>Ton laut</b> machen, Handy hinlegen.</li><li>Auf <b>„▶ Heutiges Workout starten“</b> tippen – die App weiß, welcher Tag dran ist.</li><li>Der Coach sagt alles an: Übung, Ausführung, Countdown, Pausen. Die Skizze zeigt die Haltung.</li><li>Am Ende wird der Tag automatisch im Kalender abgehakt.</li></ol>
 <p><b>Wochenplan:</b> Mo + Fr = Tag A · Mi = Tag B · Di, Do, Sa = Kurztag (5 Min.) · So = Ruhetag</p>
 
 <h2>🏁 Die Challenge</h2><ul><li><b>Testphase bis 30.11.:</b> App und Übungen ausprobieren, Feedback an Max.</li><li><b>Challenge 1.12.–31.12.:</b> Am 1.12. starten alle bei 0 Punkten.</li><li><b>Kein Überspringen:</b> Punkte gibt es nur, wenn das Workout komplett durchläuft – alle Übungen und alle Pausen.</li><li><b>App im Vordergrund lassen:</b> Bildschirm an, App offen. Wechselst du die App oder geht das Handy aus, pausiert das Workout und läuft erst weiter, wenn du „Weiter“ tippst.</li><li>Abbrechen = keine Punkte. Pause tippen ist erlaubt – die Zeit läuft danach trotzdem komplett.</li><li>Jeden Sonntag kommt per Mail die Wochenübersicht mit Ranking.</li></ul>
@@ -186,7 +185,7 @@ input.txt{width:100%;padding:12px;border-radius:10px;border:1px solid #333;backg
 <tr><td>😴 Freiwilliges Workout am Sonntag</td><td style="color:var(--acc)">+1</td></tr>
 </table>
 <ul><li><b>Nachholen:</b> Erst das heutige Workout, dann ein zweites – das zählt für gestern. Aus −3 wird so −1.</li><li><b>🔥 Serie:</b> Trainingstage am Stück ohne Lücke. Sonntag unterbricht nicht.</li><li>Ausreden gibt's keine. Es gibt keinen „Krank“-Knopf – wer ehrlich krank ist, schont sich und holt Punkte später über Challenges auf.</li></ul>
-<h2>4. Challenges & Ranking</h2><ul><li>Jeden Tag eine neue Tages-Challenge, jede Woche eine Wochen-Challenge – für alle dieselbe.</li><li>Nur abhaken, wenn wirklich komplett geschafft. Über den Tag verteilt ist erlaubt.</li><li>Im Ranking siehst du Punkte, Serie und wer heute schon trainiert hat.</li></ul>
+<h2>4. Challenges & Ranking</h2><ul><li>Jeden Tag eine neue Tages-Challenge, jede Woche eine Wochen-Challenge – für alle dieselbe.</li><li>Challenges startest du in der App – sie laufen wie ein Workout komplett durch. Nur dann gibt's Punkte.</li><li>Wochen-Challenge: jeden Tag (Mo–So) neu starten, die +5 gibt's bei 7 von 7 Tagen.</li><li>Im Ranking siehst du Punkte, Serie und wer heute schon trainiert hat.</li></ul>
 <h2>5. Meilensteine</h2><p>Für Serien, Punkte und Anzahl Workouts gibt es Meilensteine mit Lob und Belohnungsideen. Belohn dich wirklich – das hält dich dran.</p>
 <h2>6. Steigern</h2><p>Alle 2 Wochen unter „Steigerung“ +5 s einstellen. Wenn es leicht wird: härtere Variante (z. B. Liegestütz ohne Knie).</p>
 <h2>Die Übungen</h2><div class="exl" id="exList"></div>
@@ -222,6 +221,8 @@ const PLAN={1:"A",2:"K",3:"B",4:"K",5:"A",6:"K",0:null}; // 0 = Sonntag Ruhetag
 const API_URL=window.API_URL||"https://script.google.com/macros/s/AKfycbwGcovHvH3oRkxyvEK2DvueCa1sUxNLAFsg6VEz3EYFz_1jFfQvEuqFO0SGS83xN5dF/exec";
 const START="2026-11-23";
 const CH_START="2026-12-01",CH_END="2026-12-31";
+let todayW="K",curChal=null;
+const DESC={A:"Liegestütz halten · Ausfallschritt · Glute Bridge · Plank · ca. 13 Min.",B:"Bursts · Hollow Body · Seitstütz · Y-Halten · Plank · ca. 13 Min.",K:"Plank · Hüftbeuger- und Brustdehnung · ca. 5 Min."};
 const MYS=()=>state.start||START;
 const rnd=n=>Math.floor(Math.random()*n);
 const $=id=>document.getElementById(id);
@@ -355,7 +356,10 @@ function renderMenu(){
   else if(!tw&&t>=MYS())b+='<div class="banner good">😴 Sonntag = Ruhetag. Freiwilliges Workout gibt +1 Bonus.</div>';
   if(todayK()<CH_START)b='<div class="banner good">🧪 Testphase bis 30.11. – ab 1.12. startet die Challenge, alle Punkte beginnen dann bei 0.</div>'+b;
   $("banners").innerHTML=b;
-  document.querySelectorAll(".wbtn[data-w]").forEach(x=>x.classList.toggle("today",x.dataset.w===tw));
+  {const yMiss=y>=MYS()&&st.log[y]==="miss"&&!(state.days[y]&&state.days[y].done),tDone=!!(state.days[t]&&state.days[t].done);
+  let wk=tw||"K",lab="▶ Heutiges Workout starten";
+  if(tDone&&yMiss){wk=PLAN[parse(y).getDay()]||"K";lab="↺ Gestern nachholen (+2)"}else if(tDone)lab="💪 Extra-Runde (zählt nicht doppelt)";else if(!tw)lab="😴 Sonntag: freiwilliges Workout (+1)";
+  todayW=wk;$("bTodayT").textContent=lab;$("bTodayS").textContent=W[wk].t+" · "+DESC[wk];}
   // Kalender
   const yv=calM.getFullYear(),mv=calM.getMonth();$("calTitle").textContent=MON[mv]+" "+yv;
   let h=["Mo","Di","Mi","Do","Fr","Sa","So"].map(x=>'<div class="dow">'+x+'</div>').join("");
@@ -405,34 +409,39 @@ function afterMark(kind){
 
 // ---------- Challenges ----------
 const DAILY=[
- {n:"100 Liegestütze",d:"Über den Tag verteilt, Knie erlaubt. Saubere Wiederholungen!",p:2},
- {n:"100 Kniebeugen",d:"Über den Tag verteilt. Po nach hinten, Brust hoch.",p:2},
- {n:"3 Minuten Plank",d:"Gesamtzeit, maximal 3 Sätze.",p:2},
- {n:"10.000 Schritte",d:"Tipp: Kundentelefonate im Gehen führen.",p:2},
- {n:"Wandsitzen 3 × 60 s",d:"Rücken an die Wand, Oberschenkel waagerecht.",p:2},
- {n:"60 Ausfallschritte",d:"30 pro Bein, über den Tag verteilt.",p:2},
- {n:"5 × 1 Min. Liegestütz-Halten",d:"Über den Tag verteilt, Brust eine Faust über dem Boden (Knie erlaubt).",p:2},
- {n:"30 Min. zügig gehen",d:"Am Stück, Handy in der Tasche lassen.",p:2},
- {n:"Kein Sitzen über 45 Min.",d:"Den ganzen Arbeitstag: spätestens alle 45 Min. aufstehen und 2 Min. bewegen.",p:2},
- {n:"50 Burpees",d:"Ohne Sprung erlaubt. Über den Tag verteilt.",p:3}
+ {n:"Plank-Marathon",d:"3 × 60 s Plank, 30 s Pause.",p:2,ex:"plank",sec:60,sets:3,rest:30},
+ {n:"Liegestütz-Halten extrem",d:"5 × 40 s Liegestütz halten, 30 s Pause (Knie erlaubt).",p:2,ex:"push",sec:40,sets:5,rest:30},
+ {n:"Bridge-Brenner",d:"3 × 60 s Glute Bridge halten, 30 s Pause.",p:2,ex:"bridge",sec:60,sets:3,rest:30},
+ {n:"Hollow-Hölle",d:"4 × 30 s Hollow Body, 30 s Pause.",p:2,ex:"hollow",sec:30,sets:4,rest:30},
+ {n:"Seitstütz-Duell",d:"2 × 45 s pro Seite, 20 s Pause.",p:2,ex:["sideL","sideR"],sec:45,sets:2,rest:20},
+ {n:"Ausfallschritt-Ausdauer",d:"2 × 45 s pro Bein, 20 s Pause.",p:2,ex:["splitL","splitR"],sec:45,sets:2,rest:20},
+ {n:"Y-Halten für den Rücken",d:"4 × 40 s Y-Halten, 30 s Pause.",p:2,ex:"yhold",sec:40,sets:4,rest:30},
+ {n:"Burst-Feuerwerk",d:"10 × 5 s Türrahmen mit voller Kraft, 15 s Pause.",p:2,ex:"burst",sec:5,sets:10,rest:15}
 ];
 const WEEKLY=[
- {n:"500 Liegestütze diese Woche",d:"Mo–So, Knie erlaubt. Mitzählen!",p:5},
- {n:"70.000 Schritte diese Woche",d:"Im Schnitt 10.000 am Tag.",p:5},
- {n:"Plank jeden Tag",d:"7 von 7 Tagen mindestens 2 Min. Plank – auch Sonntag.",p:5},
- {n:"20 Min. Plank gesamt",d:"Alle Plank-Sätze der Woche zusammengezählt.",p:5},
- {n:"300 Kniebeugen diese Woche",d:"Über die Woche verteilt.",p:5}
+ {n:"Plank jeden Tag",d:"Jeden Tag (Mo–So) 2 Min. Plank am Stück – jeden Tag hier neu starten.",p:5,ex:"plank",sec:120,sets:1,rest:0},
+ {n:"Liegestütz-Woche",d:"Jeden Tag (Mo–So) 3 × 30 s Liegestütz halten – jeden Tag hier neu starten.",p:5,ex:"push",sec:30,sets:3,rest:30},
+ {n:"Bridge-Woche",d:"Jeden Tag (Mo–So) 2 × 60 s Glute Bridge – jeden Tag hier neu starten.",p:5,ex:"bridge",sec:60,sets:2,rest:30},
+ {n:"Rücken-Woche",d:"Jeden Tag (Mo–So) 3 × 30 s Y-Halten – jeden Tag hier neu starten.",p:5,ex:"yhold",sec:30,sets:3,rest:30}
 ];
+function chalSteps(c){const exs=Array.isArray(c.ex)?c.ex:[c.ex];const s=[];for(let i=0;i<c.sets;i++)exs.forEach((x,j)=>{const last=i===c.sets-1&&j===exs.length-1;s.push([x,c.sec,last?0:(j<exs.length-1?10:c.rest)])});return s}
+function weekCount(wk){let n=0;for(let i=0;i<7;i++)if(state.ch&&state.ch["wd:"+addDays(wk,i)])n++;return n}
 const hash=s=>{let x=0;for(const c of s)x=(x*31+c.charCodeAt(0))>>>0;return x};
 function weekKey(k){const d=parse(k);const day=(d.getDay()+6)%7;d.setDate(d.getDate()-day);return key(d)}
 function todaysChal(){const t=todayK(),w=weekKey(t);
   return [{id:"d:"+t,type:"Tages-Challenge",...DAILY[hash(t)%DAILY.length]},{id:"w:"+w,type:"Wochen-Challenge (Mo–So)",...WEEKLY[hash(w)%WEEKLY.length]}]}
-function renderChal(){
-  $("chalBox").innerHTML=todaysChal().map(c=>{const done=state.ch&&state.ch[c.id];
-    return '<div class="chal"><div class="t">'+c.type.toUpperCase()+' · +'+c.p+' PUNKTE</div><b>'+c.n+'</b><p>'+c.d+'</p><button data-c="'+c.id+'" '+(done?"disabled":"")+'>'+(done?"✅ Geschafft (+"+c.p+")":"Geschafft – ehrlich! 💪")+'</button></div>'}).join("");
-  $("chalBox").querySelectorAll("button[data-c]").forEach(b=>b.onclick=()=>{const c=todaysChal().find(x=>x.id===b.dataset.c);
-    ask("<b>"+c.n+"</b> wirklich komplett geschafft? Keine Ausreden, kein Schummeln.",()=>{state.ch=state.ch||{};state.ch[c.id]={p:c.p,n:c.n,at:todayK()};
-      const neu=checkMs(compute());save();renderMenu();unlockAudio().then(()=>say(neu.length?["pr_"+rnd(5),"ms"]:["pr_"+rnd(5)],true))})});
+function renderChal(){const t=todayK();
+  $("chalBox").innerHTML=todaysChal().map(c=>{let done=!!(state.ch&&state.ch[c.id]),info="";
+    if(c.id[0]==="w"){const n=weekCount(c.id.slice(2)),td=!!(state.ch&&state.ch["wd:"+t]);info='<p><b>Fortschritt: '+n+'/7 Tage</b>'+(td?' · heute ✅':'')+'</p>';if(!done&&td)done="today"}
+    const lab=done===true?"✅ Geschafft (+"+c.p+")":done==="today"?"✅ Heute erledigt – morgen wieder":"▶ Challenge starten";
+    return '<div class="chal"><div class="t">'+c.type.toUpperCase()+' · +'+c.p+' PUNKTE</div><b>'+c.n+'</b><p>'+c.d+'</p>'+info+'<button data-c="'+c.id+'" '+(done?"disabled":"")+'>'+lab+'</button></div>'}).join("");
+  $("chalBox").querySelectorAll("button[data-c]").forEach(b=>b.onclick=()=>{const c=todaysChal().find(x=>x.id===b.dataset.c);curChal=c;W.C={t:c.n,s:chalSteps(c)};start("C")});
+}
+function chalDone(){const c=curChal,t=todayK();state.ch=state.ch||{};let txt;
+  if(c.id[0]==="d"){state.ch[c.id]={p:c.p,n:c.n,at:t};txt="⚡ Challenge geschafft: <b>+"+c.p+" Punkte</b>"}
+  else{state.ch["wd:"+t]={p:0,at:t};const n=weekCount(c.id.slice(2));
+    if(n>=7){state.ch[c.id]={p:c.p,n:c.n,at:t};txt="🏆 Wochen-Challenge komplett: <b>+"+c.p+" Punkte</b>"}else txt="✅ Tag "+n+"/7 der Wochen-Challenge geschafft. Morgen wieder starten!"}
+  return Object.assign(afterMark("chal"),{txt});
 }
 // ---------- Ranking ----------
 function renderRank(){
@@ -510,7 +519,7 @@ let steps=[],idx=0,remain=0,total=0,running=false,paused=false,lastTick=0,timer=
 function build(k){
   const s=[];const w=W[k].s;
   s.push({type:"prep",sec:15,ex:w[0][0]});
-  w.forEach((x,i)=>{const e=EX[x[0]];let sec=x[1];if(e.hold)sec+=bonus;
+  w.forEach((x,i)=>{const e=EX[x[0]];let sec=x[1];if(e.hold&&k!=="C")sec+=bonus;
     s.push({type:"work",sec,ex:x[0]});
     if(x[2]>0&&i<w.length-1)s.push({type:"rest",sec:x[2],ex:w[i+1][0]});});
   return s;
@@ -564,10 +573,11 @@ function tick(){
 function finish(){
   running=false;clearInterval(timer);beep(1000,.2);setTimeout(()=>beep(1300,.4),250);
   try{if(wl)wl.release()}catch(e){}
-  const r=markDay(curW);
+  const r=curW==="C"?chalDone():markDay(curW);
   const st=compute();
   let txt="",voice=["done"];
-  if(r.kind==="today")txt="✅ Heute abgehakt: <b>+1 Punkt</b>";
+  if(r.txt)txt=r.txt;
+  else if(r.kind==="today")txt="✅ Heute abgehakt: <b>+1 Punkt</b>";
   else if(r.kind==="nach"){txt="↺ Gestern nachgeholt: <b>+2 Punkte</b>";voice=["nach"]}
   else if(r.kind==="extra")txt="Extra-Runde! Zählt nicht doppelt, aber macht stärker. 💪";
   else txt="Probelauf – ab "+MYS().split("-").reverse().join(".")+" zählen die Punkte.";
@@ -583,7 +593,7 @@ function finish(){
 function stop(){running=false;clearInterval(timer);say([],true);try{if(wl)wl.release()}catch(e){}
   $("run").style.display="none";$("menu").style.display="block";renderMenu()}
 
-document.querySelectorAll(".wbtn[data-w]").forEach(b=>b.onclick=()=>start(b.dataset.w));
+$("bToday").onclick=()=>start(todayW);
 $("bPause").onclick=()=>{paused=!paused;$("bPause").textContent=paused?"Weiter ▶":"Pause";if(paused)say(["paused"],true);else{lastTick=Date.now();say(["weiter"],true)}};
 $("bStop").onclick=stop;
 $("bBack").onclick=()=>{$("done").style.display="none";$("menu").style.display="block";renderMenu();window.scrollTo(0,0)};
