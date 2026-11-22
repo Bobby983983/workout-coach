@@ -479,20 +479,27 @@ function beep(f,d){try{if(!ac)return;const o=ac.createOscillator(),g=ac.createGa
 const G='<line class="g" x1="5" y1="100" x2="195" y2="100"/>';
 const P=pts=>'<polyline points="'+pts+'"/>';
 const H=(x,y)=>'<circle cx="'+x+'" cy="'+y+'" r="8" fill="currentColor" stroke="none"/>';
-const SK={
- push:G+H(174,72)+P("160,78 100,85 35,96")+P("160,78 154,89 158,99")+'<line class="hl" x1="172" y1="85" x2="172" y2="96" stroke-dasharray="3 3"/>',
- split:G+H(100,14)+P("100,24 100,58")+P("100,58 135,62 135,99")+P("100,58 80,93 52,97")+P("100,30 112,52"),
- bridge:G+H(28,90)+P("38,94 100,64 140,58 150,99")+P("40,96 78,99"),
- plank:G+H(168,58)+P("152,66 95,72 32,96")+P("152,66 150,98 172,98"),
- burst:'<line class="g" x1="45" y1="8" x2="45" y2="100"/><line class="g" x1="155" y1="8" x2="155" y2="100"/>'+G+H(100,22)+P("100,32 100,64")+P("100,64 88,99")+P("100,64 112,99")+P("100,38 74,42 48,40")+P("100,38 126,42 152,40")+'<polyline class="hl" points="38,34 30,40 38,46" stroke-width="4"/><polyline class="hl" points="162,34 170,40 162,46" stroke-width="4"/>',
- hollow:G+H(38,72)+P("50,80 100,96")+P("100,96 126,72 154,78")+P("50,80 88,78"),
- side:G+H(40,66)+P("24,98 48,98 48,78")+P("48,78 105,86 170,97")+P("48,78 66,58"),
- yhold:G+H(160,86)+P("142,88 90,96 30,98")+P("142,86 176,50"),
- hip:G+H(96,16)+P("96,26 92,60")+P("92,60 126,62 126,99")+P("92,60 78,98 44,99")+P("96,32 90,58"),
- chest:'<line class="g" x1="60" y1="5" x2="60" y2="100"/>'+G+H(110,18)+P("110,28 108,64")+P("108,64 98,99")+P("108,64 124,99")+P("110,34 64,38 64,14")
+const FR1='<line class="g" x1="45" y1="8" x2="45" y2="100"/><line class="g" x1="155" y1="8" x2="155" y2="100"/><polyline class="hl" points="38,34 30,40 38,46" stroke-width="4"/><polyline class="hl" points="162,34 170,40 162,46" stroke-width="4"/>';
+const FR2='<line class="g" x1="60" y1="5" x2="60" y2="100"/>';
+const POSE={
+ push:{s:{h:[174,50],l:[[160,58,100,70,35,96],[160,58,160,79,160,99]]},e:{h:[174,72],l:[[160,78,100,85,35,96],[160,78,150,88,158,99]]}},
+ split:{s:{h:[100,10],l:[[100,20,100,52],[100,52,118,76,124,99],[100,52,86,76,70,98],[100,26,108,48]]},e:{h:[100,16],l:[[100,26,100,58],[100,58,135,62,135,99],[100,58,80,93,52,97],[100,32,112,54]]}},
+ bridge:{s:{h:[28,90],l:[[38,95,100,96,135,70,150,99],[40,97,78,99]]},e:{h:[28,90],l:[[38,94,100,64,140,58,150,99],[40,96,78,99]]}},
+ plank:{s:{h:[168,90],l:[[152,95,95,97,32,98],[152,95,150,98,172,98]]},e:{h:[168,58],l:[[152,66,95,72,32,96],[152,66,150,98,172,98]]}},
+ burst:{d:FR1,s:{h:[100,22],l:[[100,32,100,64],[100,64,88,99],[100,64,112,99],[100,38,84,54,80,68],[100,38,116,54,120,68]]},e:{h:[100,22],l:[[100,32,100,64],[100,64,88,99],[100,64,112,99],[100,38,74,42,48,40],[100,38,126,42,152,40]]}},
+ hollow:{s:{h:[38,92],l:[[50,96,100,98],[100,98,128,98,156,98],[50,96,88,97]]},e:{h:[38,72],l:[[50,80,100,96],[100,96,126,72,154,78],[50,80,88,78]]}},
+ side:{s:{h:[40,90],l:[[24,98,48,98,48,95],[48,95,105,98,170,98],[48,95,66,88]]},e:{h:[40,66],l:[[24,98,48,98,48,78],[48,78,105,86,170,97],[48,78,66,58]]}},
+ yhold:{s:{h:[160,93],l:[[142,96,90,98,30,98],[142,96,180,96]]},e:{h:[160,86],l:[[142,88,90,96,30,98],[142,86,176,50]]}},
+ hip:{s:{h:[88,18],l:[[88,28,84,62],[84,62,116,64,120,99],[84,62,72,98,44,99],[88,34,86,58]]},e:{h:[96,16],l:[[96,26,92,60],[92,60,126,62,126,99],[92,60,78,98,44,99],[96,32,90,58]]}},
+ chest:{d:FR2,s:{h:[95,20],l:[[95,30,95,64],[95,64,88,99],[95,64,104,99],[95,36,64,38,64,14]]},e:{h:[112,20],l:[[112,30,110,64],[110,64,100,99],[110,64,126,99],[112,36,64,38,64,14]]}}
 };
 const SKMAP={push:"push",splitL:"split",splitR:"split",bridge:"bridge",plank:"plank",burst:"burst",hollow:"hollow",sideL:"side",sideR:"side",yhold:"yhold",hipL:"hip",hipR:"hip",chest:"chest"};
-function skSvg(k){return '<g fill="none" stroke="currentColor" stroke-width="6" stroke-linecap="round" stroke-linejoin="round">'+SK[SKMAP[k]]+'</g>'}
+function poseSvg(p,d){return '<line class="g" x1="5" y1="100" x2="195" y2="100"/>'+(d||'')+'<circle cx="'+p.h[0]+'" cy="'+p.h[1]+'" r="8" fill="currentColor" stroke="none"/>'+p.l.map(a=>{let s='';for(let i=0;i<a.length;i+=2)s+=a[i].toFixed(1)+','+a[i+1].toFixed(1)+' ';return '<polyline points="'+s+'"/>'}).join('')}
+function lerpP(a,b,t){return {h:[a.h[0]+(b.h[0]-a.h[0])*t,a.h[1]+(b.h[1]-a.h[1])*t],l:a.l.map((ln,i)=>ln.map((v,j)=>v+(b.l[i][j]-v)*t))}}
+function skWrap(x){return '<g fill="none" stroke="currentColor" stroke-width="6" stroke-linecap="round" stroke-linejoin="round">'+x+'</g>'}
+function skSvg(k,w){const P=POSE[SKMAP[k]];return skWrap(poseSvg(P[w||"e"],P.d))}
+let skAnim=0;
+function animSk(k,from,to,ms,then){cancelAnimationFrame(skAnim);const P=POSE[SKMAP[k]],t0=performance.now();const f=now=>{const x=Math.min(1,(now-t0)/ms),t=x<.5?2*x*x:1-Math.pow(-2*x+2,2)/2;$("runSk").innerHTML=skWrap(poseSvg(lerpP(P[from],P[to],t),P.d));if(x<1)skAnim=requestAnimationFrame(f);else if(then)then()};skAnim=requestAnimationFrame(f)}
 function renderExList(){const seen={};$("exList").innerHTML=Object.keys(EX).filter(k=>{const s=SKMAP[k];if(seen[s])return false;return seen[s]=1}).map(k=>'<div><svg class="sk" viewBox="0 0 200 110">'+skSvg(k)+'</svg><b>'+EX[k].n.replace(/ – .*/,"")+'</b></div>').join("")}
 function showHelp(){renderExList();$("help").style.display="block";$("help").scrollTop=0}
 $("bHelp").onclick=showHelp;$("helpX").onclick=$("helpX2").onclick=()=>{$("help").style.display="none";lsSet("helpSeen",1)};
@@ -524,7 +531,7 @@ function enter(){
   const e=EX[st.ex];
   $("run").className=st.type;
   $("phase").textContent=st.type==="work"?"JETZT":st.type==="rest"?"PAUSE":"GLEICH GEHT'S LOS";
-  $("ex").textContent=e.n;$("runSk").innerHTML=skSvg(st.ex);$("cue").textContent=e.c;
+  $("ex").textContent=e.n;if(st.type==="work")animSk(st.ex,"s","e",900);else if(st.type==="rest"&&idx>0&&steps[idx-1].type==="work"){const pk=steps[idx-1].ex,me=st;animSk(pk,"e","s",700,()=>setTimeout(()=>{if(steps[idx]===me)$("runSk").innerHTML=skSvg(me.ex,"s")},500))}else $("runSk").innerHTML=skSvg(st.ex,"s");$("cue").textContent=e.c;
   const works=steps.filter(x=>x.type==="work").length,done=steps.slice(0,idx).filter(x=>x.type==="work").length;
   $("prog").textContent="Übung "+Math.min(done+(st.type==="work"?1:0),works)+" von "+works;
   const nx=steps.slice(idx+1).find(x=>x.type==="work");
