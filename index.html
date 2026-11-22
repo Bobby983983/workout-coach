@@ -68,6 +68,7 @@ label{font-size:14px;color:var(--mut)}
 .chal b{display:block;font-size:18px;margin:6px 0}
 .chal p{color:var(--mut);font-size:14px;margin-bottom:10px}
 .chal button{width:100%;padding:12px;border:0;border-radius:10px;font-size:16px;font-weight:700;cursor:pointer;background:var(--warn);color:#000}
+.undo{display:block;text-align:center;margin-top:10px;font-size:14px;color:var(--mut);text-decoration:underline;cursor:pointer}
 .chal button:disabled{background:#1d4d33;color:#a8f0c6}
 .rk{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid #2a2e37}
 .rk:last-child{border:0}.rk.me{background:#1d2a22;border-radius:10px;padding:10px 8px}
@@ -454,22 +455,28 @@ const WEEKLY=[
  {n:"Rücken-Woche",d:"Jeden Tag (Mo–So) 3 × 30 s Y-Halten – jeden Tag hier neu starten.",p:5,ex:"yhold",sec:30,sets:3,rest:30}
 ];
 function chalSteps(c){const exs=Array.isArray(c.ex)?c.ex:[c.ex];const s=[];for(let i=0;i<c.sets;i++)exs.forEach((x,j)=>{const last=i===c.sets-1&&j===exs.length-1;s.push([x,c.sec,last?0:(j<exs.length-1?10:c.rest)])});return s}
-function weekCount(wk){let n=0;for(let i=0;i<7;i++)if(state.ch&&state.ch["wd:"+addDays(wk,i)])n++;return n}
+function weekCount(wk){let n=0;for(let i=0;i<7;i++){const e=state.ch&&state.ch["wd:"+addDays(wk,i)];if(e&&!e.failed)n++}return n}
 const hash=s=>{let x=0;for(const c of s)x=(x*31+c.charCodeAt(0))>>>0;return x};
 function weekKey(k){const d=parse(k);const day=(d.getDay()+6)%7;d.setDate(d.getDate()-day);return key(d)}
 function todaysChal(){const t=todayK(),w=weekKey(t);
   return [{id:"d:"+t,type:"Tages-Challenge",...DAILY[hash(t)%DAILY.length]},{id:"w:"+w,type:"Wochen-Challenge (Mo–So)",...WEEKLY[hash(w)%WEEKLY.length]}]}
 function renderChal(){const t=todayK();
-  $("chalBox").innerHTML=todaysChal().map(c=>{let done=!!(state.ch&&state.ch[c.id]),info="";
-    if(c.id[0]==="w"){const n=weekCount(c.id.slice(2)),td=!!(state.ch&&state.ch["wd:"+t]);info='<p><b>Fortschritt: '+n+'/7 Tage</b>'+(td?' · heute ✅':'')+'</p>';if(!done&&td)done="today"}
-    const lab=done===true?"✅ Geschafft (+"+c.p+")":done==="today"?"✅ Heute erledigt – morgen wieder":"▶ Challenge starten";
-    return '<div class="chal"><div class="t">'+c.type.toUpperCase()+' · +'+c.p+' PUNKTE</div><b>'+c.n+'</b><p>'+c.d+'</p>'+info+'<button data-c="'+c.id+'" '+(done?"disabled":"")+'>'+lab+'</button></div>'}).join("");
+  $("chalBox").innerHTML=todaysChal().map(c=>{const E=k=>state.ch&&state.ch[k];let done=!!(E(c.id)&&!E(c.id).failed),info="",fail=!!(E(c.id)&&E(c.id).failed&&c.id[0]==="d");
+    if(c.id[0]==="w"){const n=weekCount(c.id.slice(2)),tdE=E("wd:"+t),td=!!(tdE&&!tdE.failed);fail=!!(tdE&&tdE.failed);info='<p><b>Fortschritt: '+n+'/7 Tage</b>'+(td?' · heute ✅':fail?' · heute ❌':'')+'</p>';if(!done&&td)done="today"}
+    const lab=done===true?"✅ Geschafft (+"+c.p+")":done==="today"?"✅ Heute erledigt – morgen wieder":fail?"↻ Nochmal versuchen":"▶ Challenge starten";
+    const undo=(done===true&&E(c.id).at===t)||done==="today";
+    return '<div class="chal"><div class="t">'+c.type.toUpperCase()+' · +'+c.p+' PUNKTE</div><b>'+c.n+'</b><p>'+c.d+'</p>'+info+'<button data-c="'+c.id+'" '+(done?"disabled":"")+'>'+lab+'</button>'+(undo?'<a class="undo" data-u="'+c.id+'">Doch nicht geschafft? Punkte zurückgeben</a>':'')+'</div>'}).join("");
+  $("chalBox").querySelectorAll("a[data-u]").forEach(a=>a.onclick=()=>undoChal(todaysChal().find(x=>x.id===a.dataset.u)));
   $("chalBox").querySelectorAll("button[data-c]").forEach(b=>b.onclick=()=>{const c=todaysChal().find(x=>x.id===b.dataset.c);curChal=c;W.C={t:c.n,s:chalSteps(c)};start("C")});
 }
+function undoChal(c){ask("<b>"+c.n+"</b> doch nicht geschafft? Dann werden die Punkte zurückgenommen. Ehrlich währt am längsten 👍",()=>{const t=todayK();state.ch=state.ch||{};
+  if(c.id[0]==="d")state.ch[c.id]={p:0,n:c.n,at:t,failed:true};
+  else{state.ch["wd:"+t]={p:0,at:t,failed:true};if(state.ch[c.id]&&state.ch[c.id].at===t)state.ch[c.id]={p:0,n:c.n,at:t,failed:true}}
+  save();renderMenu();$("done").style.display="none";$("menu").style.display="block"})}
 function chalDone(){const c=curChal,t=todayK();state.ch=state.ch||{};let txt;
   if(c.id[0]==="d"){state.ch[c.id]={p:c.p,n:c.n,at:t};txt="⚡ Challenge geschafft: <b>+"+c.p+" Punkte</b>"}
   else{state.ch["wd:"+t]={p:0,at:t};const n=weekCount(c.id.slice(2));
-    if(n>=7){state.ch[c.id]={p:c.p,n:c.n,at:t};txt="🏆 Wochen-Challenge komplett: <b>+"+c.p+" Punkte</b>"}else txt="✅ Tag "+n+"/7 der Wochen-Challenge geschafft. Morgen wieder starten!"}
+    if(n>=7&&!(state.ch[c.id]&&!state.ch[c.id].failed)){state.ch[c.id]={p:c.p,n:c.n,at:t};txt="🏆 Wochen-Challenge komplett: <b>+"+c.p+" Punkte</b>"}else txt="✅ Tag "+n+"/7 der Wochen-Challenge geschafft. Morgen wieder starten!"}
   return Object.assign(afterMark("chal"),{txt});
 }
 // ---------- Ranking ----------
@@ -759,7 +766,7 @@ async function lock(){try{if(navigator.wakeLock)wl=await navigator.wakeLock.requ
 async function start(k){
   curW=k;
   const p=unlockAudio();
-  steps=build(k);idx=0;usedL={};running=true;paused=false;
+  steps=build(k);idx=0;usedL={};$("bStop").textContent=k==="C"?"❌ Nicht geschafft":"Stopp";running=true;paused=false;
   $("menu").style.display="none";$("done").style.display="none";$("run").style.display="block";
   lock();
   await p;
@@ -823,6 +830,7 @@ function finish(){
     $("doneMs").innerHTML=r.neu.map(m=>'<div class="banner good" style="font-size:16px">'+m.ic+' <b>Meilenstein: '+m.n+'</b><br>'+m.r+'</div>').join("");
   }else $("doneMs").innerHTML="";
   say(voice,true);
+  if(curW==="C"&&curChal){const c=curChal;txt+='<br><a class="undo" id="bUndo">Doch nicht geschafft? Punkte zurückgeben</a>';setTimeout(()=>{const u=$("bUndo");if(u)u.onclick=()=>undoChal(c)},0)}
   $("doneTxt").innerHTML=txt;
   $("run").style.display="none";$("done").style.display="block";
 }
@@ -832,7 +840,7 @@ function stop(){running=false;musStop();clearInterval(timer);say([],true);try{if
 $("bToday").onclick=()=>startChk(todayW);
 function startChk(k){if(W[k]&&W[k].chair)ask("🪑 Für dieses Workout brauchst du einen <b>stabilen Stuhl oder Hocker</b> (ohne Rollen, am besten an die Wand). Bereit?",()=>start(k));else start(k)}
 $("bPause").onclick=()=>{paused=!paused;$("bPause").textContent=paused?"Weiter ▶":"Pause";if(paused){musOn(false);say(["paused"],true)}else{lastTick=Date.now();musOn(steps[idx]&&steps[idx].type==="work");say(["weiter"],true)}};
-$("bStop").onclick=stop;
+$("bStop").onclick=()=>{if(curW==="C"&&running)ask("Challenge <b>nicht geschafft</b>? Dann gibt es keine Punkte – du kannst es später nochmal versuchen.",stop);else stop()};
 $("bBack").onclick=()=>{$("done").style.display="none";$("menu").style.display="block";renderMenu();window.scrollTo(0,0)};
 document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden"&&running&&!paused){paused=true;musOn(false);$("bPause").textContent="Weiter ▶";say([],true)}
 if(document.visibilityState==="visible"){if(running)lock();else renderMenu()}});
