@@ -510,8 +510,15 @@ function skWrap(x){return '<g fill="none" stroke="currentColor" stroke-width="6"
 function skSvg(k,w){const P=POSE[SKMAP[k]];return skWrap(poseSvg(P[w||"e"],P.d))}
 let skAnim=0;
 function animSk(k,from,to,ms,then){cancelAnimationFrame(skAnim);const P=POSE[SKMAP[k]],t0=performance.now();const f=now=>{const x=Math.min(1,(now-t0)/ms),t=x<.5?2*x*x:1-Math.pow(-2*x+2,2)/2;$("runSk").innerHTML=skWrap(poseSvg(lerpP(P[from],P[to],t),P.d));if(x<1)skAnim=requestAnimationFrame(f);else if(then)then()};skAnim=requestAnimationFrame(f)}
-function renderExList(){const seen={};$("exList").innerHTML=Object.keys(EX).filter(k=>{const s=SKMAP[k];if(seen[s])return false;return seen[s]=1}).map(k=>'<div><svg class="sk" viewBox="0 0 200 110">'+skSvg(k)+'</svg><b>'+EX[k].n.replace(/ – .*/,"")+'</b></div>').join("")}
-function showHelp(){renderExList();$("help").style.display="block";$("help").scrollTop=0}
+function renderExList(){const seen={};$("exList").innerHTML=Object.keys(EX).filter(k=>{const s=SKMAP[k];if(seen[s])return false;return seen[s]=1}).map(k=>'<div><svg class="sk exsk" data-k="'+k+'" viewBox="0 0 200 110">'+skSvg(k,"s")+'</svg><b>'+EX[k].n.replace(/ – .*/,"")+'</b></div>').join("")}
+let exLoop=0;
+function animExList(){cancelAnimationFrame(exLoop);const t0=performance.now();const els=[...document.querySelectorAll(".exsk")];
+  const f=now=>{if($("help").style.display==="none")return;const ms=(now-t0)%4000;let x;
+    if(ms<800)x=ms/800;else if(ms<2800)x=1;else if(ms<3600)x=1-(ms-2800)/800;else x=0;
+    const e=x<.5?2*x*x:1-Math.pow(-2*x+2,2)/2;
+    els.forEach(el=>{const P=POSE[SKMAP[el.dataset.k]];el.innerHTML=skWrap(poseSvg(lerpP(P.s,P.e,e),P.d))});
+    exLoop=requestAnimationFrame(f)};exLoop=requestAnimationFrame(f)}
+function showHelp(){renderExList();$("help").style.display="block";animExList();$("help").scrollTop=0}
 $("bHelp").onclick=showHelp;$("helpX").onclick=$("helpX2").onclick=()=>{$("help").style.display="none";lsSet("helpSeen",1)};
 
 // ---------- Ablauf ----------
