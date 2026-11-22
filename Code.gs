@@ -16,7 +16,9 @@ const CH_P = { d: 2, w: 5 };
 function dstr_(v) { return (v instanceof Date) ? Utilities.formatDate(v, 'Europe/Berlin', 'yyyy-MM-dd') : String(v || ''); }
 function weekKey_(k) { return addDays_(k, -((dow_(k) + 6) % 7)); }
 function parseData_(o) { let d = {}; try { d = JSON.parse(o.data || '{}'); } catch (e) {} d.days = d.days || {}; d.ch = d.ch || {}; d.ms = d.ms || []; return d; }
-function finish_(d, start0, s, t) {
+function xmas_(k) { return k >= '2026-12-24' && k <= '2026-12-26'; }
+function wdOk_(d, k) { const e = d.ch['wd:' + k]; return !!(e && !e.failed); }
+function finish_(d, start0, s, t, easy) {
   const y = addDays_(t, -1);
   let start = start0 || '2026-11-23';
   if (t >= CH_START && start < CH_START) start = CH_START;
@@ -27,7 +29,14 @@ function finish_(d, start0, s, t) {
       d.ch[id] = { p: CH_P.d, n: n, at: t }; return 'chal';
     }
     if (id === 'w:' + weekKey_(t)) {
-      d.ch['wd:' + t] = { p: 0, at: t };
+      // heute zählen; ist heute schon erledigt: 1x pro Woche den verpassten Vortag nachholen
+      const wk = weekKey_(t);
+      if (!wdOk_(d, t)) d.ch['wd:' + t] = { p: 0, at: t };
+      else {
+        let used = false; for (let i = 0; i < 7; i++) { const e = d.ch['wd:' + addDays_(wk, i)]; if (e && e.mk && !e.failed) used = true; }
+        if (weekKey_(y) === wk && y >= start && !wdOk_(d, y) && !used) d.ch['wd:' + y] = { p: 0, at: t, mk: 1 };
+        else return 'dup';
+      }
       let cnt = 0; for (let i = 0; i < 7; i++) { const e = d.ch['wd:' + addDays_(weekKey_(t), i)]; if (e && !e.failed) cnt++; }
       if (cnt >= 7 && !(d.ch[id] && !d.ch[id].failed)) { d.ch[id] = { p: CH_P.w, n: n, at: t }; return 'week'; }
       return 'weekday';
@@ -35,8 +44,9 @@ function finish_(d, start0, s, t) {
     return 'badchal';
   }
   if (t < start) return 'probe';
-  if (!(d.days[t] && d.days[t].done)) { d.days[t] = { done: true, at: t, w: s.w }; return 'today'; }
-  if (dow_(y) !== 0 && y >= start && !(d.days[y] && d.days[y].done)) { d.days[y] = { done: true, at: t, w: s.w }; return 'nach'; }
+  const D = () => easy ? { done: true, at: t, w: s.w, e: 1 } : { done: true, at: t, w: s.w };
+  if (!(d.days[t] && d.days[t].done)) { d.days[t] = D(); return 'today'; }
+  if (dow_(y) !== 0 && y >= start && !(d.days[y] && d.days[y].done)) { d.days[y] = D(); return 'nach'; }
   return 'extra';
 }
 const HEAD = ['name','nameKey','pinHash','salt','token','email','start','data','created','updated'];
@@ -120,10 +130,11 @@ function doPost(e) {
       // Trainingstage und Challenge-Punkte setzt ausschließlich der Server (Aktion finish).
       const d = q.data || {}, cd = d.ch || {}, cur = parseData_(r.o), t = today_();
       if (Array.isArray(d.ms)) cur.ms = d.ms.slice(0, 60).map(x => String(x).slice(0, 10));
+      if (typeof d.bx === 'number' && isFinite(d.bx)) cur.bx = Math.max(0, Math.min(30, Math.round(d.bx)));
       if (cd.msg && cd.msg.t) cur.ch.msg = { p: 0, t: String(cd.msg.t).slice(0, 140), ts: String(cd.msg.ts || new Date().toISOString()).slice(0, 30) };
       else delete cur.ch.msg;
       Object.keys(cd).forEach(k => { const v = cd[k]; if (k !== 'msg' && v && v.failed && v.at === t) cur.ch[k] = { p: 0, n: String((cur.ch[k] || {}).n || v.n || '').slice(0, 40), at: t, failed: true }; });
-      const clean = JSON.stringify({ days: cur.days, ms: cur.ms, ch: cur.ch });
+      const clean = JSON.stringify({ days: cur.days, ms: cur.ms, ch: cur.ch, bx: cur.bx || 0 });
       if (clean.length > 45000) return out_({ ok: false, err: 'zu groß' });
       sh.getRange(r.row, HEAD.indexOf('data') + 1).setValue(clean);
       sh.getRange(r.row, HEAD.indexOf('updated') + 1).setValue(new Date());
@@ -147,7 +158,7 @@ function doPost(e) {
       if (s.u !== r.o.nameKey) return out_({ ok: false, err: 'auth' });
       if ((Date.now() - s.t) / 1000 < MIN_SEC[s.w]) return out_({ ok: false, err: 'zu schnell' });
       cache.remove('s_' + q.sid);
-      const d = parseData_(r.o), kind = finish_(d, dstr_(r.o.start), s, today_());
+      const d = parseData_(r.o), kind = finish_(d, dstr_(r.o.start), s, today_(), !!q.easy);
       sh.getRange(r.row, HEAD.indexOf('data') + 1).setValue(JSON.stringify(d));
       sh.getRange(r.row, HEAD.indexOf('updated') + 1).setValue(new Date());
       return out_({ ok: true, kind: kind, data: d });
@@ -163,7 +174,7 @@ function doPost(e) {
     if (q.a === 'list') {
       return out_({ ok: true, users: rows.map(r => {
         let d = {}; try { d = JSON.parse(r.o.data || '{}'); } catch (e) {}
-        return { name: r.o.name, start: dstr_(r.o.start), days: d.days || {}, ch: d.ch || {} };
+        return { name: r.o.name, start: dstr_(r.o.start), days: d.days || {}, ch: d.ch || {}, bx: +d.bx || 0 };
       }) });
     }
     return out_({ ok: false, err: 'unbekannte Aktion' });
@@ -191,18 +202,18 @@ function compute_(o, tt) {
   for (let k = start; k <= t; k = addDays_(k, 1)) {
     const d = days[k], rest = dow_(k) === 0, past = k < t;
     let st = 'open';
-    if (d && d.done) { total++; pts += (d.at === k) ? 1 : -1; st = 'done'; if (!rest) { streak++; weekRun++; } }
+    if (d && d.done) { total++; const ez = d.e ? 1 : 0; pts += rest ? 1 : (d.at === k) ? (3 - ez) * (xmas_(k) ? 2 : 1) : 1 - ez; st = 'done'; if (!rest) { streak++; weekRun++; } }
     else if (rest) st = 'rest';
     else if (past) { pts -= 3; streak = 0; weekRun = 0; st = 'miss'; }
     if (dow_(k) === 6) { if (weekRun >= 6 && st !== 'open') pts += 3; weekRun = 0; }
   }
-  Object.keys(ch).forEach(x => { const c = ch[x]; if (c && (c.at || '') >= start && (c.at || '') <= CH_END) pts += c.p || 0; });
-  return { pts, streak, total, done: !!(days[tt] && days[tt].done), days };
+  Object.keys(ch).forEach(x => { const c = ch[x]; if (c && (c.at || '') >= start && (c.at || '') <= CH_END) pts += (c.p || 0) * (x.slice(0, 2) === 'd:' && xmas_(c.at) ? 2 : 1); });
+  return { pts, streak, total, bx: +data.bx || 0, done: !!(days[tt] && days[tt].done), days };
 }
 
 function ranking_(rows, t) {
   return rows.filter(r => r.o.name).map(r => Object.assign({ row: r }, compute_(r.o, t), { name: r.o.name }))
-    .sort((a, b) => b.pts - a.pts || b.streak - a.streak);
+    .sort((a, b) => b.pts - a.pts || b.bx - a.bx || b.streak - a.streak);
 }
 
 function dailyReminder() {
@@ -220,7 +231,7 @@ function dailyReminder() {
     let body = 'Hey ' + o.name + ',\n\n' +
       'dein Workout für heute (' + PLAN[dow] + ') ist noch offen! 😢\n' +
       (t < CH_START ? '🧪 Testphase – ab 1.12. zählt\'s richtig.\n' : 'Ausreden gibt\'s keine – sonst morgen −3 Punkte.\n');
-    if (missedY) body += '\nGestern hast du auch verpasst. Heute nachholen bringt +2 zurück (2 Einheiten machen).\n';
+    if (missedY) body += '\nGestern hast du auch verpasst. Heute nachholen holt 4 Punkte zurück (2 Einheiten machen).\n';
     body += '\n🏆 Ranking\n';
     rank.slice(0, 3).forEach((r, j) => { body += medal[j] + ' ' + r.name + ' – ' + r.pts + ' Punkte (🔥 ' + r.streak + ')' + (r.done ? ' ✓ heute' : '') + '\n'; });
     body += '\nDu: Platz ' + (i + 1) + ' von ' + rank.length + ' mit ' + me.pts + ' Punkten.\n';
