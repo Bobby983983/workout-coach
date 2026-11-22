@@ -30,6 +30,7 @@ function setup() {
   sheet_();
   ScriptApp.getProjectTriggers().forEach(t => ScriptApp.deleteTrigger(t));
   ScriptApp.newTrigger('dailyReminder').timeBased().everyDays(1).atHour(18).nearMinute(0).inTimezone('Europe/Berlin').create();
+  ScriptApp.newTrigger('morningReminder').timeBased().everyDays(1).atHour(7).nearMinute(0).inTimezone('Europe/Berlin').create();
   ScriptApp.newTrigger('weeklySummary').timeBased().onWeekDay(ScriptApp.WeekDay.SUNDAY).atHour(18).nearMinute(0).inTimezone('Europe/Berlin').create();
   Logger.log('Fertig. Tabelle: ' + SpreadsheetApp.openById(PropertiesService.getScriptProperties().getProperty('SHEET_ID')).getUrl());
 }
@@ -167,7 +168,7 @@ function dailyReminder() {
     body += '\nDu: Platz ' + (i + 1) + ' von ' + rank.length + ' mit ' + me.pts + ' Punkten.\n';
     if (i > 0) body += 'Bis Platz ' + i + ' fehlen dir ' + (rank[i - 1].pts - me.pts + 1) + ' Punkte.\n';
     body += '\nZum Coach: ' + APP_LINK + '\n\nZieh durch! 💪';
-    MailApp.sendEmail({ to: o.email, subject: '😢 ' + o.name + ', dein Workout ist heute noch offen!', body: body, name: 'Workout-Coach' });
+    MailApp.sendEmail({ to: o.email, subject: '😢 ' + o.name + ', vergiss nicht dein Workout!', body: body, name: 'Workout-Coach' });
   });
 }
 
@@ -190,6 +191,23 @@ function weeklySummary() {
       (i > 0 ? 'Bis Platz ' + i + ' fehlen dir ' + (rank[i - 1].pts - me.pts + 1) + ' Punkte.\n' : 'Du führst! Verteidige Platz 1. 🏆\n') +
       '\n🏆 Gesamt-Ranking\n' + table + '\nNeue Woche, neue Chance: ' + APP_LINK + '\n\nZieh durch! 💪';
     MailApp.sendEmail({ to: o.email, subject: '🏆 Workout-Challenge: deine Wochenübersicht', body: body, name: 'Workout-Coach' });
+  });
+}
+
+function morningReminder() {
+  const t = today_();
+  const dow = dow_(t);
+  if (dow === 0 || t > CH_END) return;
+  const { rows } = rows_();
+  const rank = ranking_(rows, t);
+  rank.forEach((me, i) => {
+    const o = me.row.o;
+    if (!o.email || !o.start || t < o.start) return;
+    const body = 'Guten Morgen ' + o.name + '! ☀️\n\nDenk an dein Workout heute: ' + PLAN[dow] + ' (max. 15 Minuten).\n' +
+      'Aktuell: Platz ' + (i + 1) + ' von ' + rank.length + ' mit ' + me.pts + ' Punkten, Serie 🔥 ' + me.streak + '.\n' +
+      (t < CH_START ? '🧪 Testphase – ab 1.12. zählt\'s richtig.\n' : '') +
+      '\nJetzt starten: ' + APP_LINK + '\n\nZieh durch! 💪';
+    MailApp.sendEmail({ to: o.email, subject: '☀️ Denk an dein Workout heute, ' + o.name + '!', body: body, name: 'Workout-Coach' });
   });
 }
 
