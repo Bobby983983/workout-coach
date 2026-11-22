@@ -274,7 +274,7 @@ async function loadRank(){try{const r=await api("list");if(r.ok){others=r.users|
 setInterval(()=>{if(token&&document.visibilityState==="visible"&&!running)loadRank()},60000);
 // Login
 let regMode=false;
-function showLogin(){$("login").style.display="block";setMode(false)}
+function showLogin(){$("login").style.display="block";setMode(!ls("hadLogin",0))}
 function setMode(r){regMode=r;$("lgIn").classList.toggle("on",!r);$("lgReg").classList.toggle("on",r);$("regExtra").style.display=r?"block":"none";$("lgGo").innerHTML="<b>"+(r?"Registrieren":"Anmelden")+"</b>";$("lgErr").textContent=""}
 $("lgIn").onclick=()=>setMode(false);$("lgReg").onclick=()=>setMode(true);
 $("lgGo").onclick=async()=>{
@@ -284,7 +284,8 @@ $("lgGo").onclick=async()=>{
   if(regMode&&!$("lgOk").checked){$("lgErr").textContent="Bitte Einverständnis bestätigen";return}
   $("lgErr").textContent="…";
   try{const r=await api(regMode?"register":"login",{name,pin,email:mail});
-    if(!r.ok){$("lgErr").textContent=r.err||"Fehler";return}
+    if(!r.ok){$("lgErr").textContent=(!regMode&&/falsch/.test(r.err||""))?"Name oder PIN falsch. Noch nicht registriert? Oben auf „Registrieren“ tippen.":(r.err||"Fehler");return}
+    lsSet("hadLogin",1);
     token=r.token;lsSet("token",token);$("login").style.display="none";if(regMode||!ls("helpSeen",0))showHelp();applyServer(r);online=true;setSync("☁️ synchronisiert");loadRank();
   }catch(e){$("lgErr").textContent="Keine Verbindung zum Server"}
 };
