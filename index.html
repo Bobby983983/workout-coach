@@ -77,6 +77,7 @@ label{font-size:14px;color:var(--mut)}
 .chal b{display:block;font-size:18px;margin:6px 0}
 .chal p{color:var(--mut);font-size:14px;margin-bottom:10px}
 .chal button{width:100%;padding:12px;border:0;border-radius:10px;font-size:16px;font-weight:700;cursor:pointer;background:var(--warn);color:#000}
+.boss{background:linear-gradient(135deg,#3a2a0c,#1d2a22);border:1px solid #ffb02055;border-radius:14px;padding:14px;margin-bottom:12px}.boss .t{font-size:12px;color:var(--warn);letter-spacing:1px;font-weight:700;margin-bottom:6px}.boss q{display:block;font-size:17px;font-weight:700;line-height:1.35;quotes:"„" "“"}.boss small{display:block;color:var(--mut);margin-top:6px;font-size:13px}
 .undo{display:block;text-align:center;margin-top:10px;font-size:14px;color:var(--mut);text-decoration:underline;cursor:pointer}
 .chal button:disabled{background:#1d4d33;color:#a8f0c6}
 .rk{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid #2a2e37}
@@ -110,10 +111,10 @@ select.txt{appearance:auto}
     <div class="stat"><b id="sStreak">0</b><span>🔥 Serie</span></div>
     <div class="stat"><b id="sTot">0</b><span>Workouts</span></div>
   </div>
-  <div id="banners"></div>
+  <div id="banners"></div><div id="bossBox2"></div>
   <div class="tabs"><button data-t="train" class="on">🏋️ Training</button><button data-t="chal">⚡ Challenges</button><button data-t="rank">🏆 Ranking</button></div>
   <div id="tab-chal" style="display:none"><div id="chalBox"></div><div class="note">Challenges laufen wie ein Workout: starten, komplett durchziehen, Punkte kassieren. Kein Abhaken von Hand.</div></div>
-  <div id="tab-rank" style="display:none"><div class="card"><h3>🏆 Ranking</h3><div id="rankList"></div></div><div class="note" id="rankNote">Freunde einladen: einfach den Link zu dieser Seite schicken. Jede/r registriert sich mit Benutzername + PIN.</div><button class="wbtn" id="bAcc" style="text-align:center;margin-top:12px"><b>⚙️ Mein Konto (E-Mail, Abmelden)</b></button></div>
+  <div id="tab-rank" style="display:none"><div id="bossBox"></div><div class="card"><h3>🏆 Ranking</h3><div id="rankList"></div></div><div class="note" id="rankNote">Freunde einladen: einfach den Link zu dieser Seite schicken. Jede/r registriert sich mit Benutzername + PIN.</div><button class="wbtn" id="bAcc" style="text-align:center;margin-top:12px"><b>⚙️ Mein Konto (E-Mail, Abmelden)</b></button></div>
   <div id="tab-train">
 
   <button class="wbtn" id="bSingle" style="text-align:center;padding:12px"><b style="font-size:16px;margin:0">🎯 Einzelne Übung starten</b><span>zum Testen &amp; Üben – zählt nicht für Punkte</span></button>
@@ -489,13 +490,25 @@ function chalDone(){const c=curChal,t=todayK();state.ch=state.ch||{};let txt;
   return Object.assign(afterMark("chal"),{txt});
 }
 // ---------- Ranking ----------
+function renderBoss(rows){const lead=rows.filter(r=>r.pl===1),meLead=lead.some(r=>r.me);
+  const ms=lead.filter(r=>r.msg&&r.msg.t).sort((a,b)=>(b.msg.ts||"").localeCompare(a.msg.ts||""));
+  let h="";if(ms.length){const m=ms[0];h='<div class="boss"><div class="t">📣 ANSAGE VOM SPITZENREITER</div><q id="bossT"></q><small id="bossN"></small></div>'}
+  if(meLead)h+='<button class="wbtn" id="bBoss" style="text-align:center;padding:12px"><b style="font-size:16px;margin:0">👑 Du bist vorne – Ansage an alle schreiben</b></button>';
+  ["bossBox","bossBox2"].forEach(id=>{const el=$(id);if(!el)return;el.innerHTML=id==="bossBox2"?(ms.length?h.replace(/<button[\s\S]*$/,"").replace('id="bossT"','class="bt"').replace('id="bossN"','class="bn"'):""):h;
+    el.querySelectorAll("#bossT,.bt").forEach(q=>q.textContent=ms[0].msg.t);el.querySelectorAll("#bossN,.bn").forEach(s=>s.textContent="– "+ms[0].name+(lead.length>1?" (geteilter 1. Platz)":""))});
+  const b=$("bBoss");if(b)b.onclick=()=>{const cur=(state.ch&&state.ch.msg&&state.ch.msg.t)||"";
+    ask('<b>👑 Deine Ansage an alle</b> (max. 140 Zeichen):<textarea id="bossIn" maxlength="140" style="width:100%;margin-top:10px;min-height:80px;padding:10px;border-radius:10px;border:1px solid #333;background:#0f1115;color:#fff;font-size:16px"></textarea><span class="note">Motivieren, anstacheln, provozieren – aber fair bleiben. Sichtbar, solange du auf Platz 1 bist.</span>',()=>{
+      const v=($("bossIn")&&$("bossIn").value||"").trim().slice(0,140);state.ch=state.ch||{};if(v)state.ch.msg={p:0,t:v,ts:new Date().toISOString()};else delete state.ch.msg;save();renderMenu()});
+    setTimeout(()=>{const i=$("bossIn");if(i){i.value=cur;i.focus()}},50)}}
 function renderRank(){
   const list=others.filter(u=>u.name!==state.name).concat(state.name?[{name:state.name,start:state.start,days:state.days,ch:state.ch,me:true}]:[]);
   const t=todayK();
-  const rows=list.map(u=>{const c=compute({days:u.days||{},ch:u.ch||{},start:u.start||START});return {me:!!u.me,name:u.name,pts:c.pts,streak:c.streak,total:c.total,today:!!(u.days&&u.days[t]&&u.days[t].done)}})
-    .sort((a,b)=>b.pts-a.pts||b.streak-a.streak);
+  const rows=list.map(u=>{const c=compute({days:u.days||{},ch:u.ch||{},start:u.start||START});return {me:!!u.me,name:u.name,pts:c.pts,streak:c.streak,total:c.total,today:!!(u.days&&u.days[t]&&u.days[t].done),msg:u.ch&&u.ch.msg}})
+    .sort((a,b)=>b.pts-a.pts||b.streak-a.streak||b.total-a.total);
+  rows.forEach((r,i)=>{const q=rows[i-1];r.pl=i&&r.pts===q.pts&&r.streak===q.streak&&r.total===q.total?q.pl:i+1});
   const med=["🥇","🥈","🥉"];
-  $("rankList").innerHTML=rows.length?rows.map((r,i)=>'<div class="rk'+(r.me?" me":"")+'"><div class="p">'+(med[i]||(i+1))+'</div><div class="nm"><b></b><small>🔥 '+r.streak+' · '+r.total+' Workouts'+(r.today?' · heute ✓':'')+'</small></div><div class="pt">'+r.pts+'</div></div>').join(""):'<p class="sub">Noch niemand im Ranking.</p>';
+  renderBoss(rows);
+  $("rankList").innerHTML=rows.length?rows.map((r,i)=>'<div class="rk'+(r.me?" me":"")+'"><div class="p">'+(med[r.pl-1]||r.pl)+'</div><div class="nm"><b></b><small>🔥 '+r.streak+' · '+r.total+' Workouts'+(r.today?' · heute ✓':'')+'</small></div><div class="pt">'+r.pts+'</div></div>').join(""):'<p class="sub">Noch niemand im Ranking.</p>';
   $("rankList").querySelectorAll(".rk b").forEach((b,i)=>b.textContent=rows[i].name);
 }
 document.querySelectorAll(".tabs button").forEach(b=>b.onclick=()=>{document.querySelectorAll(".tabs button").forEach(x=>x.classList.toggle("on",x===b));
