@@ -296,7 +296,8 @@ async function initApi(){
 function applyServer(r){
   const d=r.data||{},loc=ls("state",{});
   const days=Object.assign({},d.days||{}),ch=Object.assign({},d.ch||{});
-  if(loc.name===r.name){Object.assign(days,loc.days||{});Object.assign(ch,loc.ch||{})}
+  if(loc.name===r.name&&!r.v){Object.assign(days,loc.days||{});Object.assign(ch,loc.ch||{})}
+  if(r.v)setTimeout(runPend,500);
   state={days,ch,ms:Array.from(new Set([...(d.ms||[]),...((loc.name===r.name&&loc.ms)||[])])),name:r.name,start:r.start||START};
   email=r.email||"";lsSet("state",state);renderMenu();
   if(JSON.stringify(days)!==JSON.stringify(d.days||{})||JSON.stringify(ch)!==JSON.stringify(d.ch||{}))save();
@@ -785,10 +786,21 @@ function build(k){
   return s;
 }
 async function lock(){try{if(navigator.wakeLock)wl=await navigator.wakeLock.request("screen")}catch(e){}}
+// ---------- Schummel-Schutz: Start/Ende beim Server melden ----------
+let sidP=null;
+async function beginSess(k){for(let i=0;i<3;i++){try{const r=await api("begin",{token,w:k,c:k==="C"&&curChal?curChal.id:"",n:k==="C"&&curChal?curChal.n:""});if(r.ok)return r.sid;if(r.err==="unbekannte Aktion")return null;return ""}catch(e){await new Promise(z=>setTimeout(z,2000))}}return ""}
+function pendL(){return ls("pend",[])}
+function warnSync(t){setSync(t);const d=$("doneTxt");if(d&&$("done").style.display==="block")d.insertAdjacentHTML("beforeend",'<br><span style="color:var(--warn)">'+t+'</span>')}
+function finSid(sid){return api("finish",{token,sid}).then(res=>{lsSet("pend",pendL().filter(x=>x!==sid));
+  if(res.ok){state.days=res.data.days||{};state.ch=res.data.ch||{};lsSet("state",state);renderMenu();setSync("☁️ synchronisiert")}
+  else{warnSync(res.err==="zu schnell"?"⚠️ Server: Workout war zu kurz und zählt nicht.":res.err==="abgelaufen"?"⚠️ Server: Workout-Sitzung abgelaufen, zählt nicht.":"⚠️ Server: "+res.err);api("me",{token}).then(m=>{if(m.ok)applyServer(m)}).catch(()=>{})}})
+  .catch(()=>{const l=pendL();if(!l.includes(sid)){l.push(sid);lsSet("pend",l)}setSync("⚠️ offline – Workout wird nachgereicht")})}
+function runPend(){if(!token)return;pendL().forEach(finSid)}
+function syncFinish(){const pr=sidP;sidP=null;if(!pr||curW==="X")return;pr.then(sid=>{if(sid===null)return;if(!sid){warnSync("⚠️ Beim Start keine Verbindung – dieses Workout konnte nicht gezählt werden.");return}finSid(sid)})}
 async function start(k){
   curW=k;
   const p=unlockAudio();
-  steps=build(k);idx=0;usedL={};$("bStop").textContent=k==="C"?"❌ Nicht geschafft":"Stopp";running=true;paused=false;
+  steps=build(k);idx=0;usedL={};sidP=(API_URL&&token&&k!=="X")?beginSess(k):null;$("bStop").textContent=k==="C"?"❌ Nicht geschafft":"Stopp";running=true;paused=false;
   $("menu").style.display="none";$("done").style.display="none";$("run").style.display="block";
   lock();
   await p;
@@ -839,6 +851,7 @@ function finish(){
   running=false;musStop();clearInterval(timer);beep(1000,.2);setTimeout(()=>beep(1300,.4),250);
   try{if(wl)wl.release()}catch(e){}
   const r=(curW==="X"?{txt:"🎯 Einzelübung – zählt nicht für Punkte."}:curW==="C"?chalDone():markDay(curW))||{};
+  setTimeout(syncFinish,300);
   const st=compute();
   let txt="",voice=["done"];
   if(r.txt)txt=r.txt;

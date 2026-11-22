@@ -10,6 +10,35 @@
 const APP_LINK = 'https://bobby983983.github.io/workout-coach/';
 const PLAN = {1:'Tag A', 2:'Kurztag', 3:'Tag B', 4:'Kurztag', 5:'Tag A', 6:'Kurztag'};
 const CH_START = '2026-12-01', CH_END = '2026-12-31';
+// Schummel-Schutz: Workouts zählen nur mit Start-/End-Meldung und Mindestdauer
+const MIN_SEC = { A: 810, B: 780, K: 360, C: 100 };
+const CH_P = { d: 2, w: 5 };
+function dstr_(v) { return (v instanceof Date) ? Utilities.formatDate(v, 'Europe/Berlin', 'yyyy-MM-dd') : String(v || ''); }
+function weekKey_(k) { return addDays_(k, -((dow_(k) + 6) % 7)); }
+function parseData_(o) { let d = {}; try { d = JSON.parse(o.data || '{}'); } catch (e) {} d.days = d.days || {}; d.ch = d.ch || {}; d.ms = d.ms || []; return d; }
+function finish_(d, start0, s, t) {
+  const y = addDays_(t, -1);
+  let start = start0 || '2026-11-23';
+  if (t >= CH_START && start < CH_START) start = CH_START;
+  if (s.w === 'C') {
+    const id = String(s.c || ''), n = String(s.n || '').slice(0, 40);
+    if (id === 'd:' + t) {
+      if (d.ch[id] && !d.ch[id].failed) return 'dup';
+      d.ch[id] = { p: CH_P.d, n: n, at: t }; return 'chal';
+    }
+    if (id === 'w:' + weekKey_(t)) {
+      d.ch['wd:' + t] = { p: 0, at: t };
+      let cnt = 0; for (let i = 0; i < 7; i++) { const e = d.ch['wd:' + addDays_(weekKey_(t), i)]; if (e && !e.failed) cnt++; }
+      if (cnt >= 7 && !(d.ch[id] && !d.ch[id].failed)) { d.ch[id] = { p: CH_P.w, n: n, at: t }; return 'week'; }
+      return 'weekday';
+    }
+    return 'badchal';
+  }
+  if (t < start) return 'probe';
+  if (!(d.days[t] && d.days[t].done)) { d.days[t] = { done: true, at: t, w: s.w }; return 'today'; }
+  if (dow_(y) !== 0 && y >= start && !(d.days[y] && d.days[y].done)) { d.days[y] = { done: true, at: t, w: s.w }; return 'nach'; }
+  return 'extra';
+}
 const HEAD = ['name','nameKey','pinHash','salt','token','email','start','data','created','updated'];
 
 function sheet_() {
@@ -42,7 +71,7 @@ function hash_(pin, salt) {
 function rows_() {
   const sh = sheet_();
   const v = sh.getDataRange().getValues();
-  return { sh, rows: v.slice(1).map((r, i) => ({ row: i + 2, o: Object.fromEntries(HEAD.map((h, j) => [h, r[j]])) })) };
+  return { sh, rows: v.slice(1).map((r, i) => { const o = Object.fromEntries(HEAD.map((h, j) => [h, r[j]])); o.start = dstr_(o.start); return { row: i + 2, o: o }; }) };
 }
 function out_(o) { return ContentService.createTextOutput(JSON.stringify(o)).setMimeType(ContentService.MimeType.JSON); }
 function today_() { return Utilities.formatDate(new Date(), 'Europe/Berlin', 'yyyy-MM-dd'); }
@@ -77,22 +106,51 @@ function doPost(e) {
     if (q.a === 'login') {
       const r = rows.find(x => x.o.nameKey === key);
       if (!r || hash_(String(q.pin || ''), r.o.salt) !== r.o.pinHash) return out_({ ok: false, err: 'Name oder PIN falsch' });
-      return out_({ ok: true, token: r.o.token, name: r.o.name, email: r.o.email, start: r.o.start, data: JSON.parse(r.o.data || '{}') });
+      return out_({ ok: true, v: 2, token: r.o.token, name: r.o.name, email: r.o.email, start: dstr_(r.o.start), data: parseData_(r.o) });
     }
     if (q.a === 'me') {
       const r = byToken(q.token);
       if (!r) return out_({ ok: false, err: 'auth' });
-      return out_({ ok: true, name: r.o.name, email: r.o.email, start: r.o.start, data: JSON.parse(r.o.data || '{}') });
+      return out_({ ok: true, v: 2, name: r.o.name, email: r.o.email, start: dstr_(r.o.start), data: parseData_(r.o) });
     }
     if (q.a === 'save') {
       const r = byToken(q.token);
       if (!r) return out_({ ok: false, err: 'auth' });
-      const d = q.data || {};
-      const clean = JSON.stringify({ days: d.days || {}, ms: d.ms || [], ch: d.ch || {} });
+      // Nur Meilensteine, Spitzenreiter-Ansage und "nicht geschafft" dürfen vom Handy kommen.
+      // Trainingstage und Challenge-Punkte setzt ausschließlich der Server (Aktion finish).
+      const d = q.data || {}, cd = d.ch || {}, cur = parseData_(r.o), t = today_();
+      if (Array.isArray(d.ms)) cur.ms = d.ms.slice(0, 60).map(x => String(x).slice(0, 10));
+      if (cd.msg && cd.msg.t) cur.ch.msg = { p: 0, t: String(cd.msg.t).slice(0, 140), ts: String(cd.msg.ts || new Date().toISOString()).slice(0, 30) };
+      else delete cur.ch.msg;
+      Object.keys(cd).forEach(k => { const v = cd[k]; if (k !== 'msg' && v && v.failed && v.at === t) cur.ch[k] = { p: 0, n: String((cur.ch[k] || {}).n || v.n || '').slice(0, 40), at: t, failed: true }; });
+      const clean = JSON.stringify({ days: cur.days, ms: cur.ms, ch: cur.ch });
       if (clean.length > 45000) return out_({ ok: false, err: 'zu groß' });
       sh.getRange(r.row, HEAD.indexOf('data') + 1).setValue(clean);
       sh.getRange(r.row, HEAD.indexOf('updated') + 1).setValue(new Date());
       return out_({ ok: true });
+    }
+    if (q.a === 'begin') {
+      const r = byToken(q.token);
+      if (!r) return out_({ ok: false, err: 'auth' });
+      const w = String(q.w || '');
+      if (!MIN_SEC[w]) return out_({ ok: false, err: 'Workout unbekannt' });
+      const sid = Utilities.getUuid();
+      CacheService.getScriptCache().put('s_' + sid, JSON.stringify({ u: r.o.nameKey, w: w, t: Date.now(), c: String(q.c || '').slice(0, 20), n: String(q.n || '').slice(0, 40) }), 21600);
+      return out_({ ok: true, sid: sid });
+    }
+    if (q.a === 'finish') {
+      const r = byToken(q.token);
+      if (!r) return out_({ ok: false, err: 'auth' });
+      const cache = CacheService.getScriptCache(), raw = cache.get('s_' + q.sid);
+      if (!raw) return out_({ ok: false, err: 'abgelaufen' });
+      const s = JSON.parse(raw);
+      if (s.u !== r.o.nameKey) return out_({ ok: false, err: 'auth' });
+      if ((Date.now() - s.t) / 1000 < MIN_SEC[s.w]) return out_({ ok: false, err: 'zu schnell' });
+      cache.remove('s_' + q.sid);
+      const d = parseData_(r.o), kind = finish_(d, dstr_(r.o.start), s, today_());
+      sh.getRange(r.row, HEAD.indexOf('data') + 1).setValue(JSON.stringify(d));
+      sh.getRange(r.row, HEAD.indexOf('updated') + 1).setValue(new Date());
+      return out_({ ok: true, kind: kind, data: d });
     }
     if (q.a === 'email') {
       const r = byToken(q.token);
@@ -105,7 +163,7 @@ function doPost(e) {
     if (q.a === 'list') {
       return out_({ ok: true, users: rows.map(r => {
         let d = {}; try { d = JSON.parse(r.o.data || '{}'); } catch (e) {}
-        return { name: r.o.name, start: r.o.start, days: d.days || {}, ch: d.ch || {} };
+        return { name: r.o.name, start: dstr_(r.o.start), days: d.days || {}, ch: d.ch || {} };
       }) });
     }
     return out_({ ok: false, err: 'unbekannte Aktion' });
