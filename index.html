@@ -80,7 +80,10 @@ input.txt{width:100%;padding:12px;border-radius:10px;border:1px solid #333;backg
 #help{display:none;position:fixed;inset:0;background:var(--bg);overflow:auto;padding:20px;z-index:7}
 #help h2{font-size:22px;margin:18px 0 8px}#help p,#help li{font-size:15px;line-height:1.5;color:#ddd}#help ul,#help ol{padding-left:20px;margin-bottom:8px}
 .pt-tbl{width:100%;border-collapse:collapse;font-size:15px;margin:6px 0 10px}.pt-tbl td{padding:7px 4px;border-bottom:1px solid #2a2e37}.pt-tbl td:last-child{text-align:right;font-weight:800}
-.exl{display:grid;grid-template-columns:1fr 1fr;gap:8px}.exl div{background:var(--card);border-radius:12px;padding:8px;text-align:center;font-size:13px}
+.exl{display:grid;grid-template-columns:1fr 1fr;gap:8px}.exl div{background:var(--card);border-radius:12px;padding:8px;text-align:center;font-size:13px;cursor:pointer}.exl div small{display:block;color:var(--acc);font-size:11px;margin-top:2px}
+#exd{display:none;position:fixed;inset:0;background:var(--bg);overflow:auto;padding:20px;z-index:9}#exd h2{font-size:22px;margin:4px 0 6px}#exd h4{font-size:15px;margin:16px 0 6px;color:var(--acc)}#exd li{font-size:15px;line-height:1.5;color:#ddd;margin-bottom:4px}#exd ul,#exd ol{padding-left:20px}#exd .sk{max-width:380px}#exd .key{background:#173a26;color:#c9f5dc;border-radius:12px;padding:12px;font-size:15px;line-height:1.45;margin-top:10px}
+#runSk{cursor:pointer}.skhint{font-size:12px;color:var(--mut);margin-top:-2px}
+select.txt{appearance:auto}
 .note{color:var(--mut);font-size:13px;line-height:1.4}
 #modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);align-items:center;justify-content:center;padding:20px}
 #modal .card{max-width:360px;width:100%}
@@ -120,6 +123,10 @@ input.txt{width:100%;padding:12px;border-radius:10px;border:1px solid #333;backg
   <div class="card">
     <label>Steigerung (Sekunden extra pro Halteübung)</label>
     <div class="row" id="bonus" style="margin-top:8px"></div>
+    <label style="display:block;margin-top:14px">Stimme</label>
+    <div class="row" id="vmode" style="margin-top:8px"></div>
+    <select class="txt" id="vsel" style="display:none;margin:10px 0 0;font-size:15px"></select>
+    <div class="note" id="vnote" style="margin-top:6px"></div>
     <label style="display:block;margin-top:14px">Sprechtempo</label>
     <div class="row" id="rate" style="margin-top:8px"></div>
   </div>
@@ -131,7 +138,7 @@ input.txt{width:100%;padding:12px;border-radius:10px;border:1px solid #333;backg
   <div id="prog"></div>
   <div id="phase"></div>
   <div id="ex"></div>
-  <svg id="runSk" class="sk" viewBox="0 0 200 110"></svg>
+  <svg id="runSk" class="sk" viewBox="0 0 200 110"></svg><div class="skhint">ℹ️ Skizze antippen für Erklärung</div>
   <div id="cue"></div>
   <div id="time">0</div>
   <div class="bar"><div id="barf"></div></div>
@@ -167,6 +174,7 @@ input.txt{width:100%;padding:12px;border-radius:10px;border:1px solid #333;backg
 <div id="accMsg" style="font-size:14px;min-height:20px;margin-bottom:8px;color:var(--mut)"></div>
 <div class="row"><button class="chip" id="accSave" style="flex:1">Speichern</button><button class="chip" id="accOut" style="flex:1">Abmelden</button><button class="chip" id="accX" style="flex:1">Schließen</button></div>
 </div></div>
+<div id="exd"><div style="max-width:480px;margin:0 auto"><div class="row" style="justify-content:space-between"><span class="note">Übung</span><button class="chip" id="exdX">Zurück ✕</button></div><div id="exdBody"></div><button class="wbtn" id="exdX2" style="text-align:center;margin-top:16px"><b>Verstanden 👍</b></button></div></div>
 <div id="help"><div style="max-width:480px;margin:0 auto">
 <div class="row" style="justify-content:space-between"><h1>❓ Erste Schritte</h1><button class="chip" id="helpX">Schließen ✕</button></div>
 <h2>1. Anmelden</h2><ul><li>Benutzername + 4-stellige PIN wählen – fertig. Kein Konto, kein Passwort.</li><li>E-Mail ist freiwillig: Dann kommt um 18 Uhr eine Erinnerung, falls du noch nicht trainiert hast. 😢</li><li>Tipp: Seite zum Startbildschirm hinzufügen (Browser-Menü ⋮ → „Zum Startbildschirm“). Dann ist sie wie eine App.</li></ul>
@@ -188,7 +196,7 @@ input.txt{width:100%;padding:12px;border-radius:10px;border:1px solid #333;backg
 <h2>4. Challenges & Ranking</h2><ul><li>Jeden Tag eine neue Tages-Challenge, jede Woche eine Wochen-Challenge – für alle dieselbe.</li><li>Challenges startest du in der App – sie laufen wie ein Workout komplett durch. Nur dann gibt's Punkte.</li><li>Wochen-Challenge: jeden Tag (Mo–So) neu starten, die +5 gibt's bei 7 von 7 Tagen.</li><li>Im Ranking siehst du Punkte, Serie und wer heute schon trainiert hat.</li></ul>
 <h2>5. Meilensteine</h2><p>Für Serien, Punkte und Anzahl Workouts gibt es Meilensteine mit Lob und Belohnungsideen. Belohn dich wirklich – das hält dich dran.</p>
 <h2>6. Steigern</h2><p>Alle 2 Wochen unter „Steigerung“ +5 s einstellen. Wenn es leicht wird: härtere Variante (z. B. Liegestütz ohne Knie).</p>
-<h2>Die Übungen</h2><div class="exl" id="exList"></div>
+<h2>Die Übungen</h2><p class="sub" style="margin-bottom:8px">Tippe auf eine Übung für die genaue Erklärung.</p><div class="exl" id="exList"></div>
 <h2>Sicherheit</h2><ul><li>Beim Drücken ausatmen, nie die Luft anhalten.</li><li>Brennen im Muskel ist okay, stechender Gelenkschmerz nicht → abbrechen.</li><li>Bei Bluthochdruck, Herzproblemen oder Verletzungen vorher ärztlich abklären.</li></ul>
 <button class="wbtn" id="helpX2" style="text-align:center;background:var(--acc);color:#000;margin-top:16px"><b>Los geht's! 💪</b></button>
 </div></div>
@@ -203,7 +211,7 @@ const EX={
  splitR:{n:"Ausfallschritt halten – rechtes Bein vorne",c:"Hinteres Knie knapp über dem Boden, Brust hoch. Unten bleiben!",hold:true},
  bridge:{n:"Glute Bridge halten",c:"Rückenlage, Füße aufstellen, Po hoch und fest anspannen. Kein Hohlkreuz.",hold:true},
  plank:{n:"Plank",c:"Unterarme unter den Schultern, Körper eine Linie, Bauch und Po fest.",hold:true,long:true},
- burst:{n:"Burst – Türrahmen wegdrücken",c:"Von null auf hundert! Mit voller Kraft drücken und dabei ausatmen.",hold:false},
+ burst:{n:"Burst – Türrahmen wegdrücken",c:"In 1 Sekunde von 0 auf 100 – maximal nach außen drücken und dabei ausatmen.",hold:false},
  hollow:{n:"Hollow Body Hold",c:"Unteren Rücken fest in den Boden drücken, Schultern und Füße leicht anheben. Knie angewinkelt ist okay.",hold:true},
  sideL:{n:"Seitstütz – linke Seite",c:"Ellbogen unter der Schulter, Hüfte hoch, Körper eine Linie. Knie am Boden ist okay.",hold:true},
  sideR:{n:"Seitstütz – rechte Seite",c:"Ellbogen unter der Schulter, Hüfte hoch, Körper eine Linie. Knie am Boden ist okay.",hold:true},
@@ -462,18 +470,47 @@ function chips(id,vals,cur,lab,set){const el=$(id);el.innerHTML="";vals.forEach(
 chips("bonus",[0,5,10,15,20,30],bonus,v=>"+"+v+" s",v=>{bonus=v;lsSet("bonus",v)});
 chips("rate",[1,1.1,1.2],rate,v=>v===1?"normal":v===1.1?"zügig":"schnell",v=>{rate=v;lsSet("rate",v);unlockAudio().then(()=>say(["test"],true))});
 
-// ---------- Audio (fertige Sprachaufnahmen) ----------
-const CLIPS=["n1","n2","n3","los","first","stop","next","in5","noch90","noch60","noch30","alles","paused","weiter","done","sA","sB","sK","test","ms","nach","bonus"]
- .concat(Object.keys(EX).flatMap(k=>["n_"+k,"c_"+k]))
- .concat([0,1,2,3,4].map(i=>"m10_"+i),[0,1,2].map(i=>"p5_"+i),[0,1,2,3].map(i=>"mm_"+i),[0,1,2,3,4,5].map(i=>"ml_"+i),[0,1,2].map(i=>"ms_"+i),[0,1,2,3,4].map(i=>"pr_"+i));
+// ---------- Audio: Handy-Stimme (Sprachausgabe des Geräts) oder Coach-Aufnahme ----------
+const TXT={"n_push": "Liegestütz halten.", "c_push": "Brust eine Faust über dem Boden, Ellbogen eng am Körper. Drück den Boden aktiv weg. Notfalls auf den Knien.", "n_splitL": "Ausfallschritt halten, linkes Bein vorne.", "c_splitL": "Hinteres Knie knapp über dem Boden, Oberkörper aufrecht. Unten bleiben.", "n_splitR": "Ausfallschritt halten, rechtes Bein vorne.", "c_splitR": "Hinteres Knie knapp über dem Boden, Oberkörper aufrecht. Unten bleiben.", "n_bridge": "Glute Bridge halten.", "c_bridge": "Rückenlage, Füße aufstellen, Po hoch und fest anspannen. Kein Hohlkreuz.", "n_plank": "Plank.", "c_plank": "Unterarme unter den Schultern, Körper eine Linie, Bauch und Po fest.", "n_burst": "Burst. Türrahmen wegdrücken.", "c_burst": "In einer Sekunde von null auf hundert. Maximal drücken und dabei ausatmen.", "n_hollow": "Hollow Body Hold.", "c_hollow": "Unteren Rücken fest in den Boden drücken, Schultern und Füße leicht anheben. Knie angewinkelt ist okay.", "n_sideL": "Seitstütz, linke Seite.", "c_sideL": "Ellbogen unter der Schulter, Hüfte hoch, Körper eine Linie. Knie am Boden ist okay.", "n_sideR": "Seitstütz, rechte Seite.", "c_sideR": "Ellbogen unter der Schulter, Hüfte hoch, Körper eine Linie. Knie am Boden ist okay.", "n_yhold": "Y-Halten.", "c_yhold": "Bauchlage, Arme schräg nach vorne als Y, Daumen nach oben. Arme und Brust leicht anheben, Blick zum Boden.", "n_hipL": "Hüftbeuger-Dehnung, linkes Knie unten.", "c_hipL": "Halbkniestand, Po anspannen, Hüfte leicht nach vorne schieben. Ruhig atmen.", "n_hipR": "Hüftbeuger-Dehnung, rechtes Knie unten.", "c_hipR": "Halbkniestand, Po anspannen, Hüfte leicht nach vorne schieben. Ruhig atmen.", "n_chest": "Brustdehnung im Türrahmen.", "c_chest": "Unterarm an den Türrahmen, Ellbogen auf Schulterhöhe, kleiner Schritt nach vorne.", "m10_0": "Noch zehn Sekunden. Jetzt zählt's!", "m10_1": "Zehn Sekunden noch. Gib alles!", "m10_2": "Letzte zehn. Zieh durch!", "m10_3": "Noch zehn. Nicht nachlassen!", "m10_4": "Zehn Sekunden. Das ist der Teil, der stark macht!", "p5_0": "Noch fünf. Alles raus!", "p5_1": "Fünf Sekunden. Beiß die Zähne zusammen!", "p5_2": "Letzte fünf. Komm schon!", "mm_0": "Halbzeit. Stark!", "mm_1": "Halbzeit. Spannung halten!", "mm_2": "Halbzeit. Ruhig weiteratmen.", "mm_3": "Halbe Miete. Weiter so!", "ml_0": "Bleib dran, du machst das super!", "ml_1": "Bauch fest, Po fest. Weiter!", "ml_2": "Ruhig atmen, du hast das im Griff!", "ml_3": "Jede Sekunde macht dich stärker!", "ml_4": "Nicht aufgeben!", "ml_5": "Hüfte oben lassen, Linie halten!", "ms_0": "Schön locker atmen.", "ms_1": "Gut so. Tiefer in die Dehnung atmen.", "ms_2": "Schultern locker lassen.", "pr_0": "Saubere Arbeit. Genau so wird man stark!", "pr_1": "Wieder ein Haken im Kalender. Stark!", "pr_2": "Respekt. Disziplin schlägt Motivation.", "pr_3": "Erledigt. Dein Rücken sagt danke!", "pr_4": "Top. Morgen wieder, keine Ausreden!", "n1": "Eins!", "n2": "Zwei!", "n3": "Drei!", "los": "Los geht's!", "first": "Erste Übung:", "stop": "Und Stopp. Durchatmen.", "next": "Gleich kommt:", "in5": "In fünf Sekunden geht's los mit", "noch90": "Noch neunzig Sekunden.", "noch60": "Noch sechzig Sekunden.", "noch30": "Noch dreißig Sekunden. Durchziehen!", "alles": "Volle Kraft! Alles geben!", "paused": "Pause.", "weiter": "Weiter geht's!", "done": "Geschafft! Stark gemacht.", "sA": "Tag A. Los geht's, mach dich bereit.", "sB": "Tag B. Los geht's, mach dich bereit.", "sK": "Kurztag. Los geht's, mach dich bereit.", "sC": "Challenge. Los geht's, mach dich bereit.", "test": "Hallo, so klinge ich. Bereit fürs Training?", "ms": "Meilenstein erreicht! Richtig stark!", "nach": "Nachgeholt! Zwei Punkte zurückgeholt.", "bonus": "Volle Woche ohne Lücke! Drei Bonuspunkte!"};
+const CLIPS=Object.keys(TXT);
 const raw={},buf={};let ac=null,cur=null,queue=[];
-CLIPS.forEach(k=>fetch("a/"+k+".mp3").then(r=>r.ok?r.arrayBuffer():null).then(b=>{if(b)raw[k]=b}).catch(()=>{}));
+let vmode=ls("vmode",""),vname=ls("vname",""),voices=[];
+const hasTTS=()=>"speechSynthesis" in window;
+function deVoices(){try{return speechSynthesis.getVoices().filter(v=>/^de/i.test(v.lang))}catch(e){return []}}
+function pickVoice(){return voices.find(v=>v.name===vname)||voices.find(v=>/google/i.test(v.name))||voices[0]||null}
+function useTTS(){return vmode==="tts"&&hasTTS()&&voices.length>0}
+function setupVoice(){
+  const upd=()=>{voices=deVoices();if(!vmode)vmode=voices.length?"tts":"rec";renderVoice()};
+  if(hasTTS()){upd();try{speechSynthesis.onvoiceschanged=upd}catch(e){}}else{vmode="rec";renderVoice()}
+}
+function renderVoice(){
+  chips("vmode",["tts","rec"],vmode,v=>v==="tts"?"📱 Handy-Stimme":"🎙️ Coach-Aufnahme",v=>{vmode=v;lsSet("vmode",v);renderVoice();unlockAudio().then(()=>say(["test"],true))});
+  const sel=$("vsel"),n=$("vnote");
+  if(vmode==="tts"){
+    if(!voices.length){sel.style.display="none";n.textContent="Auf diesem Gerät ist keine deutsche Handy-Stimme installiert – es wird die Coach-Aufnahme genutzt.";return}
+    const pv=pickVoice();
+    sel.innerHTML=voices.map(v=>'<option'+(pv&&v.name===pv.name?' selected':'')+'>'+v.name.replace(/</g,"")+'</option>').join("");
+    sel.style.display=voices.length>1?"block":"none";
+    sel.onchange=()=>{vname=sel.value;lsSet("vname",vname);say(["test"],true)};
+    n.textContent="Nutzt die Sprachausgabe deines Handys (bei Android meist Google). Klingt in der Regel natürlicher. Antippen zum Probehören.";
+  }else{sel.style.display="none";n.textContent="Fest aufgenommene Computerstimme – funktioniert überall, auch ohne Handy-Stimme."}
+}
+function ttsSay(keys,interrupt){
+  try{
+    if(interrupt)speechSynthesis.cancel();
+    const v=pickVoice();
+    keys.forEach(k=>{const t=TXT[k];if(!t)return;const u=new SpeechSynthesisUtterance(t);u.lang=v?v.lang:"de-DE";if(v)u.voice=v;u.rate=rate;u.pitch=1;speechSynthesis.speak(u)});
+  }catch(e){}
+}
+CLIPS.forEach(k=>fetch("a/"+k+".mp3?v=3").then(r=>r.ok?r.arrayBuffer():null).then(b=>{if(b)raw[k]=b}).catch(()=>{}));
 async function unlockAudio(){
   try{if(!ac)ac=new (window.AudioContext||window.webkitAudioContext)();if(ac.state==="suspended")await ac.resume()}catch(e){}
+  if(useTTS())return;
   for(const k of Object.keys(raw)){if(!buf[k]){try{buf[k]=await ac.decodeAudioData(raw[k].slice(0))}catch(e){}}}
 }
 function decodeLate(k){if(!buf[k]&&raw[k]&&ac){ac.decodeAudioData(raw[k].slice(0)).then(b=>buf[k]=b).catch(()=>{})}}
 function say(keys,interrupt){
+  if(useTTS())return ttsSay(keys,interrupt);
   if(!ac)return;
   if(interrupt){queue=[];if(cur){try{cur.onended=null;cur.stop()}catch(e){}cur=null}}
   keys.forEach(k=>{if(buf[k])queue.push(buf[k]);else decodeLate(k)});
@@ -491,32 +528,119 @@ const P=pts=>'<polyline points="'+pts+'"/>';
 const H=(x,y)=>'<circle cx="'+x+'" cy="'+y+'" r="8" fill="currentColor" stroke="none"/>';
 const FR1='<line class="g" x1="45" y1="8" x2="45" y2="100"/><line class="g" x1="155" y1="8" x2="155" y2="100"/><polyline class="hl" points="38,34 30,40 38,46" stroke-width="4"/><polyline class="hl" points="162,34 170,40 162,46" stroke-width="4"/>';
 const FR2='<line class="g" x1="60" y1="5" x2="60" y2="100"/>';
+// Strichmännchen: h=Kopf, f=Blickrichtung (Nase), t=Rumpf, a/g = Arm/Bein vorne (hell), a2/g2 = Arm/Bein hinten (dunkel), fr=Frontansicht
+const ARR=(x1,y1,x2,y2)=>{const dx=x2-x1,dy=y2-y1,l=Math.hypot(dx,dy),ux=dx/l,uy=dy/l;return '<polyline points="'+x1+','+y1+' '+x2+','+y2+'" stroke="var(--warn)" stroke-width="3"/><polyline points="'+(x2-ux*6-uy*5).toFixed(1)+','+(y2-uy*6+ux*5).toFixed(1)+' '+x2+','+y2+' '+(x2-ux*6+uy*5).toFixed(1)+','+(y2-uy*6-ux*5).toFixed(1)+'" stroke="var(--warn)" stroke-width="3"/>'};
+const FRB='<rect x="38" y="6" width="9" height="94" rx="2" fill="#6b5a45" stroke="none"/><rect x="153" y="6" width="9" height="94" rx="2" fill="#6b5a45" stroke="none"/><polyline class="hl" points="30,34 22,40 30,46" stroke="var(--warn)" stroke-width="4"/><polyline class="hl" points="170,34 178,40 170,46" stroke="var(--warn)" stroke-width="4"/><text x="100" y="9" fill="var(--warn)" stroke="none" font-size="11" font-weight="700" text-anchor="middle">0 → 100 in 1 s</text>';
+const FRC='<rect x="56" y="4" width="9" height="96" rx="2" fill="#6b5a45" stroke="none"/>'+ARR(108,10,130,10)+'<text x="119" y="25" fill="var(--warn)" stroke="none" font-size="10" font-weight="700" text-anchor="middle">Schritt</text>';
 const POSE={
- push:{s:{h:[174,50],l:[[160,58,100,70,35,96],[160,58,160,79,160,99]]},e:{h:[174,72],l:[[160,78,100,85,35,96],[160,78,150,88,158,99]]}},
- split:{s:{h:[100,10],l:[[100,20,100,52],[100,52,118,76,124,99],[100,52,86,76,70,98],[100,26,108,48]]},e:{h:[100,16],l:[[100,26,100,58],[100,58,135,62,135,99],[100,58,80,93,52,97],[100,32,112,54]]}},
- bridge:{s:{h:[28,90],l:[[38,95,100,96,135,70,150,99],[40,97,78,99]]},e:{h:[28,90],l:[[38,94,100,64,140,58,150,99],[40,96,78,99]]}},
- plank:{s:{h:[168,90],l:[[152,95,95,97,32,98],[152,95,150,98,172,98]]},e:{h:[168,58],l:[[152,66,95,72,32,96],[152,66,150,98,172,98]]}},
- burst:{d:FR1,s:{h:[100,22],l:[[100,32,100,64],[100,64,88,99],[100,64,112,99],[100,38,84,54,80,68],[100,38,116,54,120,68]]},e:{h:[100,22],l:[[100,32,100,64],[100,64,88,99],[100,64,112,99],[100,38,74,42,48,40],[100,38,126,42,152,40]]}},
- hollow:{s:{h:[38,92],l:[[50,96,100,98],[100,98,128,98,156,98],[50,96,88,97]]},e:{h:[38,72],l:[[50,80,100,96],[100,96,126,72,154,78],[50,80,88,78]]}},
- side:{s:{h:[40,90],l:[[24,98,48,98,48,95],[48,95,105,98,170,98],[48,95,66,88]]},e:{h:[40,66],l:[[24,98,48,98,48,78],[48,78,105,86,170,97],[48,78,66,58]]}},
- yhold:{s:{h:[160,93],l:[[142,96,90,98,30,98],[142,96,180,96]]},e:{h:[160,86],l:[[142,88,90,96,30,98],[142,86,176,50]]}},
- hip:{s:{h:[88,18],l:[[88,28,84,62],[84,62,116,64,120,99],[84,62,72,98,44,99],[88,34,86,58]]},e:{h:[96,16],l:[[96,26,92,60],[92,60,126,62,126,99],[92,60,78,98,44,99],[96,32,90,58]]}},
- chest:{d:FR2,s:{h:[95,20],l:[[95,30,95,64],[95,64,88,99],[95,64,104,99],[95,36,64,38,64,14]]},e:{h:[112,20],l:[[112,30,110,64],[110,64,100,99],[110,64,126,99],[112,36,64,38,64,14]]}}
+ push:{s:{h:[164,50],f:[.55,.83],t:[150,58,96,70],a:[150,58,151,78,152,99],a2:[146,59,147,79,148,99],g:[96,70,66,82,37,93,34,99],g2:[96,70,64,83,35,94,32,99]},
+       e:{h:[166,74],f:[.6,.8],t:[151,82,96,88],a:[151,82,133,90,150,99],a2:[147,83,129,91,146,99],g:[96,88,66,92,37,95,34,99],g2:[96,88,64,93,35,96,32,99]}},
+ split:{s:{h:[100,13],f:[1,0],t:[100,23,100,54],a:[100,28,104,42,106,55],a2:[100,28,96,42,95,55],g:[100,54,114,76,120,96,131,99],g2:[100,54,88,76,78,93,84,99]},
+        e:{h:[100,25],f:[1,0],t:[100,35,100,66],a:[100,40,104,54,106,66],a2:[100,40,96,54,95,66],g:[100,66,126,70,126,95,137,99],g2:[100,66,92,92,70,94,64,99]}},
+ bridge:{s:{h:[24,90],f:[0,-1],t:[36,96,92,97],a:[40,96,62,98,82,98],a2:[42,97,64,99,84,99],g:[92,97,118,74,140,97,151,98],g2:[92,97,114,75,136,97,147,98]},
+         e:{h:[24,90],f:[0,-1],t:[36,95,96,74],a:[40,96,62,98,82,98],a2:[42,97,64,99,84,99],g:[96,74,126,64,140,97,151,98],g2:[96,74,122,65,136,97,147,98]},d2:ARR(100,52,100,40)},
+ plank:{s:{h:[164,90],f:[.4,.9],t:[150,94,95,96],a:[150,94,150,98,172,98],a2:[146,95,146,98,168,98],g:[95,96,65,97,36,97,33,99],g2:[95,96,63,97,34,97,31,99]},
+        e:{h:[163,60],f:[.5,.85],t:[150,68,95,76],a:[150,68,150,98,172,98],a2:[146,69,146,98,168,98],g:[95,76,65,85,36,94,33,99],g2:[95,76,63,86,34,95,31,99]}},
+ burst:{fr:1,d:FRB,s:{h:[100,22],f:[0,0],t:[100,32,100,64],a:[100,38,86,52,82,66],a2:[100,38,114,52,118,66],g:[100,64,92,82,88,99],g2:[100,64,108,82,112,99]},
+        e:{h:[100,22],f:[0,0],t:[100,32,100,64],a:[100,38,74,40,51,40],a2:[100,38,126,40,149,40],g:[100,64,92,82,88,99],g2:[100,64,108,82,112,99]}},
+ hollow:{s:{h:[30,92],f:[0,-1],t:[42,96,96,97],a:[44,96,66,98,88,98],a2:[46,97,68,99,90,99],g:[96,97,126,97,158,97,162,91],g2:[96,97,124,98,156,98,160,92]},
+         e:{h:[34,74],f:[.45,-.9],t:[46,82,98,96],a:[48,83,70,80,90,78],a2:[50,84,72,81,92,79],g:[98,96,122,74,150,78,155,72],g2:[98,96,118,75,146,79,151,73]}},
+ side:{fr:1,s:{h:[30,90],f:[0,0],t:[44,95,104,97],a:[44,95,44,99,66,99],a2:[44,93,70,92,96,93],g:[104,97,138,98,170,98,174,93],g2:[104,95,138,96,170,96,173,91]},
+       e:{h:[34,64],f:[0,0],t:[46,74,104,86],a:[46,74,46,98,68,98],a2:[46,74,74,80,100,84],g:[104,86,138,93,170,97,174,92],g2:[104,84,138,91,170,95,173,90]},d2:ARR(104,56,104,44)},
+ yhold:{s:{h:[156,92],f:[.3,.95],t:[142,96,92,97],a:[142,96,164,97,188,97],a2:[140,96,162,96,186,96],g:[92,97,62,97,34,97,30,99],g2:[92,97,60,98,32,98,28,99]},
+        e:{h:[152,92],f:[.45,.9],t:[140,88,92,97],a:[140,87,163,77,186,67],a2:[138,88,161,78,184,68],g:[92,97,62,97,34,97,30,99],g2:[92,97,60,98,32,98,28,99]},d2:ARR(176,58,176,46)},
+ hip:{s:{h:[88,16],f:[1,0],t:[88,26,86,62],a:[88,32,98,46,90,60],a2:[88,32,80,46,84,60],g:[86,62,116,64,120,96,131,99],g2:[86,62,74,94,48,96,40,99]},
+      e:{h:[98,16],f:[1,0],t:[98,26,96,60],a:[98,32,108,46,100,58],a2:[98,32,90,46,94,58],g:[96,60,122,64,122,96,133,99],g2:[96,60,78,94,48,96,40,99]},d2:ARR(78,40,96,40)},
+ chest:{d:FRC,s:{h:[76,18],f:[1,0],t:[76,28,76,62],a:[76,34,63,35,62,12],a2:[76,34,62,36,61,13],g:[76,62,80,80,82,97,92,99],g2:[76,62,72,80,70,97,80,99]},
+        e:{h:[92,19],f:[1,0],t:[87,29,83,62],a:[87,34,64,36,62,12],a2:[87,34,63,37,61,13],g:[83,62,99,78,104,97,114,99],g2:[83,62,72,80,64,96,72,99]}}
 };
 const SKMAP={push:"push",splitL:"split",splitR:"split",bridge:"bridge",plank:"plank",burst:"burst",hollow:"hollow",sideL:"side",sideR:"side",yhold:"yhold",hipL:"hip",hipR:"hip",chest:"chest"};
-function poseSvg(p,d){return '<line class="g" x1="5" y1="100" x2="195" y2="100"/>'+(d||'')+'<circle cx="'+p.h[0]+'" cy="'+p.h[1]+'" r="8" fill="currentColor" stroke="none"/>'+p.l.map(a=>{let s='';for(let i=0;i<a.length;i+=2)s+=a[i].toFixed(1)+','+a[i+1].toFixed(1)+' ';return '<polyline points="'+s+'"/>'}).join('')}
-function lerpP(a,b,t){return {h:[a.h[0]+(b.h[0]-a.h[0])*t,a.h[1]+(b.h[1]-a.h[1])*t],l:a.l.map((ln,i)=>ln.map((v,j)=>v+(b.l[i][j]-v)*t))}}
+const LK=["t","a","a2","g","g2"];
+function pl(a,w,c){let s='';for(let i=0;i<a.length;i+=2)s+=a[i].toFixed(1)+','+a[i+1].toFixed(1)+' ';return '<polyline points="'+s+'" stroke-width="'+w+'"'+(c?' stroke="'+c+'"':'')+'/>'}
+function headSvg(p,fr){const x=p.h[0],y=p.h[1],fx=p.f[0],fy=p.f[1],F=v=>v.toFixed(1);
+  let s='<circle cx="'+F(x)+'" cy="'+F(y)+'" r="9" fill="currentColor" stroke="none"/>';
+  if(fr||(!fx&&!fy))return s+'<circle cx="'+F(x-3.2)+'" cy="'+F(y-1)+'" r="1.6" fill="var(--bg)" stroke="none"/><circle cx="'+F(x+3.2)+'" cy="'+F(y-1)+'" r="1.6" fill="var(--bg)" stroke="none"/>';
+  const l=Math.hypot(fx,fy)||1,ux=fx/l,uy=fy/l,px=-uy,py=ux;
+  s+='<polygon points="'+F(x+ux*13)+','+F(y+uy*13)+' '+F(x+ux*7+px*3.5)+','+F(y+uy*7+py*3.5)+' '+F(x+ux*7-px*3.5)+','+F(y+uy*7-py*3.5)+'" fill="currentColor" stroke="none"/>';
+  return s+'<circle cx="'+F(x+ux*4)+'" cy="'+F(y+uy*4)+'" r="1.8" fill="var(--bg)" stroke="none"/>'}
+function poseSvg(p,d,fr,d2){const far=fr?null:"#5d7a68";
+  return '<line class="g" x1="5" y1="100" x2="195" y2="100"/>'+(d||'')+pl(p.a2,5,far)+pl(p.g2,5,far)+pl(p.t,9)+pl(p.g,6)+pl(p.a,6)+headSvg(p,fr)+(d2||'')}
+function lerpP(a,b,t){const o={h:[a.h[0]+(b.h[0]-a.h[0])*t,a.h[1]+(b.h[1]-a.h[1])*t],f:[a.f[0]+(b.f[0]-a.f[0])*t,a.f[1]+(b.f[1]-a.f[1])*t]};LK.forEach(k=>o[k]=a[k].map((v,j)=>v+(b[k][j]-v)*t));return o}
 function skWrap(x){return '<g fill="none" stroke="currentColor" stroke-width="6" stroke-linecap="round" stroke-linejoin="round">'+x+'</g>'}
-function skSvg(k,w){const P=POSE[SKMAP[k]];return skWrap(poseSvg(P[w||"e"],P.d))}
+function skDraw(P,p,showD2){return skWrap(poseSvg(p,P.d,P.fr,showD2?P.d2:""))}
+function skSvg(k,w){const P=POSE[SKMAP[k]];return skDraw(P,P[w||"e"],w!=="s")}
 let skAnim=0;
-function animSk(k,from,to,ms,then){cancelAnimationFrame(skAnim);const P=POSE[SKMAP[k]],t0=performance.now();const f=now=>{const x=Math.min(1,(now-t0)/ms),t=x<.5?2*x*x:1-Math.pow(-2*x+2,2)/2;$("runSk").innerHTML=skWrap(poseSvg(lerpP(P[from],P[to],t),P.d));if(x<1)skAnim=requestAnimationFrame(f);else if(then)then()};skAnim=requestAnimationFrame(f)}
-function renderExList(){const seen={};$("exList").innerHTML=Object.keys(EX).filter(k=>{const s=SKMAP[k];if(seen[s])return false;return seen[s]=1}).map(k=>'<div><svg class="sk exsk" data-k="'+k+'" viewBox="0 0 200 110">'+skSvg(k,"s")+'</svg><b>'+EX[k].n.replace(/ – .*/,"")+'</b></div>').join("")}
+function animSk(k,from,to,ms,then){cancelAnimationFrame(skAnim);const P=POSE[SKMAP[k]],t0=performance.now();const f=now=>{const x=Math.min(1,(now-t0)/ms),t=x<.5?2*x*x:1-Math.pow(-2*x+2,2)/2;$("runSk").innerHTML=skDraw(P,lerpP(P[from],P[to],t),to==="e"&&x>=1);if(x<1)skAnim=requestAnimationFrame(f);else if(then)then()};skAnim=requestAnimationFrame(f)}
+// ---------- Übungs-Erklärungen ----------
+const INFO={
+ push:{so:["Hände etwas breiter als schulterbreit, Körper gestreckt wie beim Plank.","Langsam absenken, bis die Brust eine Faust über dem Boden ist.","Genau dort halten – nicht ablegen."],
+  key:"Unten halten und dabei <b>aktiv den Boden wegdrücken</b>, als wolltest du hoch – nur ohne dich zu bewegen.",
+  wi:["Ellbogen etwa 45° am Körper, nicht seitlich abspreizen","Bauch und Po fest – Hüfte weder durchhängen noch hochstrecken","Blick leicht vor die Hände, Nacken lang","Weiteratmen, nie die Luft anhalten"],
+  fe:["Hohlkreuz / durchhängende Hüfte","Zu hoch halten – je tiefer, desto mehr bringt es"],
+  lv:"Leichter: auf den Knien oder Hände erhöht (Sofa, Tisch). Schwerer: tiefer halten, Füße erhöht."},
+ split:{so:["Großer Schritt nach vorne, Füße hüftbreit (wie auf Schienen, nicht auf einer Linie).","Gerade nach unten absenken, bis das hintere Knie knapp über dem Boden ist.","Dort halten. Danach Seite wechseln."],
+  key:"<b>Unten bleiben</b> – das hintere Knie schwebt knapp über dem Boden. In der gedehnten Position bringt Halten am meisten.",
+  wi:["Vorderes Knie über dem Fuß, nicht nach innen kippen","Gewicht auf der vorderen Ferse","Oberkörper aufrecht, Bauch fest"],
+  fe:["Schritt zu kurz – vorderes Knie schiebt weit über die Zehen","Hinteres Knie ablegen"],
+  lv:"Leichter: weniger tief, an Wand oder Stuhl festhalten. Schwerer: tiefer und länger halten."},
+ bridge:{so:["Rückenlage, Füße hüftbreit nah am Po aufstellen, Arme neben dem Körper.","Po hochdrücken, bis Schultern, Hüfte und Knie eine Linie bilden.","Oben halten und den Po fest zusammenkneifen."],
+  key:"Die Kraft kommt aus dem <b>Po</b>, nicht aus dem unteren Rücken. Drück über die Fersen.",
+  wi:["Rippen unten lassen – kein Hohlkreuz","Knie zeigen nach vorne, nicht auseinanderfallen lassen","Gleichmäßig atmen"],
+  fe:["Hüfte zu hoch – dann arbeitet der Rücken statt der Po","Krampf hinten im Oberschenkel: Füße näher an den Po"],
+  lv:"Schwerer: ein Bein gestreckt in die Luft (einbeinig)."},
+ plank:{so:["Unterarme auf den Boden, Ellbogen genau unter den Schultern.","Auf die Zehen, Körper gestreckt.","Halten: Kopf bis Ferse eine Linie."],
+  key:"<b>Bauch fest wie vor einem Schlag</b> und Po anspannen. Zieh die Ellbogen gedanklich Richtung Füße – dann wird's richtig hart.",
+  wi:["Hüfte nicht durchhängen und nicht zum Dach strecken","Blick zum Boden, Nacken lang","Ruhig weiteratmen"],
+  fe:["Luft anhalten","Nur ‚absitzen' statt aktiv Spannung halten"],
+  lv:"Leichter: auf den Knien oder 4 × 30 s statt am Stück. Schwerer: länger halten, ein Bein anheben."},
+ burst:{so:["In den Türrahmen stellen, stabil schulterbreit stehen.","Hände oder Unterarme auf Schulterhöhe innen an beide Seiten des Rahmens legen.","Auf ‚Los': <b>in ca. 1 Sekunde von 0 auf 100 %</b> – explosiv mit maximaler Kraft nach außen drücken, als wolltest du den Rahmen sprengen.","Die volle Kraft 3–5 Sekunden halten, dann komplett locker lassen."],
+  key:"Es geht um <b>maximale Kraft, so schnell wie möglich</b> – nicht um langsames Hochfahren. Jeder Burst ist ein 100-%-Versuch.",
+  wi:["Beim Drücken kräftig ausatmen – nicht pressen, nie die Luft anhalten","Bauch fest, Knie leicht gebeugt, sicherer Stand","Pause zwischen den Bursts voll nutzen"],
+  fe:["Kraft langsam aufbauen (dann ist es nur Halten)","Mit halber Kraft drücken"],
+  lv:"Alternative ohne Türrahmen: Handtuch mit beiden Händen explosiv auseinanderreißen. Bei Bluthochdruck vorher ärztlich abklären."},
+ hollow:{so:["Rückenlage, Arme Richtung Füße strecken.","Unteren Rücken fest in den Boden drücken.","Schultern und Kopf leicht anheben, Beine anheben – Knie angewinkelt für den Anfang.","So halten."],
+  key:"Der <b>untere Rücken bleibt am Boden</b>. Das ist die ganze Übung – hebt er ab, ist es zu schwer.",
+  wi:["Kinn leicht Richtung Brust","Bauch flach ziehen","Weiteratmen"],
+  fe:["Hohlkreuz – dann Beine höher oder Knie mehr beugen"],
+  lv:"Schwerer: Beine strecken und tiefer halten, Arme über den Kopf."},
+ side:{so:["Auf die Seite legen, Ellbogen genau unter die Schulter.","Beine gestreckt übereinander (oder Knie am Boden).","Hüfte hochdrücken, bis der Körper eine gerade Linie ist. Obere Hand an die Hüfte.","Halten, danach Seite wechseln."],
+  key:"<b>Hüfte oben lassen</b> – sie darf weder durchsacken noch nach hinten wegknicken.",
+  wi:["Schulter weg vom Ohr drücken","Bauch und Po fest","Weiteratmen"],
+  fe:["Hüfte hängt durch","Oberkörper kippt nach vorne"],
+  lv:"Leichter: untere Knie am Boden. Schwerer: oberes Bein anheben."},
+ yhold:{so:["Bauchlage, Stirn knapp über dem Boden.","Arme schräg nach vorne als Y ausstrecken, Daumen zeigen nach oben.","Arme und Brust nur wenige Zentimeter anheben.","Oben halten."],
+  key:"Schulterblätter <b>nach hinten-unten ziehen</b>. Die Kraft kommt aus dem oberen Rücken – genau der, der beim Sitzen schwach wird.",
+  wi:["Nacken lang, Blick zum Boden","Lieber niedrig und sauber als hoch","Beine bleiben am Boden"],
+  fe:["Kopf in den Nacken","Zu hoch reißen – dann arbeitet der untere Rücken"],
+  lv:"Leichter: Arme als W anwinkeln. Schwerer: kleine Wasserflaschen in die Hände."},
+ hip:{so:["Halbkniestand: hinteres Knie auf ein Kissen, vorderer Fuß vorne aufgestellt (Knie ca. 90°).","Po der hinteren Seite fest anspannen, Becken leicht aufrichten.","Hüfte langsam nach vorne schieben, bis es vorne in der Leiste zieht.","Halten, ruhig atmen. Dann Seite wechseln."],
+  key:"<b>Po anspannen</b> ist der Schlüssel. Ohne Po-Spannung landest du im Hohlkreuz und dehnst nichts.",
+  wi:["Oberkörper aufrecht","Nur so weit, dass es angenehm zieht","Plus: Arm der Kniestand-Seite nach oben strecken"],
+  fe:["Ins Hohlkreuz fallen","Nach vorne lehnen statt Hüfte schieben"],
+  lv:"Das ist das Gegenmittel zum vielen Sitzen."},
+ chest:{so:["In den Türrahmen stellen.","Beide Unterarme hochkant an den Rahmen legen, Ellbogen auf Schulterhöhe (90°).","Mit einem Bein einen kleinen Schritt nach vorne durch die Tür machen.","Die Arme bleiben am Rahmen, die Brust geht nach vorne – halten, ruhig atmen."],
+  key:"Die Dehnung kommt vorne in <b>Brust und Schulter</b>. Nur so weit nach vorne, dass es angenehm zieht.",
+  wi:["Schultern nicht hochziehen","Brust raus, Bauch leicht fest – kein Hohlkreuz","Kribbeln in der Hand: Ellbogen etwas tiefer"],
+  fe:["Zu großer Schritt, in die Dehnung fallen lassen"],
+  lv:"Geht auch einarmig, dann Seite wechseln."}
+};
+function renderExList(){const seen={};$("exList").innerHTML=Object.keys(EX).filter(k=>{const s=SKMAP[k];if(seen[s])return false;return seen[s]=1}).map(k=>'<div data-k="'+k+'"><svg class="sk exsk" data-k="'+k+'" viewBox="0 0 200 110">'+skSvg(k,"s")+'</svg><b>'+EX[k].n.replace(/ – .*/,"")+'</b><small>Erklärung ›</small></div>').join("");
+  $("exList").querySelectorAll("div[data-k]").forEach(el=>el.onclick=()=>showDetail(el.dataset.k))}
+const li=a=>a.map(x=>'<li>'+x+'</li>').join("");
+let exdLoop=0;
+function showDetail(k){const I=INFO[SKMAP[k]],e=EX[k];if(!I)return;
+  $("exdBody").innerHTML='<h2>'+e.n.replace(/ – .*/,"")+'</h2><svg class="sk" id="exdSk" viewBox="0 0 200 110"></svg><div class="note" style="text-align:center">hell = vorderer Arm/Bein · dunkel = hinterer · Nase = Blickrichtung</div>'+
+   '<div class="key">💡 '+I.key+'</div><h4>So geht\'s</h4><ol>'+li(I.so)+'</ol><h4>Darauf kommt es an</h4><ul>'+li(I.wi)+'</ul><h4>Typische Fehler</h4><ul>'+li(I.fe)+'</ul>'+(I.lv?'<h4>Varianten</h4><p class="note" style="font-size:14px">'+I.lv+'</p>':'');
+  $("exd").style.display="block";$("exd").scrollTop=0;
+  cancelAnimationFrame(exdLoop);const P=POSE[SKMAP[k]],t0=performance.now();
+  const f=now=>{if($("exd").style.display==="none")return;const x=loopX(now-t0);$("exdSk").innerHTML=skDraw(P,lerpP(P.s,P.e,x),x>.99);exdLoop=requestAnimationFrame(f)};exdLoop=requestAnimationFrame(f)}
+$("exdX").onclick=$("exdX2").onclick=()=>{$("exd").style.display="none";cancelAnimationFrame(exdLoop)};
+$("runSk").onclick=()=>{const st=steps[idx];if(running&&st)showDetail(st.ex)};
+function loopX(t){const ms=t%4000;let x;if(ms<800)x=ms/800;else if(ms<2800)x=1;else if(ms<3600)x=1-(ms-2800)/800;else x=0;return x<.5?2*x*x:1-Math.pow(-2*x+2,2)/2}
 let exLoop=0;
 function animExList(){cancelAnimationFrame(exLoop);const t0=performance.now();const els=[...document.querySelectorAll(".exsk")];
-  const f=now=>{if($("help").style.display==="none")return;const ms=(now-t0)%4000;let x;
-    if(ms<800)x=ms/800;else if(ms<2800)x=1;else if(ms<3600)x=1-(ms-2800)/800;else x=0;
-    const e=x<.5?2*x*x:1-Math.pow(-2*x+2,2)/2;
-    els.forEach(el=>{const P=POSE[SKMAP[el.dataset.k]];el.innerHTML=skWrap(poseSvg(lerpP(P.s,P.e,e),P.d))});
+  const f=now=>{if($("help").style.display==="none")return;const x=loopX(now-t0);
+    els.forEach(el=>{const P=POSE[SKMAP[el.dataset.k]];el.innerHTML=skDraw(P,lerpP(P.s,P.e,x),x>.99)});
     exLoop=requestAnimationFrame(f)};exLoop=requestAnimationFrame(f)}
 function showHelp(){renderExList();$("help").style.display="block";animExList();$("help").scrollTop=0}
 $("bHelp").onclick=showHelp;$("helpX").onclick=$("helpX2").onclick=()=>{$("help").style.display="none";lsSet("helpSeen",1)};
@@ -607,7 +731,7 @@ $("bStop").onclick=stop;
 $("bBack").onclick=()=>{$("done").style.display="none";$("menu").style.display="block";renderMenu();window.scrollTo(0,0)};
 document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden"&&running&&!paused){paused=true;$("bPause").textContent="Weiter ▶";say([],true)}
 if(document.visibilityState==="visible"){if(running)lock();else renderMenu()}});
-renderMenu();initApi();if(!API_URL&&!ls("helpSeen",0))showHelp();
+setupVoice();renderMenu();initApi();if(!API_URL&&!ls("helpSeen",0))showHelp();
 </script>
 </body>
 </html>
