@@ -110,7 +110,7 @@ input.txt{width:100%;padding:12px;border-radius:10px;border:1px solid #333;backg
   <div class="card">
     <div class="cal-h"><button id="calPrev">‹</button><h3 id="calTitle" style="margin:0"></h3><button id="calNext">›</button></div>
     <div class="grid" id="cal"></div>
-    <div class="legend">✓ erledigt +1 · ↺ nachgeholt −3 +2 · ✗ verpasst −3 · So = Ruhetag (Bonus +1)<br>Tippe auf <b>heute</b>, um ohne Coach abzuhaken (z. B. nach dem Vereinstraining).</div>
+    <div class="legend">✓ erledigt +1 · ↺ nachgeholt −3 +2 · ✗ verpasst −3 · So = Ruhetag (Bonus +1)<br>Abgehakt wird nur durch ein <b>komplett durchgelaufenes</b> Workout.</div>
   </div>
 
   <div class="card">
@@ -139,7 +139,7 @@ input.txt{width:100%;padding:12px;border-radius:10px;border:1px solid #333;backg
   <div id="next"></div>
   <div class="ctl">
     <button id="bPause">Pause</button>
-    <button id="bSkip">Weiter ⏭</button>
+    
     <button id="bStop">Stopp</button>
   </div>
 </div>
@@ -173,7 +173,8 @@ input.txt{width:100%;padding:12px;border-radius:10px;border:1px solid #333;backg
 <h2>1. Anmelden</h2><ul><li>Benutzername + 4-stellige PIN wählen – fertig. Kein Konto, kein Passwort.</li><li>E-Mail ist freiwillig: Dann kommt um 18 Uhr eine Erinnerung, falls du noch nicht trainiert hast. 😢</li><li>Tipp: Seite zum Startbildschirm hinzufügen (Browser-Menü ⋮ → „Zum Startbildschirm“). Dann ist sie wie eine App.</li></ul>
 <h2>2. Trainieren</h2><ol><li><b>Ton laut</b> machen, Handy hinlegen.</li><li>Das Workout für heute ist grün umrandet – antippen.</li><li>Der Coach sagt alles an: Übung, Ausführung, Countdown, Pausen. Die Skizze zeigt die Haltung.</li><li>Am Ende wird der Tag automatisch im Kalender abgehakt.</li></ol>
 <p><b>Wochenplan:</b> Mo + Fr = Tag A · Mi = Tag B · Di, Do, Sa = Kurztag (5 Min.) · So = Ruhetag</p>
-<p>Ohne Coach trainiert (z. B. im Verein)? Im Kalender auf <b>heute</b> tippen und ehrlich abhaken.</p>
+
+<h2>🏁 Die Challenge</h2><ul><li><b>Testphase bis 30.11.:</b> App und Übungen ausprobieren, Feedback an Max.</li><li><b>Challenge 1.12.–31.12.:</b> Am 1.12. starten alle bei 0 Punkten.</li><li><b>Kein Überspringen:</b> Punkte gibt es nur, wenn das Workout komplett durchläuft – alle Übungen und alle Pausen.</li><li><b>App im Vordergrund lassen:</b> Bildschirm an, App offen. Wechselst du die App oder geht das Handy aus, pausiert das Workout und läuft erst weiter, wenn du „Weiter“ tippst.</li><li>Abbrechen = keine Punkte. Pause tippen ist erlaubt – die Zeit läuft danach trotzdem komplett.</li><li>Jeden Sonntag kommt per Mail die Wochenübersicht mit Ranking.</li></ul>
 <h2>3. Punkte</h2>
 <table class="pt-tbl">
 <tr><td>✓ Workout am Tag erledigt</td><td style="color:var(--acc)">+1</td></tr>
@@ -220,6 +221,7 @@ const W={
 const PLAN={1:"A",2:"K",3:"B",4:"K",5:"A",6:"K",0:null}; // 0 = Sonntag Ruhetag
 const API_URL=window.API_URL||"https://script.google.com/macros/s/AKfycbwGcovHvH3oRkxyvEK2DvueCa1sUxNLAFsg6VEz3EYFz_1jFfQvEuqFO0SGS83xN5dF/exec";
 const START="2026-11-23";
+const CH_START="2026-12-01",CH_END="2026-12-31";
 const MYS=()=>state.start||START;
 const rnd=n=>Math.floor(Math.random()*n);
 const $=id=>document.getElementById(id);
@@ -296,7 +298,7 @@ $("accOut").onclick=()=>{token="";lsSet("token","");lsSet("state",{});state={day
 
 // ---------- Punkte ----------
 function compute(S){
-  S=S||state;const t=todayK();const st0=S.start||START;let pts=0,streak=0,best=0,total=0,bonus=0,weekRun=0;
+  S=S||state;const tt=todayK();const t=tt>CH_END?CH_END:tt;let st0=S.start||START;if(tt>=CH_START&&st0<CH_START)st0=CH_START;let pts=0,streak=0,best=0,total=0,bonus=0,weekRun=0;
   const log={};
   let k=st0;
   while(k<=t){
@@ -314,7 +316,7 @@ function compute(S){
     best=Math.max(best,streak);
     k=addDays(k,1);
   }
-  let chp=0;Object.keys(S.ch||{}).forEach(x=>{chp+=(S.ch[x]&&S.ch[x].p)||0});pts+=chp;
+  let chp=0;Object.keys(S.ch||{}).forEach(x=>{const c=S.ch[x];if(c&&(c.at||"")>=st0&&(c.at||"")<=CH_END)chp+=c.p||0});pts+=chp;
   return {pts,streak,best,total,bonus,log,chp};
 }
 
@@ -350,6 +352,7 @@ function renderMenu(){
   if(t>=MYS()&&!(state.days[t]&&state.days[t].done)&&tw)b+='<div class="banner bad">Heute dran: <b>'+W[tw].t+'</b>. Noch nicht erledigt'+(email?' – um 18 Uhr kommt sonst eine Mail':'')+'.</div>';
   else if(state.days[t]&&state.days[t].done)b+='<div class="banner good">✅ Heute erledigt. Stark, '+(state.name||'')+'!</div>';
   else if(!tw&&t>=MYS())b+='<div class="banner good">😴 Sonntag = Ruhetag. Freiwilliges Workout gibt +1 Bonus.</div>';
+  if(todayK()<CH_START)b='<div class="banner good">🧪 Testphase bis 30.11. – ab 1.12. startet die Challenge, alle Punkte beginnen dann bei 0.</div>'+b;
   $("banners").innerHTML=b;
   document.querySelectorAll(".wbtn[data-w]").forEach(x=>x.classList.toggle("today",x.dataset.w===tw));
   // Kalender
@@ -379,7 +382,7 @@ $("calPrev").onclick=()=>{calM.setMonth(calM.getMonth()-1);renderMenu()};
 $("calNext").onclick=()=>{calM.setMonth(calM.getMonth()+1);renderMenu()};
 
 function ask(txt,yes){$("mTxt").innerHTML=txt;$("modal").style.display="flex";$("mYes").onclick=()=>{$("modal").style.display="none";yes()};$("mNo").onclick=()=>{$("modal").style.display="none"}}
-function dayTap(k){
+function dayTap(k){return;
   const t=todayK(),y=addDays(t,-1);
   if(k<MYS())return;
   if(k===t&&!(state.days[t]&&state.days[t].done))ask("Heute ohne Coach trainiert und <b>ehrlich</b> erledigt? Dann abhaken (+1).",()=>markDay("manual"));
@@ -536,7 +539,7 @@ function once(k,f){if(!said[k]){said[k]=1;f()}}
 function tick(){
   const now=Date.now(),dt=(now-lastTick)/1000;lastTick=now;
   if(!running||paused)return;
-  remain-=dt;const st=steps[idx],s=Math.ceil(remain),e=EX[st.ex];
+  if(dt>2)return;remain-=dt;const st=steps[idx],s=Math.ceil(remain),e=EX[st.ex];
   if(st.type==="work"){
     if(total>=40&&!e.long&&remain<=total/2)once("half",()=>say([e.hold?"mm_"+rnd(4):"ms_"+rnd(3)]));
     if(e.long)[90,60,30].forEach(t=>{if(total>t+5&&s===t)once("l"+t,()=>say(["noch"+t,"ml_"+rnd(6)]))});
@@ -574,10 +577,10 @@ function stop(){running=false;clearInterval(timer);say([],true);try{if(wl)wl.rel
 
 document.querySelectorAll(".wbtn[data-w]").forEach(b=>b.onclick=()=>start(b.dataset.w));
 $("bPause").onclick=()=>{paused=!paused;$("bPause").textContent=paused?"Weiter ▶":"Pause";if(paused)say(["paused"],true);else{lastTick=Date.now();say(["weiter"],true)}};
-$("bSkip").onclick=()=>{if(running){idx++;if(idx>=steps.length)finish();else enter()}};
 $("bStop").onclick=stop;
 $("bBack").onclick=()=>{$("done").style.display="none";$("menu").style.display="block";renderMenu();window.scrollTo(0,0)};
-document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible"){if(running)lock();else renderMenu()}});
+document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden"&&running&&!paused){paused=true;$("bPause").textContent="Weiter ▶";say([],true)}
+if(document.visibilityState==="visible"){if(running)lock();else renderMenu()}});
 renderMenu();initApi();if(!API_URL&&!ls("helpSeen",0))showHelp();
 </script>
 </body>
