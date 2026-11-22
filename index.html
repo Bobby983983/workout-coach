@@ -106,6 +106,7 @@ select.txt{appearance:auto}
   <div id="tab-rank" style="display:none"><div class="card"><h3>🏆 Ranking</h3><div id="rankList"></div></div><div class="note" id="rankNote">Freunde einladen: einfach den Link zu dieser Seite schicken. Jede/r registriert sich mit Benutzername + PIN.</div><button class="wbtn" id="bAcc" style="text-align:center;margin-top:12px"><b>⚙️ Mein Konto (E-Mail, Abmelden)</b></button></div>
   <div id="tab-train">
 
+  <button class="wbtn" id="bSingle" style="text-align:center;padding:12px"><b style="font-size:16px;margin:0">🎯 Einzelne Übung starten</b><span>zum Testen &amp; Üben – zählt nicht für Punkte</span></button>
   <button class="wbtn today" id="bToday"><b id="bTodayT">▶ Heutiges Workout starten</b><span id="bTodayS"></span></button>
   <div class="note" style="margin:-2px 0 12px">Wochenplan: Mo + Fr = Tag A · Mi = Tag B · Di, Do, Sa = Kurztag · So = Ruhetag (freiwillig, +1)</div>
 
@@ -176,12 +177,13 @@ select.txt{appearance:auto}
 <div id="accMsg" style="font-size:14px;min-height:20px;margin-bottom:8px;color:var(--mut)"></div>
 <div class="row"><button class="chip" id="accSave" style="flex:1">Speichern</button><button class="chip" id="accOut" style="flex:1">Abmelden</button><button class="chip" id="accX" style="flex:1">Schließen</button></div>
 </div></div>
+<div id="pick" style="display:none;position:fixed;inset:0;background:var(--bg);overflow:auto;padding:20px;z-index:8"><div style="max-width:480px;margin:0 auto"><div class="row" style="justify-content:space-between"><h1>🎯 Einzelne Übung</h1><button class="chip" id="pickX">Schließen ✕</button></div><p class="sub">Antippen = starten. ℹ️ = Erklärung. Zählt nicht für Punkte.</p><div class="exl" id="pickList"></div></div></div>
 <div id="exd"><div style="max-width:480px;margin:0 auto"><div class="row" style="justify-content:space-between"><span class="note">Übung</span><button class="chip" id="exdX">Zurück ✕</button></div><div id="exdBody"></div><button class="wbtn" id="exdX2" style="text-align:center;margin-top:16px"><b>Verstanden 👍</b></button></div></div>
 <div id="help"><div style="max-width:480px;margin:0 auto">
 <div class="row" style="justify-content:space-between"><h1>❓ Erste Schritte</h1><button class="chip" id="helpX">Schließen ✕</button></div>
 <h2>1. Anmelden</h2><ul><li>Benutzername + 4-stellige PIN wählen – fertig. Kein Konto, kein Passwort.</li><li>E-Mail ist freiwillig: Dann kommt um 18 Uhr eine Erinnerung, falls du noch nicht trainiert hast. 😢</li><li>Tipp: Seite zum Startbildschirm hinzufügen (Browser-Menü ⋮ → „Zum Startbildschirm“). Dann ist sie wie eine App.</li></ul>
 <h2>2. Trainieren</h2><ol><li><b>Ton laut</b> machen, Handy hinlegen.</li><li>Auf <b>„▶ Heutiges Workout starten“</b> tippen – die App weiß, welcher Tag dran ist.</li><li>Der Coach sagt alles an: Übung, Ausführung, Countdown, Pausen. Die Skizze zeigt die Haltung.</li><li>Am Ende wird der Tag automatisch im Kalender abgehakt.</li></ol>
-<p><b>Wochenplan:</b> Mo + Fr = Tag A · Mi = Tag B · Di, Do, Sa = Kurztag (5 Min.) · So = Ruhetag</p>
+<p><b>Wochenplan:</b> Mo + Fr = Tag A · Mi = Tag B · Di, Do, Sa = Kurztag (7 Min.) · 🪑 Tag A braucht einen Stuhl oder Hocker · So = Ruhetag</p>
 
 <h2>🏁 Die Challenge</h2><ul><li><b>Testphase bis 30.11.:</b> App und Übungen ausprobieren, Feedback an Max.</li><li><b>Challenge 1.12.–31.12.:</b> Am 1.12. starten alle bei 0 Punkten.</li><li><b>Kein Überspringen:</b> Punkte gibt es nur, wenn das Workout komplett durchläuft – alle Übungen und alle Pausen.</li><li><b>App im Vordergrund lassen:</b> Bildschirm an, App offen. Wechselst du die App oder geht das Handy aus, pausiert das Workout und läuft erst weiter, wenn du „Weiter“ tippst.</li><li>Abbrechen = keine Punkte. Pause tippen ist erlaubt – die Zeit läuft danach trotzdem komplett.</li><li>Jeden Sonntag kommt per Mail die Wochenübersicht mit Ranking.</li></ul>
 <h2>3. Punkte</h2>
@@ -220,19 +222,33 @@ const EX={
  yhold:{n:"Y-Halten",c:"Bauchlage, Arme schräg nach vorne als Y, Daumen hoch. Arme und Brust leicht anheben, Blick zum Boden.",hold:true},
  hipL:{n:"Hüftbeuger-Dehnung – linkes Knie unten",c:"Halbkniestand, Po anspannen, Hüfte leicht nach vorne schieben. Ruhig atmen.",hold:false},
  hipR:{n:"Hüftbeuger-Dehnung – rechtes Knie unten",c:"Halbkniestand, Po anspannen, Hüfte leicht nach vorne schieben. Ruhig atmen.",hold:false},
- chest:{n:"Brustdehnung im Türrahmen",c:"Unterarm an den Türrahmen, Ellbogen auf Schulterhöhe, kleiner Schritt nach vorne.",hold:false}
+ chest:{n:"Brustdehnung im Türrahmen",c:"Unterarm an den Türrahmen, Ellbogen auf Schulterhöhe, kleiner Schritt nach vorne.",hold:false},
+ palms:{n:"Hände pressen",c:"Handflächen vor der Brust, Ellbogen hoch – mit voller Kraft gegeneinander drücken.",hold:true},
+ dips:{n:"Stuhl-Dips halten",c:"Hände auf die Stuhlkante, runter bis die Ellbogen 90° haben – dort halten.",hold:true},
+ pike:{n:"Pike halten",c:"Umgedrehtes V, Kopf zwischen den Armen, Schultern aktiv wegdrücken.",hold:true},
+ wallsit:{n:"Wandsitzen",c:"Rücken an die Wand, Oberschenkel waagerecht, Knie über den Füßen.",hold:true},
+ squat:{n:"Kniebeuge halten",c:"Po nach hinten-unten, Brust hoch, Arme nach vorne. Unten halten.",hold:true},
+ calf:{n:"Wadenheben halten",c:"Hände an die Wand, ganz hoch auf die Zehenspitzen und oben halten.",hold:true},
+ bridge1L:{n:"Einbeinige Bridge – linkes Bein in der Luft",c:"Po hoch, linkes Bein gestreckt in Verlängerung. Hüfte gerade.",hold:true},
+ bridge1R:{n:"Einbeinige Bridge – rechtes Bein in der Luft",c:"Po hoch, rechtes Bein gestreckt in Verlängerung. Hüfte gerade.",hold:true},
+ revplank:{n:"Reverse Plank",c:"Rückenlage auf den Unterarmen, Beine gestreckt, Po hoch – Körper eine Linie.",hold:true},
+ row:{n:"Ellbogen-Drücken",c:"Rückenlage, Ellbogen neben dem Körper fest in den Boden drücken, bis sich die Brust hebt. Schulterblätter zusammen und halten.",hold:true},
+ wy:{n:"W-Halten",c:"Bauchlage, Arme als W, Ellbogen Richtung Hüfte ziehen, Arme und Brust leicht anheben.",hold:true},
+ deadbug:{n:"Dead Bug",c:"Rücken fest am Boden, einen Arm nach hinten und das andere Bein nach vorne lang machen.",hold:true},
+ birddogL:{n:"Bird-Dog – linker Arm, rechtes Bein",c:"Vierfüßlerstand, linken Arm und rechtes Bein strecken, Rücken gerade.",hold:true},
+ birddogR:{n:"Bird-Dog – rechter Arm, linkes Bein",c:"Vierfüßlerstand, rechten Arm und linkes Bein strecken, Rücken gerade.",hold:true}
 };
 const W={
- A:{t:"Tag A",s:[["push",30,45],["push",30,45],["push",30,45],["splitL",30,15],["splitR",30,45],["splitL",30,15],["splitR",30,45],["bridge",30,40],["bridge",30,40],["bridge",30,45],["plank",120,0]]},
- B:{t:"Tag B",s:[["burst",5,20],["burst",5,20],["burst",5,20],["burst",5,20],["burst",5,40],["hollow",20,40],["hollow",20,40],["hollow",20,45],["sideL",25,15],["sideR",25,40],["sideL",25,15],["sideR",25,45],["yhold",20,40],["yhold",20,40],["yhold",20,45],["plank",120,0]]},
- K:{t:"Kurztag",s:[["plank",120,20],["hipL",45,12],["hipR",45,12],["chest",45,0]]}
+ A:{t:"Tag A",chair:true,s:[["push",30,35],["push",30,35],["palms",20,30],["dips",20,40],["dips",20,40],["pike",20,35],["wallsit",40,40],["splitL",30,15],["splitR",30,40],["bridge",30,30],["bridge1L",25,15],["bridge1R",25,40],["revplank",20,40],["plank",120,0]]},
+ B:{t:"Tag B",s:[["burst",5,15],["burst",5,15],["burst",5,15],["burst",5,15],["burst",5,40],["row",30,40],["row",30,40],["yhold",20,30],["wy",20,30],["yhold",20,40],["hollow",20,30],["deadbug",20,40],["sideL",25,15],["sideR",25,40],["birddogL",20,10],["birddogR",20,40],["plank",120,0]]},
+ K:{t:"Kurztag",s:[["plank",120,20],["squat",30,15],["calf",30,15],["hipL",45,12],["hipR",45,12],["chest",45,0]]}
 };
 const PLAN={1:"A",2:"K",3:"B",4:"K",5:"A",6:"K",0:null}; // 0 = Sonntag Ruhetag
 const API_URL=window.API_URL||"https://script.google.com/macros/s/AKfycbwGcovHvH3oRkxyvEK2DvueCa1sUxNLAFsg6VEz3EYFz_1jFfQvEuqFO0SGS83xN5dF/exec";
 const START="2026-11-23";
 const CH_START="2026-12-01",CH_END="2026-12-31";
 let todayW="K",curChal=null;
-const DESC={A:"Liegestütz halten · Ausfallschritt · Glute Bridge · Plank · ca. 13 Min.",B:"Bursts · Hollow Body · Seitstütz · Y-Halten · Plank · ca. 13 Min.",K:"Plank · Hüftbeuger- und Brustdehnung · ca. 5 Min."};
+const DESC={A:"🪑 Stuhl/Hocker nötig · Liegestütz · Hände pressen · Dips · Pike · Wandsitzen · Ausfallschritt · Bridge · Reverse Plank · Plank · ca. 15 Min.",B:"Bursts · Ellbogen-Drücken · Y/W-Halten · Hollow · Dead Bug · Seitstütz · Bird-Dog · Plank · ca. 15 Min.",K:"Plank · Kniebeuge · Waden · Hüftbeuger- und Brustdehnung · ca. 7 Min."};
 const MYS=()=>state.start||START;
 const rnd=n=>Math.floor(Math.random()*n);
 const $=id=>document.getElementById(id);
@@ -426,6 +442,9 @@ const DAILY=[
  {n:"Seitstütz-Duell",d:"2 × 45 s pro Seite, 20 s Pause.",p:2,ex:["sideL","sideR"],sec:45,sets:2,rest:20},
  {n:"Ausfallschritt-Ausdauer",d:"2 × 45 s pro Bein, 20 s Pause.",p:2,ex:["splitL","splitR"],sec:45,sets:2,rest:20},
  {n:"Y-Halten für den Rücken",d:"4 × 40 s Y-Halten, 30 s Pause.",p:2,ex:"yhold",sec:40,sets:4,rest:30},
+ {n:"Wandsitz-Wahnsinn",d:"3 × 60 s Wandsitzen, 30 s Pause.",p:2,ex:"wallsit",sec:60,sets:3,rest:30},
+ {n:"Kniebeugen-Keller",d:"4 × 40 s Kniebeuge halten, 30 s Pause.",p:2,ex:"squat",sec:40,sets:4,rest:30},
+ {n:"Rücken-Brenner",d:"4 × 30 s Ellbogen-Drücken, 30 s Pause.",p:2,ex:"row",sec:30,sets:4,rest:30},
  {n:"Burst-Feuerwerk",d:"10 × 5 s Türrahmen mit voller Kraft, 15 s Pause.",p:2,ex:"burst",sec:5,sets:10,rest:15}
 ];
 const WEEKLY=[
@@ -473,8 +492,10 @@ chips("bonus",[0,5,10,15,20,30],bonus,v=>"+"+v+" s",v=>{bonus=v;lsSet("bonus",v)
 chips("rate",[1,1.1,1.2],rate,v=>v===1?"normal":v===1.1?"zügig":"schnell",v=>{rate=v;lsSet("rate",v);unlockAudio().then(()=>say(["test"],true))});
 
 // ---------- Audio: Handy-Stimme (Sprachausgabe des Geräts) oder Coach-Aufnahme ----------
-const TXT={"n_push": "Liegestütz halten.", "c_push": "Brust eine Faust über dem Boden, Ellbogen eng am Körper. Drück den Boden aktiv weg. Notfalls auf den Knien.", "n_splitL": "Ausfallschritt halten, linkes Bein vorne.", "c_splitL": "Hinteres Knie knapp über dem Boden, Oberkörper aufrecht. Unten bleiben.", "n_splitR": "Ausfallschritt halten, rechtes Bein vorne.", "c_splitR": "Hinteres Knie knapp über dem Boden, Oberkörper aufrecht. Unten bleiben.", "n_bridge": "Glute Bridge halten.", "c_bridge": "Rückenlage, Füße aufstellen, Po hoch und fest anspannen. Kein Hohlkreuz.", "n_plank": "Plank.", "c_plank": "Unterarme unter den Schultern, Körper eine Linie, Bauch und Po fest.", "n_burst": "Burst. Türrahmen wegdrücken.", "c_burst": "In einer Sekunde von null auf hundert. Maximal drücken und dabei ausatmen.", "n_hollow": "Hollow Body Hold.", "c_hollow": "Unteren Rücken fest in den Boden drücken, Schultern und Füße leicht anheben. Knie angewinkelt ist okay.", "n_sideL": "Seitstütz, linke Seite.", "c_sideL": "Ellbogen unter der Schulter, Hüfte hoch, Körper eine Linie. Knie am Boden ist okay.", "n_sideR": "Seitstütz, rechte Seite.", "c_sideR": "Ellbogen unter der Schulter, Hüfte hoch, Körper eine Linie. Knie am Boden ist okay.", "n_yhold": "Y-Halten.", "c_yhold": "Bauchlage, Arme schräg nach vorne als Y, Daumen nach oben. Arme und Brust leicht anheben, Blick zum Boden.", "n_hipL": "Hüftbeuger-Dehnung, linkes Knie unten.", "c_hipL": "Halbkniestand, Po anspannen, Hüfte leicht nach vorne schieben. Ruhig atmen.", "n_hipR": "Hüftbeuger-Dehnung, rechtes Knie unten.", "c_hipR": "Halbkniestand, Po anspannen, Hüfte leicht nach vorne schieben. Ruhig atmen.", "n_chest": "Brustdehnung im Türrahmen.", "c_chest": "Unterarm an den Türrahmen, Ellbogen auf Schulterhöhe, kleiner Schritt nach vorne.", "m10_0": "Noch zehn Sekunden. Komm, zieh durch!", "m10_1": "Zehn Sekunden noch. Gib alles, jetzt zählt's!", "m10_2": "Letzte zehn. Zieh durch!", "m10_3": "Noch zehn. Nicht nachlassen!", "m10_4": "Zehn Sekunden. Das ist der Teil, der stark macht!", "p5_0": "Noch ein paar Sekunden. Komm, zieh durch!", "p5_1": "Fünf Sekunden. Gib alles, jetzt zählt's!", "p5_2": "Letzte fünf. Beiß die Zähne zusammen!", "mm_0": "Halbzeit. Stark!", "mm_1": "Halbzeit. Spannung halten!", "mm_2": "Halbzeit. Ruhig weiteratmen.", "mm_3": "Halbe Miete. Weiter so!", "ml_0": "Bleib dran, du machst das super!", "ml_1": "Bauch fest, Po fest. Weiter!", "ml_2": "Ruhig atmen, du hast das im Griff!", "ml_3": "Jede Sekunde macht dich stärker!", "ml_4": "Nicht aufgeben!", "ml_5": "Hüfte oben lassen, Linie halten!", "ms_0": "Schön locker atmen.", "ms_1": "Gut so. Tiefer in die Dehnung atmen.", "ms_2": "Schultern locker lassen.", "pr_0": "Saubere Arbeit. Genau so wird man stark!", "pr_1": "Wieder ein Haken im Kalender. Stark!", "pr_2": "Respekt. Disziplin schlägt Motivation.", "pr_3": "Erledigt. Dein Rücken sagt danke!", "pr_4": "Top. Morgen wieder, keine Ausreden!", "n1": "Eins!", "n2": "Zwei!", "n3": "Drei!", "los": "Los geht's!", "first": "Erste Übung:", "stop": "Und Stopp. Durchatmen.", "next": "Gleich kommt:", "in5": "In fünf Sekunden geht's los mit", "noch90": "Noch neunzig Sekunden.", "noch60": "Noch sechzig Sekunden.", "noch30": "Noch dreißig Sekunden. Durchziehen!", "alles": "Volle Kraft! Alles geben!", "paused": "Pause.", "weiter": "Weiter geht's!", "done": "Geschafft! Stark gemacht.", "sA": "Tag A. Los geht's, mach dich bereit.", "sB": "Tag B. Los geht's, mach dich bereit.", "sK": "Kurztag. Los geht's, mach dich bereit.", "sC": "Challenge. Los geht's, mach dich bereit.", "test": "Hallo, so klinge ich. Bereit fürs Training?", "half_0": "Die Hälfte hast du!", "half_1": "Hälfte geschafft. Stark!", "half_2": "Halbzeit. Spannung halten!", "n10": "Noch zehn Sekunden.", "n5": "Noch fünf Sekunden.", "hi": "Hallo! Willkommen zu deinem heutigen Workout.", "hiC": "Hallo! Willkommen zu deiner heutigen Challenge.", "ready": "Mach dich bereit für die erste Übung:", "ms": "Meilenstein erreicht! Richtig stark!", "nach": "Nachgeholt! Zwei Punkte zurückgeholt.", "bonus": "Volle Woche ohne Lücke! Drei Bonuspunkte!"};
+const TXT={"n_push": "Liegestütz halten.", "c_push": "Brust eine Faust über dem Boden, Ellbogen eng am Körper. Drück den Boden aktiv weg. Notfalls auf den Knien.", "n_splitL": "Ausfallschritt halten, linkes Bein vorne.", "c_splitL": "Hinteres Knie knapp über dem Boden, Oberkörper aufrecht. Unten bleiben.", "n_splitR": "Ausfallschritt halten, rechtes Bein vorne.", "c_splitR": "Hinteres Knie knapp über dem Boden, Oberkörper aufrecht. Unten bleiben.", "n_bridge": "Glute Bridge halten.", "c_bridge": "Rückenlage, Füße aufstellen, Po hoch und fest anspannen. Kein Hohlkreuz.", "n_plank": "Plank.", "c_plank": "Unterarme unter den Schultern, Körper eine Linie, Bauch und Po fest.", "n_burst": "Burst. Türrahmen wegdrücken.", "c_burst": "In einer Sekunde von null auf hundert. Maximal drücken und dabei ausatmen.", "n_hollow": "Hollow Body Hold.", "c_hollow": "Unteren Rücken fest in den Boden drücken, Schultern und Füße leicht anheben. Knie angewinkelt ist okay.", "n_sideL": "Seitstütz, linke Seite.", "c_sideL": "Ellbogen unter der Schulter, Hüfte hoch, Körper eine Linie. Knie am Boden ist okay.", "n_sideR": "Seitstütz, rechte Seite.", "c_sideR": "Ellbogen unter der Schulter, Hüfte hoch, Körper eine Linie. Knie am Boden ist okay.", "n_yhold": "Y-Halten.", "c_yhold": "Bauchlage, Arme schräg nach vorne als Y, Daumen nach oben. Arme und Brust leicht anheben, Blick zum Boden.", "n_hipL": "Hüftbeuger-Dehnung, linkes Knie unten.", "c_hipL": "Halbkniestand, Po anspannen, Hüfte leicht nach vorne schieben. Ruhig atmen.", "n_hipR": "Hüftbeuger-Dehnung, rechtes Knie unten.", "c_hipR": "Halbkniestand, Po anspannen, Hüfte leicht nach vorne schieben. Ruhig atmen.", "n_chest": "Brustdehnung im Türrahmen.", "c_chest": "Unterarm an den Türrahmen, Ellbogen auf Schulterhöhe, kleiner Schritt nach vorne.", "mm_0": "Halbzeit. Stark!", "mm_1": "Halbzeit. Spannung halten!", "mm_2": "Halbzeit. Ruhig weiteratmen.", "mm_3": "Halbe Miete. Weiter so!", "n1": "Eins!", "n2": "Zwei!", "n3": "Drei!", "los": "Los geht's!", "first": "Erste Übung:", "stop": "Und Stopp. Durchatmen.", "next": "Gleich kommt:", "in5": "In fünf Sekunden geht's los mit", "noch90": "Noch neunzig Sekunden.", "noch60": "Noch sechzig Sekunden.", "noch30": "Noch dreißig Sekunden. Durchziehen!", "alles": "Volle Kraft! Alles geben!", "paused": "Pause.", "weiter": "Weiter geht's!", "done": "Geschafft! Stark gemacht.", "sA": "Tag A. Los geht's, mach dich bereit.", "sB": "Tag B. Los geht's, mach dich bereit.", "sK": "Kurztag. Los geht's, mach dich bereit.", "sC": "Challenge. Los geht's, mach dich bereit.", "test": "Hallo, so klinge ich. Bereit fürs Training?", "n10": "Noch zehn Sekunden.", "n5": "Noch fünf Sekunden.", "hi": "Hallo! Willkommen zu deinem heutigen Workout.", "hiC": "Hallo! Willkommen zu deiner heutigen Challenge.", "ready": "Mach dich bereit für die erste Übung:", "ms": "Meilenstein erreicht! Richtig stark!", "nach": "Nachgeholt! Zwei Punkte zurückgeholt.", "bonus": "Volle Woche ohne Lücke! Drei Bonuspunkte!", "n_palms": "Hände pressen.", "c_palms": "Handflächen vor der Brust zusammen, Ellbogen hoch. Mit voller Kraft gegeneinander drücken.", "n_dips": "Stuhl-Dips halten.", "c_dips": "Hände auf die Stuhlkante, Po vor den Stuhl, langsam runter bis die Ellbogen neunzig Grad haben. Dort halten.", "n_pike": "Pike halten.", "c_pike": "Hände und Füße am Boden, Po hoch wie ein umgedrehtes V. Kopf zwischen die Arme, Schultern aktiv wegdrücken.", "n_wallsit": "Wandsitzen.", "c_wallsit": "Rücken an die Wand, runterrutschen bis die Oberschenkel waagerecht sind. Knie über den Füßen.", "n_squat": "Kniebeuge halten.", "c_squat": "Füße schulterbreit, Po nach hinten unten, Brust hoch, Arme nach vorne. Unten halten.", "n_calf": "Wadenheben halten.", "c_calf": "Hände an die Wand, ganz hoch auf die Zehenspitzen und oben halten.", "n_bridge1L": "Einbeinige Bridge, linkes Bein in der Luft.", "c_bridge1L": "Po hoch, linkes Bein gestreckt in Verlängerung vom Körper. Hüfte gerade halten.", "n_bridge1R": "Einbeinige Bridge, rechtes Bein in der Luft.", "c_bridge1R": "Po hoch, rechtes Bein gestreckt in Verlängerung vom Körper. Hüfte gerade halten.", "n_revplank": "Reverse Plank.", "c_revplank": "Rückenlage auf den Unterarmen, Beine gestreckt. Po hoch, Körper eine Linie, Bauch zur Decke.", "n_row": "Ellbogen-Drücken.", "c_row": "Rückenlage, Ellbogen neben dem Körper fest in den Boden drücken, bis sich die Brust hebt. Schulterblätter zusammen und halten.", "n_wy": "W-Halten.", "c_wy": "Bauchlage, Arme als W angewinkelt, Ellbogen Richtung Hüfte ziehen. Arme und Brust leicht anheben.", "n_deadbug": "Dead Bug.", "c_deadbug": "Rückenlage, unterer Rücken fest am Boden. Einen Arm nach hinten und das andere Bein nach vorne lang machen und halten.", "n_birddogL": "Bird-Dog, linker Arm und rechtes Bein.", "c_birddogL": "Vierfüßlerstand, linken Arm nach vorne und rechtes Bein nach hinten strecken. Rücken gerade.", "n_birddogR": "Bird-Dog, rechter Arm und linkes Bein.", "c_birddogR": "Vierfüßlerstand, rechten Arm nach vorne und linkes Bein nach hinten strecken. Rücken gerade.", "half_0": "Die Hälfte hast du!", "half_1": "Hälfte geschafft. Stark!", "half_2": "Halbzeit. Spannung halten!", "half_3": "Hälfte geschafft, der Rest ist Kopfsache!", "half_4": "Halbzeit! Jetzt purzeln die Pfunde.", "half_5": "Die Hälfte ist rum. Dein Sofa vermisst dich, aber noch nicht!", "half_6": "Halbzeit. Du machst das besser als gedacht!", "half_7": "Halbe Miete! Ruhig weiteratmen.", "half_8": "Hälfte geschafft. Die Couch kann warten.", "half_9": "Halbzeit! Ab jetzt geht's bergab, versprochen.", "half_10": "Die Hälfte! Atmen, nicht pressen.", "half_11": "Halbzeit! Wenn's brennt, wirkt's.", "m10_0": "Noch zehn Sekunden. Komm, zieh durch!", "m10_1": "Zehn Sekunden noch. Gib alles, jetzt zählt's!", "m10_2": "Letzte zehn. Zieh durch!", "m10_3": "Noch zehn. Nicht nachlassen!", "m10_4": "Zehn Sekunden. Das ist der Teil, der stark macht!", "m10_5": "Noch zehn! Hiernach ist ein Stück Schokolade mehr drin.", "m10_6": "Zehn Sekunden! Jetzt purzeln die Pfunde!", "m10_7": "Noch zehn. Dein zukünftiges Ich klatscht schon Beifall!", "m10_8": "Zehn Sekunden! Wer jetzt aufgibt, muss morgen doppelt.", "m10_9": "Noch zehn! Beißen, nicht jammern!", "m10_10": "Zehn Sekunden. Zähne zusammen, gleich ist Feierabend!", "m10_11": "Noch zehn! Das Feierabendbier hast du dir gleich verdient.", "p5_0": "Noch ein paar Sekunden. Komm, zieh durch!", "p5_1": "Fünf Sekunden. Gib alles, jetzt zählt's!", "p5_2": "Letzte fünf. Beiß die Zähne zusammen!", "p5_3": "Noch fünf! Das schaffst du im Schlaf!", "p5_4": "Fünf! Gleich darfst du jammern!", "p5_5": "Letzte fünf! Jetzt nicht schlappmachen!", "p5_6": "Fünf Sekunden! Die Pfunde zittern schon!", "p5_7": "Noch fünf. Keine Ausreden!", "p5_8": "Fünf! Gleich ist es vorbei, versprochen!", "p5_9": "Letzte Sekunden! Volle Spannung!", "ml_0": "Bleib dran, du machst das super!", "ml_1": "Bauch fest, Po fest. Weiter!", "ml_2": "Ruhig atmen, du hast das im Griff!", "ml_3": "Jede Sekunde macht dich stärker!", "ml_4": "Nicht aufgeben!", "ml_5": "Hüfte oben lassen, Linie halten!", "ml_6": "Zitter ruhig, das ist das Fett, das weint!", "ml_7": "Weiteratmen, du bist kein Fisch!", "ml_8": "Jede Sekunde hier ist eine Sekunde weniger Rückenschmerzen!", "ml_9": "Bauch rein, Brust raus, Chef-Modus!", "ml_10": "Du hältst länger durch als jeder Neujahrsvorsatz!", "ml_11": "Stell dir vor, unter dir liegt Lava!", "ms_0": "Schön locker atmen.", "ms_1": "Gut so. Tiefer in die Dehnung atmen.", "ms_2": "Schultern locker lassen.", "ms_3": "Tief einatmen, ganz entspannt.", "ms_4": "Locker lassen, das hier ist Wellness.", "ms_5": "Gönn dir die Dehnung, dein Rücken liebt dich dafür.", "pr_0": "Saubere Arbeit. Genau so wird man stark!", "pr_1": "Wieder ein Haken im Kalender. Stark!", "pr_2": "Respekt. Disziplin schlägt Motivation.", "pr_3": "Erledigt. Dein Rücken sagt danke!", "pr_4": "Top. Morgen wieder, keine Ausreden!", "pr_5": "Erledigt! Heute Abend darfst du ein Stück Schokolade mehr essen.", "pr_6": "Stark! Die Pfunde packen schon ihre Koffer.", "pr_7": "Geschafft! Das Sofa hat dich vermisst.", "pr_8": "Fertig! Du bist offiziell härter als gestern.", "pr_9": "Erledigt! Deine Haltung sagt danke.", "pr_10": "Top! Damit bist du weiter als neunzig Prozent auf dem Sofa.", "pr_11": "Geschafft! Der Kühlschrank darf heute einmal mehr aufgehen.", "pr_12": "Fertig! Jetzt stolz sein, aber nicht übermütig werden.", "los_0": "Los geht's!", "los_1": "Und los!", "los_2": "Feuer frei!", "los_3": "Los, zeig's mir!", "los_4": "Auf geht's!", "los_5": "Action!", "stop_0": "Und Stopp. Durchatmen.", "stop_1": "Stopp! Stark gemacht.", "stop_2": "Und locker lassen.", "stop_3": "Stopp. Kurz ausschütteln.", "stop_4": "Pause! Verdient.", "chair": "Für dieses Workout brauchst du einen stabilen Stuhl oder Hocker.", "single": "Einzelübung. Mach dich bereit!"};
 const CLIPS=Object.keys(TXT);
+let usedL={};
+function pk(p){const all=CLIPS.filter(k=>k.startsWith(p));let free=all.filter(k=>!usedL[k]);if(!free.length){all.forEach(k=>delete usedL[k]);free=all}const k=free[Math.floor(Math.random()*free.length)];usedL[k]=1;return k}
 const raw={},buf={};let ac=null,cur=null,queue=[];
 let vmode=ls("vmode",""),vname=ls("vname",""),voices=[];
 const hasTTS=()=>"speechSynthesis" in window;
@@ -532,18 +553,18 @@ function setDuck(d){if(duck!==d){duck=d;musApply()}}
 function musStart(){
   if(mus||!ac||!musVol)return;
   const g=ac.createGain();g.gain.value=0;g.connect(ac.destination);
-  const nb=ac.createBuffer(1,ac.sampleRate*.2,ac.sampleRate),nd=nb.getChannelData(0);for(let i=0;i<nd.length;i++)nd[i]=Math.random()*2-1;
-  const bpm=86,bt=60/bpm,CH=[[57,60,64,67],[53,57,60,64],[48,55,60,64],[55,59,62,65]];
+  const lp=ac.createBiquadFilter();lp.type="lowpass";lp.frequency.value=2600;lp.connect(g);
+  const nb=ac.createBuffer(1,ac.sampleRate*.3,ac.sampleRate),nd=nb.getChannelData(0);for(let i=0;i<nd.length;i++)nd[i]=Math.random()*2-1;
+  const bpm=124,bt=60/bpm,CH=[[57,60,64],[53,57,60],[48,52,55],[55,59,62]];
   let t=ac.currentTime+.1,bar=0;
-  const note=(f,s,d,v,type)=>{const o=ac.createOscillator(),e=ac.createGain();o.type=type;o.frequency.value=f;e.gain.setValueAtTime(0,s);e.gain.linearRampToValueAtTime(v,s+Math.min(.3,d/4));e.gain.linearRampToValueAtTime(0,s+d);o.connect(e);e.connect(g);o.start(s);o.stop(s+d+.05)};
-  const kick=s=>{const o=ac.createOscillator(),e=ac.createGain();o.frequency.setValueAtTime(110,s);o.frequency.exponentialRampToValueAtTime(42,s+.18);e.gain.setValueAtTime(.45,s);e.gain.exponentialRampToValueAtTime(.001,s+.3);o.connect(e);e.connect(g);o.start(s);o.stop(s+.32)};
-  const hat=(s,v)=>{const n=ac.createBufferSource(),f=ac.createBiquadFilter(),e=ac.createGain();n.buffer=nb;f.type="highpass";f.frequency.value=7000;e.gain.setValueAtTime(v,s);e.gain.exponentialRampToValueAtTime(.001,s+.06);n.connect(f);f.connect(e);e.connect(g);n.start(s);n.stop(s+.08)};
+  const note=(f,s,d,v,type,dst)=>{const o=ac.createOscillator(),e=ac.createGain();o.type=type;o.frequency.value=f;e.gain.setValueAtTime(0,s);e.gain.linearRampToValueAtTime(v,s+.01);e.gain.exponentialRampToValueAtTime(.001,s+d);o.connect(e);e.connect(dst||g);o.start(s);o.stop(s+d+.05)};
+  const kick=s=>{const o=ac.createOscillator(),e=ac.createGain();o.frequency.setValueAtTime(140,s);o.frequency.exponentialRampToValueAtTime(45,s+.12);e.gain.setValueAtTime(.6,s);e.gain.exponentialRampToValueAtTime(.001,s+.28);o.connect(e);e.connect(g);o.start(s);o.stop(s+.3)};
+  const noise=(s,v,d,hp)=>{const n=ac.createBufferSource(),f=ac.createBiquadFilter(),e=ac.createGain();n.buffer=nb;f.type=hp?"highpass":"bandpass";f.frequency.value=hp||1500;e.gain.setValueAtTime(v,s);e.gain.exponentialRampToValueAtTime(.001,s+d);n.connect(f);f.connect(e);e.connect(g);n.start(s);n.stop(s+d+.02)};
   const sched=()=>{while(t<ac.currentTime+2){const c=CH[bar%4];
-    c.forEach(n=>note(mtof(n),t,bt*4,.035,"triangle"));
-    [0,1.5,2,3.5].forEach((b,i)=>note(mtof(c[0]-12+(i===3?7:0)),t+b*bt,bt*.9,.12,"sine"));
-    [0,2].forEach(b=>kick(t+b*bt));
-    for(let i=0;i<8;i++)hat(t+i*bt/2,i%2?.05:.025);
-    if(bar%2)[0,1,2].forEach(i=>note(mtof(c[(i+1)%4]+12),t+(1+i*.5)*bt,bt*.45,.025,"sine"));
+    for(let b=0;b<4;b++){const s=t+b*bt;kick(s);noise(s+bt/2,.07,.12,8000);if(b%2)noise(s,.16,.18,0);
+      note(mtof(c[0]-24),s+bt/2,bt*.45,.22,"sawtooth",lp);}
+    for(let i=0;i<8;i++)note(mtof(c[i%3]+12+(i>5?12:0)),t+i*bt/2,bt*.4,.05,"square",lp);
+    if(bar%4===3)for(let i=0;i<4;i++)noise(t+3*bt+i*bt/4,.05+i*.02,.08,4000);
     t+=bt*4;bar++}};
   sched();mus={g,iv:setInterval(sched,400)};
 }
@@ -583,20 +604,51 @@ const POSE={
  chest:{d:FRC,s:{h:[76,18],f:[1,0],t:[76,28,76,62],a:[76,34,63,35,62,12],a2:[76,34,62,36,61,13],g:[76,62,80,80,82,97,92,99],g2:[76,62,72,80,70,97,80,99]},
         e:{h:[92,19],f:[1,0],t:[87,29,83,62],a:[87,34,64,36,62,12],a2:[87,34,63,37,61,13],g:[83,62,99,78,104,97,114,99],g2:[83,62,72,80,64,96,72,99]}}
 };
-const SKMAP={push:"push",splitL:"split",splitR:"split",bridge:"bridge",plank:"plank",burst:"burst",hollow:"hollow",sideL:"side",sideR:"side",yhold:"yhold",hipL:"hip",hipR:"hip",chest:"chest"};
+const SKMAP={palms:"palms",dips:"dips",pike:"pike",wallsit:"wallsit",squat:"squat",calf:"calf",bridge1L:"bridge1",bridge1R:"bridge1",revplank:"table",row:"row",wy:"tw",deadbug:"deadbug",birddogL:"birddog",birddogR:"birddog",push:"push",splitL:"split",splitR:"split",bridge:"bridge",plank:"plank",burst:"burst",hollow:"hollow",sideL:"side",sideR:"side",yhold:"yhold",hipL:"hip",hipR:"hip",chest:"chest"};
+// Neue Übungen (Posen)
+const WALL=x=>'<rect x="'+x+'" y="4" width="8" height="96" rx="2" fill="#6b5a45" stroke="none"/>';
+const CHAIR='<rect x="38" y="56" width="38" height="6" rx="2" fill="#6b5a45" stroke="none"/><rect x="40" y="18" width="5" height="40" rx="2" fill="#6b5a45" stroke="none"/><rect x="41" y="62" width="4" height="38" fill="#6b5a45" stroke="none"/><rect x="70" y="62" width="4" height="38" fill="#6b5a45" stroke="none"/>';
+const TOWEL='<rect x="162" y="4" width="9" height="96" rx="2" fill="#6b5a45" stroke="none"/><polyline points="131,38 162,38" stroke="var(--warn)" stroke-width="4"/>';
+Object.assign(POSE,{
+ wallsit:{d:WALL(40),s:{h:[60,16],f:[1,0],t:[57,26,56,60],a:[57,32,60,46,62,58],a2:[57,32,56,46,58,58],g:[56,60,62,80,66,98,77,99],g2:[56,60,58,80,62,98,73,99]},
+          e:{h:[60,34],f:[1,0],t:[57,44,56,72],a:[57,50,70,58,82,66],a2:[57,50,66,60,78,68],g:[56,72,86,72,86,98,97,99],g2:[56,72,82,73,82,98,93,99]}},
+ squat:{s:{h:[100,14],f:[1,0],t:[100,24,100,58],a:[100,30,103,44,104,56],a2:[100,30,97,44,96,56],g:[100,58,103,78,104,98,115,99],g2:[100,58,99,78,98,98,109,99]},
+        e:{h:[110,34],f:[1,0],t:[104,43,90,74],a:[104,48,124,48,144,46],a2:[104,48,122,50,142,48],g:[90,74,116,74,108,98,119,99],g2:[90,74,112,76,104,98,115,99]}},
+ bridge1:{s:{h:[24,90],f:[0,-1],t:[36,96,92,97],a:[40,96,62,98,82,98],a2:[42,97,64,99,84,99],g:[92,97,120,80,146,64,152,58],g2:[92,97,114,75,136,97,147,98]},
+          e:{h:[24,90],f:[0,-1],t:[36,95,96,74],a:[40,96,62,98,82,98],a2:[42,97,64,99,84,99],g:[96,74,126,64,156,54,162,48],g2:[96,74,122,65,136,97,147,98]}},
+ calf:{d:WALL(156),s:{h:[110,18],f:[1,0],t:[110,28,108,60],a:[110,34,130,40,152,40],a2:[110,34,128,42,150,42],g:[108,60,110,80,110,96,121,99],g2:[108,60,106,80,104,96,115,99]},
+       e:{h:[110,10],f:[1,0],t:[110,20,108,52],a:[110,26,130,32,152,32],a2:[110,26,128,34,150,34],g:[108,52,110,72,112,89,120,99],g2:[108,52,106,72,106,89,114,99]}},
+ row:{s:{h:[24,90],f:[0,-1],t:[36,96,92,97],a:[40,96,58,98,58,78],a2:[42,97,60,99,60,79],g:[92,97,118,74,140,97,151,98],g2:[92,97,114,75,136,97,147,98]},
+      e:{h:[28,78],f:[.25,-.97],t:[40,85,92,97],a:[40,85,56,98,58,78],a2:[42,86,58,99,60,79],g:[92,97,118,74,140,97,151,98],g2:[92,97,114,75,136,97,147,98]},d2:ARR(44,64,44,52)},
+ tw:{s:{h:[156,92],f:[.3,.95],t:[142,96,92,97],a:[142,96,128,98,150,98],a2:[140,96,126,98,148,98],g:[92,97,62,97,34,97,30,99],g2:[92,97,60,98,32,98,28,99]},
+     e:{h:[152,92],f:[.45,.9],t:[140,88,92,97],a:[140,87,124,78,146,70],a2:[138,88,122,79,144,71],g:[92,97,62,97,34,97,30,99],g2:[92,97,60,98,32,98,28,99]},d2:ARR(132,62,132,50)},
+ birddog:{s:{h:[154,58],f:[.9,.4],t:[140,66,90,66],a:[140,66,140,82,140,99],a2:[136,67,136,83,137,99],g:[90,66,90,97,62,99],g2:[87,67,87,97,59,99]},
+          e:{h:[154,58],f:[.9,.4],t:[140,66,90,66],a:[140,66,164,62,188,58],a2:[136,67,136,83,137,99],g:[90,66,90,97,62,99],g2:[90,66,62,64,32,62]}},
+ deadbug:{s:{h:[30,90],f:[0,-1],t:[42,95,96,96],a:[44,95,44,70,44,46],a2:[48,95,48,70,48,46],g:[96,96,96,66,124,66],g2:[100,96,100,66,128,66]},
+          e:{h:[30,90],f:[0,-1],t:[42,95,96,96],a:[44,95,26,84,8,80],a2:[48,95,48,70,48,46],g:[96,96,96,66,124,66],g2:[96,96,126,88,158,82]}},
+ palms:{fr:1,s:{h:[100,18],f:[0,0],t:[100,28,100,62],a:[100,34,90,48,88,62],a2:[100,34,110,48,112,62],g:[100,62,92,80,88,99],g2:[100,62,108,80,112,99]},
+        e:{h:[100,18],f:[0,0],t:[100,28,100,62],a:[100,36,78,46,98,46],a2:[100,36,122,46,102,46],g:[100,62,92,80,88,99],g2:[100,62,108,80,112,99]},d2:ARR(62,46,74,46)+ARR(138,46,126,46)},
+ table:{s:{h:[44,74],f:[.3,-.95],t:[56,82,108,97],a:[56,82,56,99,76,99],a2:[59,83,59,99,79,99],g:[108,97,134,97,160,97,164,91],g2:[108,97,132,98,158,98,162,92]},
+        e:{h:[44,74],f:[0,-1],t:[56,82,110,87],a:[56,82,56,99,76,99],a2:[59,83,59,99,79,99],g:[110,87,135,92,160,96,164,90],g2:[110,87,133,93,158,97,162,91]},d2:ARR(110,70,110,58)},
+ dips:{d:CHAIR,s:{h:[78,14],f:[1,0],t:[76,24,80,60],a:[76,28,72,44,70,57],a2:[76,28,74,44,72,57],g:[80,60,110,60,112,98,122,99],g2:[80,60,106,62,108,98,118,99]},
+       e:{h:[80,32],f:[1,0],t:[78,42,82,78],a:[78,46,60,48,70,57],a2:[78,46,62,50,72,57],g:[82,78,110,70,114,98,124,99],g2:[82,78,106,72,110,98,120,99]}},
+ pike:{s:{h:[162,56],f:[.5,.85],t:[148,62,100,70],a:[148,62,149,80,150,99],a2:[144,63,145,81,146,99],g:[100,70,70,82,42,94,38,99],g2:[100,70,68,83,40,95,36,99]},
+       e:{h:[146,72],f:[.2,1],t:[138,62,108,38],a:[138,62,144,80,150,99],a2:[134,63,140,81,146,99],g:[108,38,92,66,78,94,72,99],g2:[108,38,90,67,76,95,70,99]}}
+});
 const LK=["t","a","a2","g","g2"];
 function pl(a,w,c){let s='';for(let i=0;i<a.length;i+=2)s+=a[i].toFixed(1)+','+a[i+1].toFixed(1)+' ';return '<polyline points="'+s+'" stroke-width="'+w+'"'+(c?' stroke="'+c+'"':'')+'/>'}
-function headSvg(p,fr){const x=p.h[0],y=p.h[1],fx=p.f[0],fy=p.f[1],F=v=>v.toFixed(1);
+function headSvg(p,fr,top){const x=p.h[0],y=p.h[1],fx=p.f[0],fy=p.f[1],F=v=>v.toFixed(1);
   let s='<circle cx="'+F(x)+'" cy="'+F(y)+'" r="9" fill="currentColor" stroke="none"/>';
+  if(top)return s;
   if(fr||(!fx&&!fy))return s+'<circle cx="'+F(x-3.2)+'" cy="'+F(y-1)+'" r="1.6" fill="var(--bg)" stroke="none"/><circle cx="'+F(x+3.2)+'" cy="'+F(y-1)+'" r="1.6" fill="var(--bg)" stroke="none"/>';
   const l=Math.hypot(fx,fy)||1,ux=fx/l,uy=fy/l,px=-uy,py=ux;
   s+='<polygon points="'+F(x+ux*13)+','+F(y+uy*13)+' '+F(x+ux*7+px*3.5)+','+F(y+uy*7+py*3.5)+' '+F(x+ux*7-px*3.5)+','+F(y+uy*7-py*3.5)+'" fill="currentColor" stroke="none"/>';
   return s+'<circle cx="'+F(x+ux*4)+'" cy="'+F(y+uy*4)+'" r="1.8" fill="var(--bg)" stroke="none"/>'}
-function poseSvg(p,d,fr,d2){const far=fr?null:"#5d7a68";
-  return '<line class="g" x1="5" y1="100" x2="195" y2="100"/>'+(d||'')+pl(p.a2,5,far)+pl(p.g2,5,far)+pl(p.t,9)+pl(p.g,6)+pl(p.a,6)+headSvg(p,fr)+(d2||'')}
+function poseSvg(p,d,fr,d2,top){const far=fr?null:"#5d7a68";
+  return (top?'':'<line class="g" x1="5" y1="100" x2="195" y2="100"/>')+(d||'')+pl(p.a2,5,far)+pl(p.g2,5,far)+pl(p.t,9)+pl(p.g,6)+pl(p.a,6)+headSvg(p,fr,top)+(d2||'')}
 function lerpP(a,b,t){const o={h:[a.h[0]+(b.h[0]-a.h[0])*t,a.h[1]+(b.h[1]-a.h[1])*t],f:[a.f[0]+(b.f[0]-a.f[0])*t,a.f[1]+(b.f[1]-a.f[1])*t]};LK.forEach(k=>o[k]=a[k].map((v,j)=>v+(b[k][j]-v)*t));return o}
 function skWrap(x){return '<g fill="none" stroke="currentColor" stroke-width="6" stroke-linecap="round" stroke-linejoin="round">'+x+'</g>'}
-function skDraw(P,p,showD2){return skWrap(poseSvg(p,P.d,P.fr,showD2?P.d2:""))}
+function skDraw(P,p,showD2){return skWrap(poseSvg(p,P.d,P.fr,showD2?P.d2:"",P.top))}
 function skSvg(k,w){const P=POSE[SKMAP[k]];return skDraw(P,P[w||"e"],w!=="s")}
 let skAnim=0;
 function animSk(k,from,to,ms,then){cancelAnimationFrame(skAnim);const P=POSE[SKMAP[k]],t0=performance.now();const f=now=>{const x=Math.min(1,(now-t0)/ms),t=x<.5?2*x*x:1-Math.pow(-2*x+2,2)/2;$("runSk").innerHTML=skDraw(P,lerpP(P[from],P[to],t),to==="e"&&x>=1);if(x<1)skAnim=requestAnimationFrame(f);else if(then)then()};skAnim=requestAnimationFrame(f)}
@@ -653,6 +705,20 @@ const INFO={
   fe:["Zu großer Schritt, in die Dehnung fallen lassen"],
   lv:"Geht auch einarmig, dann Seite wechseln."}
 };
+Object.assign(INFO,{
+ palms:{so:["Aufrecht stehen oder sitzen.","Handflächen vor der Brust aneinanderlegen, Ellbogen auf Brusthöhe.","Mit voller Kraft gegeneinander drücken und halten."],key:"Du spürst es in der <b>Brust</b>. Drück so fest, als wolltest du eine Walnuss knacken.",wi:["Schultern unten lassen","Ausatmen beim Drücken, nicht pressen"],fe:["Nur halbe Kraft","Schultern zu den Ohren ziehen"],lv:"Schwerer: Hände etwas weiter vom Körper weg."},
+ dips:{so:["🪑 Stabiler Stuhl oder Hocker ohne Rollen, am besten an die Wand gestellt.","Hände auf die vordere Stuhlkante, Finger nach vorne, Po vor den Stuhl.","Füße vor dir aufstellen, Knie ca. 90°.","Langsam absenken, bis die Ellbogen ca. 90° haben – dort halten."],key:"Trainiert die <b>Rückseite der Arme</b>. Nur so tief, wie die Schultern es schmerzfrei mitmachen.",wi:["Ellbogen zeigen nach hinten, nicht nach außen","Schultern weg von den Ohren","Rücken nah am Stuhl"],fe:["Zu tief – drückt auf die Schulter","Stuhl rutscht weg"],lv:"Leichter: weniger tief oder Füße näher ran. Bei Schulterschmerz sofort abbrechen."},
+ pike:{so:["Aus dem Vierfüßlerstand Knie strecken und Po hoch: umgedrehtes V.","Hände schulterbreit, Kopf zwischen den Armen.","Schultern aktiv vom Boden wegdrücken und halten."],key:"Das ist eine <b>Schulterübung</b>. Gewicht deutlich auf die Hände bringen.",wi:["Knie dürfen leicht gebeugt sein","Rücken gerade, kein Rundrücken","Weiteratmen"],fe:["Gewicht nur auf den Füßen","Kopf in den Nacken"],lv:"Schwerer: Füße näher an die Hände. Bei Schulter- oder Handgelenkschmerz abbrechen."},
+ wallsit:{so:["Mit dem Rücken an die Wand stellen, Füße ca. 2 Fuß von der Wand.","Runterrutschen, bis die Oberschenkel waagerecht sind.","Halten."],key:"<b>Knie über den Füßen</b>, Rücken komplett an der Wand.",wi:["Gewicht auf den Fersen","Arme nicht auf den Oberschenkeln abstützen"],fe:["Knie fallen nach innen","Zu hoch sitzen"],lv:"Leichter: weniger tief. Schwerer: tiefer oder ein Fuß leicht anheben."},
+ squat:{so:["Füße schulterbreit, Zehen leicht nach außen.","Po nach hinten-unten, als würdest du dich auf einen Stuhl setzen.","So tief wie sauber möglich, Arme nach vorne – halten."],key:"<b>Brust hoch, Fersen am Boden</b>. In der tiefen Position bringt Halten am meisten.",wi:["Knie zeigen in Richtung Zehen","Rücken gerade"],fe:["Fersen heben ab","Rundrücken"],lv:"Leichter: an einem Türrahmen festhalten."},
+ calf:{so:["Hände leicht an die Wand.","Ganz hoch auf die Zehenspitzen.","Oben halten."],key:"<b>So hoch wie möglich</b> – die oberste Position ist die, die zählt.",wi:["Knie gestreckt","Gewicht über dem großen Zeh"],fe:["Langsam absinken lassen"],lv:"Schwerer: einbeinig, oder auf einer Treppenstufe."},
+ bridge1:{so:["Wie die normale Bridge: Rückenlage, Füße aufstellen.","Ein Bein gestreckt anheben.","Mit dem anderen Bein den Po hochdrücken, bis Schulter, Hüfte und das gestreckte Bein eine Linie sind.","Halten, Hüfte nicht seitlich abkippen lassen."],key:"Doppelt so viel Arbeit für <b>eine Po-Seite</b>. Hüfte gerade halten.",wi:["Über die Ferse drücken","Bauch fest"],fe:["Hüfte kippt zur Seite"],lv:"Leichter: gestrecktes Bein nur knapp über dem Boden."},
+ row:{so:["Rückenlage, Knie angewinkelt, Füße auf dem Boden.","Arme neben dem Körper, Ellbogen 90° angewinkelt, Unterarme zeigen nach oben.","Ellbogen fest in den Boden drücken, bis sich der obere Rücken und die Brust ein Stück vom Boden heben.","Schulterblätter zusammenziehen und oben halten."],key:"Das ist dein <b>Rücken-Zug ohne Geräte</b>: Die Muskeln zwischen den Schulterblättern heben dich hoch.",wi:["Nur die Ellbogen drücken, nicht mit dem Bauch hochkommen","Nacken lang, Kinn leicht zur Brust","Weiteratmen"],fe:["Schultern zu den Ohren ziehen","Hohlkreuz statt oberer Rücken"],lv:"Schwerer: Beine gestreckt oder länger halten."},
+ tw:{so:["Bauchlage wie beim Y-Halten.","Arme anwinkeln wie ein W: Ellbogen neben den Rippen, Hände neben dem Kopf.","Ellbogen Richtung Hüfte ziehen und Arme plus Brust leicht anheben – halten."],key:"Die Muskeln <b>zwischen den Schulterblättern</b> arbeiten – genau das Gegenmittel zum Rundrücken.",wi:["Daumen zeigen nach oben","Blick zum Boden"],fe:["Kopf in den Nacken","Zu hoch reißen"],lv:"Im Workout im Wechsel: Y – W – Y."},
+ birddog:{so:["Vierfüßlerstand: Hände unter den Schultern, Knie unter der Hüfte.","Einen Arm nach vorne und das gegenüberliegende Bein nach hinten strecken.","Rücken gerade wie ein Tisch – halten."],key:"<b>Nicht wackeln</b>: Stell dir ein volles Glas Wasser auf deinem Rücken vor.",wi:["Bauch fest","Bein nur bis auf Rückenhöhe heben"],fe:["Hohlkreuz","Hüfte dreht auf"],lv:"Leichter: erst nur das Bein heben."},
+ deadbug:{so:["Rückenlage, Arme senkrecht nach oben, Beine angewinkelt in der Luft (Knie 90°).","Unteren Rücken fest in den Boden drücken.","Einen Arm nach hinten und das gegenüberliegende Bein nach vorne lang machen – halten."],key:"Der <b>untere Rücken bleibt am Boden</b>, sonst Bein höher halten.",wi:["Langsam und kontrolliert","Weiteratmen"],fe:["Hohlkreuz"],lv:"Leichter: nur das Bein bewegen."},
+ table:{so:["Rückenlage auf den Unterarmen, Ellbogen unter den Schultern.","Beine gestreckt, Fersen am Boden.","Po hoch, bis der Körper eine gerade Linie ist – halten."],key:"Das ist die <b>umgedrehte Plank</b>: Po, Rücken und hintere Schultern arbeiten.",wi:["Bauch zur Decke","Kopf neutral"],fe:["Po hängt durch"],lv:"Leichter: Knie angewinkelt."}
+});
 function renderExList(){const seen={};$("exList").innerHTML=Object.keys(EX).filter(k=>{const s=SKMAP[k];if(seen[s])return false;return seen[s]=1}).map(k=>'<div data-k="'+k+'"><svg class="sk exsk" data-k="'+k+'" viewBox="0 0 200 110">'+skSvg(k,"s")+'</svg><b>'+EX[k].n.replace(/ – .*/,"")+'</b><small>Erklärung ›</small></div>').join("");
   $("exList").querySelectorAll("div[data-k]").forEach(el=>el.onclick=()=>showDetail(el.dataset.k))}
 const li=a=>a.map(x=>'<li>'+x+'</li>').join("");
@@ -665,6 +731,11 @@ function showDetail(k){const I=INFO[SKMAP[k]],e=EX[k];if(!I)return;
   const f=now=>{if($("exd").style.display==="none")return;const x=loopX(now-t0);$("exdSk").innerHTML=skDraw(P,lerpP(P.s,P.e,x),x>.99);exdLoop=requestAnimationFrame(f)};exdLoop=requestAnimationFrame(f)}
 $("exdX").onclick=$("exdX2").onclick=()=>{$("exd").style.display="none";cancelAnimationFrame(exdLoop)};
 $("runSk").onclick=()=>{const st=steps[idx];if(running&&st)showDetail(st.ex)};
+function singleSec(k){for(const w of ["A","B","K"]){const f=W[w].s.find(x=>x[0]===k);if(f)return f[1]}return 30}
+function renderPick(){$("pickList").innerHTML=Object.keys(EX).map(k=>'<div data-k="'+k+'"><svg class="sk pksk" data-k="'+k+'" viewBox="0 0 200 110">'+skSvg(k,"e")+'</svg><b>'+EX[k].n+'</b><small><span data-i="'+k+'">ℹ️ Erklärung</span> · '+singleSec(k)+' s</small></div>').join("");
+  $("pickList").querySelectorAll("div[data-k]").forEach(el=>el.onclick=ev=>{const k=el.dataset.k;if(ev.target.dataset&&ev.target.dataset.i){showDetail(k);return}
+    $("pick").style.display="none";const sec=singleSec(k);W.X={t:"Einzelübung",chair:k==="dips",s:k==="burst"?[["burst",5,15],["burst",5,15],["burst",5,0]]:[[k,sec,0]]};startChk("X")})}
+$("bSingle").onclick=()=>{renderPick();$("pick").style.display="block";$("pick").scrollTop=0};$("pickX").onclick=()=>{$("pick").style.display="none"};
 function loopX(t){const ms=t%4000;let x;if(ms<800)x=ms/800;else if(ms<2800)x=1;else if(ms<3600)x=1-(ms-2800)/800;else x=0;return x<.5?2*x*x:1-Math.pow(-2*x+2,2)/2}
 let exLoop=0;
 function animExList(){cancelAnimationFrame(exLoop);const t0=performance.now();const els=[...document.querySelectorAll(".exsk")];
@@ -680,7 +751,7 @@ function build(k){
   const s=[],cnt={};const w=W[k].s;
   s.push({type:"prep",sec:15,ex:w[0][0]});
   w.forEach((x,i)=>{const e=EX[x[0]];let sec=x[1];if(e.hold&&k!=="C")sec+=bonus;
-    cnt[x[0]]=(cnt[x[0]]||0)+1;s.push({type:"work",sec,ex:x[0],set:cnt[x[0]]});
+    const fam=x[0]==="wy"?"yhold":x[0].replace(/1?[LR]$/,"");cnt[fam]=(cnt[fam]||0)+1;s.push({type:"work",sec,ex:x[0],set:cnt[fam]});
     if(x[2]>0&&i<w.length-1)s.push({type:"rest",sec:x[2],ex:w[i+1][0]});});
   return s;
 }
@@ -688,7 +759,7 @@ async function lock(){try{if(navigator.wakeLock)wl=await navigator.wakeLock.requ
 async function start(k){
   curW=k;
   const p=unlockAudio();
-  steps=build(k);idx=0;running=true;paused=false;
+  steps=build(k);idx=0;usedL={};running=true;paused=false;
   $("menu").style.display="none";$("done").style.display="none";$("run").style.display="block";
   lock();
   await p;
@@ -706,9 +777,9 @@ function enter(){
   const nx=steps.slice(idx+1).find(x=>x.type==="work");
   $("next").textContent=st.type==="work"?(nx?"Danach: "+EX[nx.ex].n:"Letzte Übung!"):"";
   musOn(st.type==="work"&&!paused);
-  if(st.type==="work"){say(["los"],true);beep(1200,.25)}
-  else if(st.type==="rest"){beep(500,.3);say(st.sec>=15?["stop","next","n_"+st.ex,"c_"+st.ex]:["stop","next","n_"+st.ex],true)}
-  else{const C=curW==="C",nm=(state.name||"").trim();say([{t:"Hallo"+(nm?" "+nm:"")+"! Willkommen zu "+(C?"deiner heutigen Challenge":"deinem heutigen Workout"+(W[curW]?", "+W[curW].t:""))+". Mach dich bereit für die erste Übung:",k:[C?"hiC":"hi","ready"]},"n_"+st.ex,"c_"+st.ex,{t:"Es geht gleich los.",k:[]}],true)}
+  if(st.type==="work"){say([pk("los_")],true);beep(1200,.25)}
+  else if(st.type==="rest"){beep(500,.3);say(st.sec>=15&&!(idx>0&&steps[idx-1].ex===st.ex)?[pk("stop_"),"next","n_"+st.ex,"c_"+st.ex]:[pk("stop_"),"next","n_"+st.ex],true)}
+  else{const C=curW==="C",X=curW==="X",nm=(state.name||"").trim(),ch=W[curW]&&W[curW].chair;say([X?"single":{t:"Hallo"+(nm?" "+nm:"")+"! Willkommen zu "+(C?"deiner heutigen Challenge":"deinem heutigen Workout"+(W[curW]?", "+W[curW].t:""))+"."+(ch?" Für heute brauchst du einen stabilen Stuhl oder Hocker.":"")+" Mach dich bereit für die erste Übung:",k:[C?"hiC":"hi"].concat(ch?["chair"]:[],["ready"])},"n_"+st.ex,"c_"+st.ex,{t:"Es geht gleich los.",k:[]}],true)}
   render();
 }
 function render(){$("time").textContent=Math.ceil(remain);$("barf").style.width=(100*(1-remain/total))+"%"}
@@ -720,13 +791,13 @@ function tick(){
   if(st.type==="work"){
     const late=(st.set||1)>=2;
     if(st.ex==="burst"){if(s===3)once("b",()=>say(["alles"],true))}
-    else if(e.long){[90,30].forEach(t=>{if(total>t+5&&s===t)once("l"+t,()=>say(["noch"+t,"ml_"+rnd(6)]))});
-      if(total>=60&&remain<=total/2)once("half",()=>say(["half_"+rnd(3)]));
-      if(s===10)once("m10",()=>say([late?"m10_"+rnd(5):"n10"],true))}
+    else if(e.long){[90,30].forEach(t=>{if(total>t+5&&s===t)once("l"+t,()=>say(["noch"+t,pk("ml_")]))});
+      if(total>=60&&remain<=total/2)once("half",()=>say([pk("half_")]));
+      if(s===10)once("m10",()=>say([late?pk("m10_"):"n10"],true))}
     else if(total>=20){
-      if(remain<=total/2)once("half",()=>say([e.hold?"half_"+rnd(3):"ms_"+rnd(3)]));
-      if(total>=30){if(s===10)once("m10",()=>say([e.hold&&late?"m10_"+rnd(5):"n10"],true))}
-      else if(s===5)once("p5",()=>say([e.hold&&late?"p5_"+rnd(3):"n5"],true))}
+      if(remain<=total/2)once("half",()=>say([e.hold?pk("half_"):pk("ms_")]));
+      if(total>=30){if(s===10)once("m10",()=>say([e.hold&&late?pk("m10_"):"n10"],true))}
+      else if(s===5)once("p5",()=>say([e.hold&&late?pk("p5_"):"n5"],true))}
     if(st.ex!=="burst"&&total>=10&&s<=3&&s>=1)once("c"+s,()=>beep(800,.12));
   }else{
     if(st.type==="rest"&&total>=12&&s===5)once("f5",()=>say(["in5","n_"+st.ex],true));
@@ -738,7 +809,7 @@ function tick(){
 function finish(){
   running=false;musStop();clearInterval(timer);beep(1000,.2);setTimeout(()=>beep(1300,.4),250);
   try{if(wl)wl.release()}catch(e){}
-  const r=(curW==="C"?chalDone():markDay(curW))||{};
+  const r=(curW==="X"?{txt:"🎯 Einzelübung – zählt nicht für Punkte."}:curW==="C"?chalDone():markDay(curW))||{};
   const st=compute();
   let txt="",voice=["done"];
   if(r.txt)txt=r.txt;
@@ -747,7 +818,7 @@ function finish(){
   else if(r.kind==="extra")txt="Extra-Runde! Zählt nicht doppelt, aber macht stärker. 💪";
   else txt="Probelauf – ab "+MYS().split("-").reverse().join(".")+" zählen die Punkte.";
   txt+="<br>Punktestand: <b>"+st.pts+"</b> · Serie: <b>"+st.streak+"</b> 🔥";
-  voice.push("pr_"+rnd(5));
+  voice.push(pk("pr_"));
   if(r.neu&&r.neu.length){voice.push("ms");
     $("doneMs").innerHTML=r.neu.map(m=>'<div class="banner good" style="font-size:16px">'+m.ic+' <b>Meilenstein: '+m.n+'</b><br>'+m.r+'</div>').join("");
   }else $("doneMs").innerHTML="";
@@ -758,7 +829,8 @@ function finish(){
 function stop(){running=false;musStop();clearInterval(timer);say([],true);try{if(wl)wl.release()}catch(e){}
   $("run").style.display="none";$("menu").style.display="block";renderMenu()}
 
-$("bToday").onclick=()=>start(todayW);
+$("bToday").onclick=()=>startChk(todayW);
+function startChk(k){if(W[k]&&W[k].chair)ask("🪑 Für dieses Workout brauchst du einen <b>stabilen Stuhl oder Hocker</b> (ohne Rollen, am besten an die Wand). Bereit?",()=>start(k));else start(k)}
 $("bPause").onclick=()=>{paused=!paused;$("bPause").textContent=paused?"Weiter ▶":"Pause";if(paused){musOn(false);say(["paused"],true)}else{lastTick=Date.now();musOn(steps[idx]&&steps[idx].type==="work");say(["weiter"],true)}};
 $("bStop").onclick=stop;
 $("bBack").onclick=()=>{$("done").style.display="none";$("menu").style.display="block";renderMenu();window.scrollTo(0,0)};
