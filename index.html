@@ -129,6 +129,8 @@ select.txt{appearance:auto}
     <div class="note" id="vnote" style="margin-top:6px"></div>
     <label style="display:block;margin-top:14px">Sprechtempo</label>
     <div class="row" id="rate" style="margin-top:8px"></div>
+    <label style="display:block;margin-top:14px">Musik während der Übung</label>
+    <div class="row" id="music" style="margin-top:8px"></div>
   </div>
   </div>
   <div class="note">Regeln: Erledigt +1 · Nicht erledigt −3 · Am nächsten Tag nachgeholt +2 · Volle Woche Mo–Sa ohne Lücke +3 Bonus · Challenges +2 bis +5. Ausreden gibt's keine. 😉<br><br>Beim Drücken immer ausatmen. Stechender Gelenkschmerz = abbrechen. Bei Bluthochdruck vorher ärztlich abklären.</div>
@@ -471,7 +473,7 @@ chips("bonus",[0,5,10,15,20,30],bonus,v=>"+"+v+" s",v=>{bonus=v;lsSet("bonus",v)
 chips("rate",[1,1.1,1.2],rate,v=>v===1?"normal":v===1.1?"zügig":"schnell",v=>{rate=v;lsSet("rate",v);unlockAudio().then(()=>say(["test"],true))});
 
 // ---------- Audio: Handy-Stimme (Sprachausgabe des Geräts) oder Coach-Aufnahme ----------
-const TXT={"n_push": "Liegestütz halten.", "c_push": "Brust eine Faust über dem Boden, Ellbogen eng am Körper. Drück den Boden aktiv weg. Notfalls auf den Knien.", "n_splitL": "Ausfallschritt halten, linkes Bein vorne.", "c_splitL": "Hinteres Knie knapp über dem Boden, Oberkörper aufrecht. Unten bleiben.", "n_splitR": "Ausfallschritt halten, rechtes Bein vorne.", "c_splitR": "Hinteres Knie knapp über dem Boden, Oberkörper aufrecht. Unten bleiben.", "n_bridge": "Glute Bridge halten.", "c_bridge": "Rückenlage, Füße aufstellen, Po hoch und fest anspannen. Kein Hohlkreuz.", "n_plank": "Plank.", "c_plank": "Unterarme unter den Schultern, Körper eine Linie, Bauch und Po fest.", "n_burst": "Burst. Türrahmen wegdrücken.", "c_burst": "In einer Sekunde von null auf hundert. Maximal drücken und dabei ausatmen.", "n_hollow": "Hollow Body Hold.", "c_hollow": "Unteren Rücken fest in den Boden drücken, Schultern und Füße leicht anheben. Knie angewinkelt ist okay.", "n_sideL": "Seitstütz, linke Seite.", "c_sideL": "Ellbogen unter der Schulter, Hüfte hoch, Körper eine Linie. Knie am Boden ist okay.", "n_sideR": "Seitstütz, rechte Seite.", "c_sideR": "Ellbogen unter der Schulter, Hüfte hoch, Körper eine Linie. Knie am Boden ist okay.", "n_yhold": "Y-Halten.", "c_yhold": "Bauchlage, Arme schräg nach vorne als Y, Daumen nach oben. Arme und Brust leicht anheben, Blick zum Boden.", "n_hipL": "Hüftbeuger-Dehnung, linkes Knie unten.", "c_hipL": "Halbkniestand, Po anspannen, Hüfte leicht nach vorne schieben. Ruhig atmen.", "n_hipR": "Hüftbeuger-Dehnung, rechtes Knie unten.", "c_hipR": "Halbkniestand, Po anspannen, Hüfte leicht nach vorne schieben. Ruhig atmen.", "n_chest": "Brustdehnung im Türrahmen.", "c_chest": "Unterarm an den Türrahmen, Ellbogen auf Schulterhöhe, kleiner Schritt nach vorne.", "m10_0": "Noch zehn Sekunden. Jetzt zählt's!", "m10_1": "Zehn Sekunden noch. Gib alles!", "m10_2": "Letzte zehn. Zieh durch!", "m10_3": "Noch zehn. Nicht nachlassen!", "m10_4": "Zehn Sekunden. Das ist der Teil, der stark macht!", "p5_0": "Noch fünf. Alles raus!", "p5_1": "Fünf Sekunden. Beiß die Zähne zusammen!", "p5_2": "Letzte fünf. Komm schon!", "mm_0": "Halbzeit. Stark!", "mm_1": "Halbzeit. Spannung halten!", "mm_2": "Halbzeit. Ruhig weiteratmen.", "mm_3": "Halbe Miete. Weiter so!", "ml_0": "Bleib dran, du machst das super!", "ml_1": "Bauch fest, Po fest. Weiter!", "ml_2": "Ruhig atmen, du hast das im Griff!", "ml_3": "Jede Sekunde macht dich stärker!", "ml_4": "Nicht aufgeben!", "ml_5": "Hüfte oben lassen, Linie halten!", "ms_0": "Schön locker atmen.", "ms_1": "Gut so. Tiefer in die Dehnung atmen.", "ms_2": "Schultern locker lassen.", "pr_0": "Saubere Arbeit. Genau so wird man stark!", "pr_1": "Wieder ein Haken im Kalender. Stark!", "pr_2": "Respekt. Disziplin schlägt Motivation.", "pr_3": "Erledigt. Dein Rücken sagt danke!", "pr_4": "Top. Morgen wieder, keine Ausreden!", "n1": "Eins!", "n2": "Zwei!", "n3": "Drei!", "los": "Los geht's!", "first": "Erste Übung:", "stop": "Und Stopp. Durchatmen.", "next": "Gleich kommt:", "in5": "In fünf Sekunden geht's los mit", "noch90": "Noch neunzig Sekunden.", "noch60": "Noch sechzig Sekunden.", "noch30": "Noch dreißig Sekunden. Durchziehen!", "alles": "Volle Kraft! Alles geben!", "paused": "Pause.", "weiter": "Weiter geht's!", "done": "Geschafft! Stark gemacht.", "sA": "Tag A. Los geht's, mach dich bereit.", "sB": "Tag B. Los geht's, mach dich bereit.", "sK": "Kurztag. Los geht's, mach dich bereit.", "sC": "Challenge. Los geht's, mach dich bereit.", "test": "Hallo, so klinge ich. Bereit fürs Training?", "ms": "Meilenstein erreicht! Richtig stark!", "nach": "Nachgeholt! Zwei Punkte zurückgeholt.", "bonus": "Volle Woche ohne Lücke! Drei Bonuspunkte!"};
+const TXT={"n_push": "Liegestütz halten.", "c_push": "Brust eine Faust über dem Boden, Ellbogen eng am Körper. Drück den Boden aktiv weg. Notfalls auf den Knien.", "n_splitL": "Ausfallschritt halten, linkes Bein vorne.", "c_splitL": "Hinteres Knie knapp über dem Boden, Oberkörper aufrecht. Unten bleiben.", "n_splitR": "Ausfallschritt halten, rechtes Bein vorne.", "c_splitR": "Hinteres Knie knapp über dem Boden, Oberkörper aufrecht. Unten bleiben.", "n_bridge": "Glute Bridge halten.", "c_bridge": "Rückenlage, Füße aufstellen, Po hoch und fest anspannen. Kein Hohlkreuz.", "n_plank": "Plank.", "c_plank": "Unterarme unter den Schultern, Körper eine Linie, Bauch und Po fest.", "n_burst": "Burst. Türrahmen wegdrücken.", "c_burst": "In einer Sekunde von null auf hundert. Maximal drücken und dabei ausatmen.", "n_hollow": "Hollow Body Hold.", "c_hollow": "Unteren Rücken fest in den Boden drücken, Schultern und Füße leicht anheben. Knie angewinkelt ist okay.", "n_sideL": "Seitstütz, linke Seite.", "c_sideL": "Ellbogen unter der Schulter, Hüfte hoch, Körper eine Linie. Knie am Boden ist okay.", "n_sideR": "Seitstütz, rechte Seite.", "c_sideR": "Ellbogen unter der Schulter, Hüfte hoch, Körper eine Linie. Knie am Boden ist okay.", "n_yhold": "Y-Halten.", "c_yhold": "Bauchlage, Arme schräg nach vorne als Y, Daumen nach oben. Arme und Brust leicht anheben, Blick zum Boden.", "n_hipL": "Hüftbeuger-Dehnung, linkes Knie unten.", "c_hipL": "Halbkniestand, Po anspannen, Hüfte leicht nach vorne schieben. Ruhig atmen.", "n_hipR": "Hüftbeuger-Dehnung, rechtes Knie unten.", "c_hipR": "Halbkniestand, Po anspannen, Hüfte leicht nach vorne schieben. Ruhig atmen.", "n_chest": "Brustdehnung im Türrahmen.", "c_chest": "Unterarm an den Türrahmen, Ellbogen auf Schulterhöhe, kleiner Schritt nach vorne.", "m10_0": "Noch zehn Sekunden. Komm, zieh durch!", "m10_1": "Zehn Sekunden noch. Gib alles, jetzt zählt's!", "m10_2": "Letzte zehn. Zieh durch!", "m10_3": "Noch zehn. Nicht nachlassen!", "m10_4": "Zehn Sekunden. Das ist der Teil, der stark macht!", "p5_0": "Noch ein paar Sekunden. Komm, zieh durch!", "p5_1": "Fünf Sekunden. Gib alles, jetzt zählt's!", "p5_2": "Letzte fünf. Beiß die Zähne zusammen!", "mm_0": "Halbzeit. Stark!", "mm_1": "Halbzeit. Spannung halten!", "mm_2": "Halbzeit. Ruhig weiteratmen.", "mm_3": "Halbe Miete. Weiter so!", "ml_0": "Bleib dran, du machst das super!", "ml_1": "Bauch fest, Po fest. Weiter!", "ml_2": "Ruhig atmen, du hast das im Griff!", "ml_3": "Jede Sekunde macht dich stärker!", "ml_4": "Nicht aufgeben!", "ml_5": "Hüfte oben lassen, Linie halten!", "ms_0": "Schön locker atmen.", "ms_1": "Gut so. Tiefer in die Dehnung atmen.", "ms_2": "Schultern locker lassen.", "pr_0": "Saubere Arbeit. Genau so wird man stark!", "pr_1": "Wieder ein Haken im Kalender. Stark!", "pr_2": "Respekt. Disziplin schlägt Motivation.", "pr_3": "Erledigt. Dein Rücken sagt danke!", "pr_4": "Top. Morgen wieder, keine Ausreden!", "n1": "Eins!", "n2": "Zwei!", "n3": "Drei!", "los": "Los geht's!", "first": "Erste Übung:", "stop": "Und Stopp. Durchatmen.", "next": "Gleich kommt:", "in5": "In fünf Sekunden geht's los mit", "noch90": "Noch neunzig Sekunden.", "noch60": "Noch sechzig Sekunden.", "noch30": "Noch dreißig Sekunden. Durchziehen!", "alles": "Volle Kraft! Alles geben!", "paused": "Pause.", "weiter": "Weiter geht's!", "done": "Geschafft! Stark gemacht.", "sA": "Tag A. Los geht's, mach dich bereit.", "sB": "Tag B. Los geht's, mach dich bereit.", "sK": "Kurztag. Los geht's, mach dich bereit.", "sC": "Challenge. Los geht's, mach dich bereit.", "test": "Hallo, so klinge ich. Bereit fürs Training?", "half_0": "Die Hälfte hast du!", "half_1": "Hälfte geschafft. Stark!", "half_2": "Halbzeit. Spannung halten!", "n10": "Noch zehn Sekunden.", "n5": "Noch fünf Sekunden.", "hi": "Hallo! Willkommen zu deinem heutigen Workout.", "hiC": "Hallo! Willkommen zu deiner heutigen Challenge.", "ready": "Mach dich bereit für die erste Übung:", "ms": "Meilenstein erreicht! Richtig stark!", "nach": "Nachgeholt! Zwei Punkte zurückgeholt.", "bonus": "Volle Woche ohne Lücke! Drei Bonuspunkte!"};
 const CLIPS=Object.keys(TXT);
 const raw={},buf={};let ac=null,cur=null,queue=[];
 let vmode=ls("vmode",""),vname=ls("vname",""),voices=[];
@@ -499,7 +501,7 @@ function ttsSay(keys,interrupt){
   try{
     if(interrupt)speechSynthesis.cancel();
     const v=pickVoice();
-    keys.forEach(k=>{const t=TXT[k];if(!t)return;const u=new SpeechSynthesisUtterance(t);u.lang=v?v.lang:"de-DE";if(v)u.voice=v;u.rate=rate;u.pitch=1;speechSynthesis.speak(u)});
+    keys.forEach(k=>{const t=typeof k==="string"?TXT[k]:k.t;if(!t)return;const u=new SpeechSynthesisUtterance(t);u.lang=v?v.lang:"de-DE";if(v)u.voice=v;u.rate=rate;u.pitch=1;u.onstart=()=>setDuck(true);u.onend=u.onerror=()=>setTimeout(()=>{if(!speechSynthesis.speaking)setDuck(false)},150);speechSynthesis.speak(u)});
   }catch(e){}
 }
 CLIPS.forEach(k=>fetch("a/"+k+".mp3?v=3").then(r=>r.ok?r.arrayBuffer():null).then(b=>{if(b)raw[k]=b}).catch(()=>{}));
@@ -512,14 +514,41 @@ function decodeLate(k){if(!buf[k]&&raw[k]&&ac){ac.decodeAudioData(raw[k].slice(0
 function say(keys,interrupt){
   if(useTTS())return ttsSay(keys,interrupt);
   if(!ac)return;
+  keys=[].concat(...keys.map(k=>typeof k==="string"?[k]:(k.k||[])));
   if(interrupt){queue=[];if(cur){try{cur.onended=null;cur.stop()}catch(e){}cur=null}}
   keys.forEach(k=>{if(buf[k])queue.push(buf[k]);else decodeLate(k)});
   if(!cur)playNext();
 }
 function playNext(){
-  const b=queue.shift();if(!b){cur=null;return}
+  const b=queue.shift();if(!b){cur=null;setDuck(false);return}setDuck(true);
   try{const s=ac.createBufferSource();s.buffer=b;s.playbackRate.value=rate;s.connect(ac.destination);s.onended=()=>{cur=null;playNext()};cur=s;s.start()}catch(e){cur=null}
 }
+// ---------- Hintergrundmusik (selbst erzeugt, lizenzfrei) ----------
+let mus=null,musVol=ls("musvol",.35),musTarget=0,duck=false;
+const mtof=m=>440*Math.pow(2,(m-69)/12);
+function musLevel(){return musTarget*musVol*(duck?.35:1)}
+function musApply(){if(mus&&ac){const g=mus.g.gain;g.cancelScheduledValues(ac.currentTime);g.setTargetAtTime(musLevel(),ac.currentTime,.4)}}
+function setDuck(d){if(duck!==d){duck=d;musApply()}}
+function musStart(){
+  if(mus||!ac||!musVol)return;
+  const g=ac.createGain();g.gain.value=0;g.connect(ac.destination);
+  const nb=ac.createBuffer(1,ac.sampleRate*.2,ac.sampleRate),nd=nb.getChannelData(0);for(let i=0;i<nd.length;i++)nd[i]=Math.random()*2-1;
+  const bpm=86,bt=60/bpm,CH=[[57,60,64,67],[53,57,60,64],[48,55,60,64],[55,59,62,65]];
+  let t=ac.currentTime+.1,bar=0;
+  const note=(f,s,d,v,type)=>{const o=ac.createOscillator(),e=ac.createGain();o.type=type;o.frequency.value=f;e.gain.setValueAtTime(0,s);e.gain.linearRampToValueAtTime(v,s+Math.min(.3,d/4));e.gain.linearRampToValueAtTime(0,s+d);o.connect(e);e.connect(g);o.start(s);o.stop(s+d+.05)};
+  const kick=s=>{const o=ac.createOscillator(),e=ac.createGain();o.frequency.setValueAtTime(110,s);o.frequency.exponentialRampToValueAtTime(42,s+.18);e.gain.setValueAtTime(.45,s);e.gain.exponentialRampToValueAtTime(.001,s+.3);o.connect(e);e.connect(g);o.start(s);o.stop(s+.32)};
+  const hat=(s,v)=>{const n=ac.createBufferSource(),f=ac.createBiquadFilter(),e=ac.createGain();n.buffer=nb;f.type="highpass";f.frequency.value=7000;e.gain.setValueAtTime(v,s);e.gain.exponentialRampToValueAtTime(.001,s+.06);n.connect(f);f.connect(e);e.connect(g);n.start(s);n.stop(s+.08)};
+  const sched=()=>{while(t<ac.currentTime+2){const c=CH[bar%4];
+    c.forEach(n=>note(mtof(n),t,bt*4,.035,"triangle"));
+    [0,1.5,2,3.5].forEach((b,i)=>note(mtof(c[0]-12+(i===3?7:0)),t+b*bt,bt*.9,.12,"sine"));
+    [0,2].forEach(b=>kick(t+b*bt));
+    for(let i=0;i<8;i++)hat(t+i*bt/2,i%2?.05:.025);
+    if(bar%2)[0,1,2].forEach(i=>note(mtof(c[(i+1)%4]+12),t+(1+i*.5)*bt,bt*.45,.025,"sine"));
+    t+=bt*4;bar++}};
+  sched();mus={g,iv:setInterval(sched,400)};
+}
+function musOn(on){musTarget=on?1:0;if(on)musStart();musApply()}
+function musStop(){if(!mus)return;const m=mus;mus=null;clearInterval(m.iv);try{m.g.gain.setTargetAtTime(0,ac.currentTime,.3);setTimeout(()=>m.g.disconnect(),1500)}catch(e){}}
 function beep(f,d){try{if(!ac)return;const o=ac.createOscillator(),g=ac.createGain();o.frequency.value=f;o.connect(g);g.connect(ac.destination);g.gain.setValueAtTime(.2,ac.currentTime);g.gain.exponentialRampToValueAtTime(.001,ac.currentTime+d);o.start();o.stop(ac.currentTime+d)}catch(e){}}
 
 // ---------- Skizzen ----------
@@ -648,10 +677,10 @@ $("bHelp").onclick=showHelp;$("helpX").onclick=$("helpX2").onclick=()=>{$("help"
 // ---------- Ablauf ----------
 let steps=[],idx=0,remain=0,total=0,running=false,paused=false,lastTick=0,timer=null,wl=null,said={},curW="A";
 function build(k){
-  const s=[];const w=W[k].s;
+  const s=[],cnt={};const w=W[k].s;
   s.push({type:"prep",sec:15,ex:w[0][0]});
   w.forEach((x,i)=>{const e=EX[x[0]];let sec=x[1];if(e.hold&&k!=="C")sec+=bonus;
-    s.push({type:"work",sec,ex:x[0]});
+    cnt[x[0]]=(cnt[x[0]]||0)+1;s.push({type:"work",sec,ex:x[0],set:cnt[x[0]]});
     if(x[2]>0&&i<w.length-1)s.push({type:"rest",sec:x[2],ex:w[i+1][0]});});
   return s;
 }
@@ -663,7 +692,6 @@ async function start(k){
   $("menu").style.display="none";$("done").style.display="none";$("run").style.display="block";
   lock();
   await p;
-  say(["s"+k],true);
   enter();
   lastTick=Date.now();clearInterval(timer);timer=setInterval(tick,100);
 }
@@ -677,9 +705,10 @@ function enter(){
   $("prog").textContent="Übung "+Math.min(done+(st.type==="work"?1:0),works)+" von "+works;
   const nx=steps.slice(idx+1).find(x=>x.type==="work");
   $("next").textContent=st.type==="work"?(nx?"Danach: "+EX[nx.ex].n:"Letzte Übung!"):"";
+  musOn(st.type==="work"&&!paused);
   if(st.type==="work"){say(["los"],true);beep(1200,.25)}
   else if(st.type==="rest"){beep(500,.3);say(st.sec>=15?["stop","next","n_"+st.ex,"c_"+st.ex]:["stop","next","n_"+st.ex],true)}
-  else{say(["first","n_"+st.ex,"c_"+st.ex])}
+  else{const C=curW==="C",nm=(state.name||"").trim();say([{t:"Hallo"+(nm?" "+nm:"")+"! Willkommen zu "+(C?"deiner heutigen Challenge":"deinem heutigen Workout"+(W[curW]?", "+W[curW].t:""))+". Mach dich bereit für die erste Übung:",k:[C?"hiC":"hi","ready"]},"n_"+st.ex,"c_"+st.ex,{t:"Es geht gleich los.",k:[]}],true)}
   render();
 }
 function render(){$("time").textContent=Math.ceil(remain);$("barf").style.width=(100*(1-remain/total))+"%"}
@@ -689,23 +718,27 @@ function tick(){
   if(!running||paused)return;
   if(dt>2)return;remain-=dt;const st=steps[idx],s=Math.ceil(remain),e=EX[st.ex];
   if(st.type==="work"){
-    if(total>=40&&!e.long&&remain<=total/2)once("half",()=>say([e.hold?"mm_"+rnd(4):"ms_"+rnd(3)]));
-    if(e.long)[90,60,30].forEach(t=>{if(total>t+5&&s===t)once("l"+t,()=>say(["noch"+t,"ml_"+rnd(6)]))});
-    if(e.hold&&total>=20&&s===10)once("m10",()=>say(["m10_"+rnd(5)],true));
-    if(e.hold&&total>=15&&s===5)once("p5",()=>say(["p5_"+rnd(3)],true));
-    if(st.ex==="burst"&&s===3)once("b",()=>say(["alles"],true));
-    else if(total>=10&&s<=3&&s>=1)once("c"+s,()=>{beep(800,.12);say(["n"+s],true)});
+    const late=(st.set||1)>=2;
+    if(st.ex==="burst"){if(s===3)once("b",()=>say(["alles"],true))}
+    else if(e.long){[90,30].forEach(t=>{if(total>t+5&&s===t)once("l"+t,()=>say(["noch"+t,"ml_"+rnd(6)]))});
+      if(total>=60&&remain<=total/2)once("half",()=>say(["half_"+rnd(3)]));
+      if(s===10)once("m10",()=>say([late?"m10_"+rnd(5):"n10"],true))}
+    else if(total>=20){
+      if(remain<=total/2)once("half",()=>say([e.hold?"half_"+rnd(3):"ms_"+rnd(3)]));
+      if(total>=30){if(s===10)once("m10",()=>say([e.hold&&late?"m10_"+rnd(5):"n10"],true))}
+      else if(s===5)once("p5",()=>say([e.hold&&late?"p5_"+rnd(3):"n5"],true))}
+    if(st.ex!=="burst"&&total>=10&&s<=3&&s>=1)once("c"+s,()=>beep(800,.12));
   }else{
-    if(total>=12&&s===5)once("f5",()=>say(["in5","n_"+st.ex],true));
+    if(st.type==="rest"&&total>=12&&s===5)once("f5",()=>say(["in5","n_"+st.ex],true));
     if(s<=3&&s>=1)once("c"+s,()=>{beep(800,.12);say(["n"+s],true)});
   }
   if(remain<=0){idx++;if(idx>=steps.length)finish();else enter();return}
   render();
 }
 function finish(){
-  running=false;clearInterval(timer);beep(1000,.2);setTimeout(()=>beep(1300,.4),250);
+  running=false;musStop();clearInterval(timer);beep(1000,.2);setTimeout(()=>beep(1300,.4),250);
   try{if(wl)wl.release()}catch(e){}
-  const r=curW==="C"?chalDone():markDay(curW);
+  const r=(curW==="C"?chalDone():markDay(curW))||{};
   const st=compute();
   let txt="",voice=["done"];
   if(r.txt)txt=r.txt;
@@ -722,15 +755,16 @@ function finish(){
   $("doneTxt").innerHTML=txt;
   $("run").style.display="none";$("done").style.display="block";
 }
-function stop(){running=false;clearInterval(timer);say([],true);try{if(wl)wl.release()}catch(e){}
+function stop(){running=false;musStop();clearInterval(timer);say([],true);try{if(wl)wl.release()}catch(e){}
   $("run").style.display="none";$("menu").style.display="block";renderMenu()}
 
 $("bToday").onclick=()=>start(todayW);
-$("bPause").onclick=()=>{paused=!paused;$("bPause").textContent=paused?"Weiter ▶":"Pause";if(paused)say(["paused"],true);else{lastTick=Date.now();say(["weiter"],true)}};
+$("bPause").onclick=()=>{paused=!paused;$("bPause").textContent=paused?"Weiter ▶":"Pause";if(paused){musOn(false);say(["paused"],true)}else{lastTick=Date.now();musOn(steps[idx]&&steps[idx].type==="work");say(["weiter"],true)}};
 $("bStop").onclick=stop;
 $("bBack").onclick=()=>{$("done").style.display="none";$("menu").style.display="block";renderMenu();window.scrollTo(0,0)};
-document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden"&&running&&!paused){paused=true;$("bPause").textContent="Weiter ▶";say([],true)}
+document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden"&&running&&!paused){paused=true;musOn(false);$("bPause").textContent="Weiter ▶";say([],true)}
 if(document.visibilityState==="visible"){if(running)lock();else renderMenu()}});
+chips("music",[0,.35,.7],musVol,v=>v===0?"aus":v===.35?"leise":"mittel",v=>{musVol=v;lsSet("musvol",v);if(!v)musStop();else musApply()});
 setupVoice();renderMenu();initApi();if(!API_URL&&!ls("helpSeen",0))showHelp();
 </script>
 </body>
