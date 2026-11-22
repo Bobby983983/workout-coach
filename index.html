@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Workout-Coach</title>
+<style>
+:root{--bg:#0f1115;--card:#1a1d24;--fg:#f2f2f2;--mut:#9aa0aa;--acc:#3ddc84;--rest:#4aa3ff;--warn:#ffb020;--bad:#ff5c5c}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--fg);font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;min-height:100vh;padding:16px;max-width:520px;margin:0 auto}
+h1{font-size:22px;margin:6px 0 4px}
+h3{font-size:16px;margin-bottom:10px}
+.sub{color:var(--mut);font-size:14px;margin-bottom:14px}
+.card{background:var(--card);border-radius:14px;padding:16px;margin-bottom:12px}
+.wbtn{display:block;width:100%;text-align:left;border:0;color:var(--fg);background:var(--card);border-radius:14px;padding:16px;margin-bottom:10px;cursor:pointer;font-size:17px}
+.wbtn.today{outline:2px solid var(--acc)}
+.wbtn b{display:block;font-size:19px;margin-bottom:4px}
+.wbtn span{color:var(--mut);font-size:14px}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.chip{border:1px solid #333;background:transparent;color:var(--fg);border-radius:20px;padding:8px 14px;font-size:15px;cursor:pointer}
+.chip.on{background:var(--acc);color:#000;border-color:var(--acc)}
+label{font-size:14px;color:var(--mut)}
+.stats{display:flex;gap:8px;margin-bottom:12px}
+.stat{flex:1;background:var(--card);border-radius:14px;padding:12px;text-align:center}
+.stat b{display:block;font-size:26px}
+.stat span{font-size:12px;color:var(--mut)}
+.banner{border-radius:14px;padding:14px;margin-bottom:12px;font-size:15px;line-height:1.4}
+.banner.bad{background:#3a1f22;color:#ffb3b3}
+.banner.good{background:#173a26;color:#a8f0c6}
+.cal-h{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.cal-h button{background:#2a2e37;border:0;color:var(--fg);border-radius:8px;padding:6px 12px;font-size:16px;cursor:pointer}
+.grid{display:grid;grid-template-columns:repeat(7,1fr);gap:5px}
+.dow{text-align:center;font-size:12px;color:var(--mut)}
+.d{aspect-ratio:1;border-radius:9px;background:#22262e;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:13px;cursor:default;position:relative}
+.d i{font-style:normal;font-size:15px;line-height:1}
+.d.done{background:#1d4d33}.d.late{background:#5a4314}.d.miss{background:#5a2124}.d.rest{background:#1a1d24;color:#666}.d.fut{opacity:.55}.d.empty{background:transparent}
+.d.today{outline:2px solid var(--acc)}
+.legend{font-size:12px;color:var(--mut);margin-top:10px;line-height:1.6}
+.ms{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid #2a2e37;font-size:14px}
+.ms:last-child{border:0}
+.ms .ic{font-size:22px;width:30px;text-align:center}
+.ms.lock{opacity:.45}
+.ms small{display:block;color:var(--mut)}
+#run{display:none;text-align:center}
+#phase{font-size:16px;letter-spacing:2px;font-weight:700;margin-top:8px}
+#ex{font-size:28px;font-weight:800;margin:10px 0 6px}
+#cue{color:var(--mut);font-size:16px;min-height:44px;padding:0 6px}
+#time{font-size:110px;font-weight:800;font-variant-numeric:tabular-nums;line-height:1;margin:18px 0 8px}
+.bar{height:10px;background:#2a2e37;border-radius:6px;overflow:hidden;margin:0 0 14px}
+.bar>div{height:100%;width:0;background:var(--acc);transition:width .2s linear}
+#next{color:var(--mut);font-size:15px;margin-bottom:16px}
+#prog{color:var(--mut);font-size:13px;margin-bottom:12px}
+.ctl{display:flex;gap:10px}
+.ctl button{flex:1;padding:16px;border:0;border-radius:12px;font-size:17px;font-weight:700;cursor:pointer;background:#2a2e37;color:var(--fg)}
+#bStop{background:#3a1f22;color:#ff8a8a}
+.work #phase{color:var(--acc)}.work .bar>div{background:var(--acc)}
+.rest #phase{color:var(--rest)}.rest .bar>div{background:var(--rest)}
+.prep #phase{color:var(--warn)}.prep .bar>div{background:var(--warn)}
+#done{display:none;text-align:center;padding-top:30px}
+#done h2{font-size:30px;margin-bottom:10px}
+#doneTxt{font-size:17px;line-height:1.5;margin-bottom:16px}
+#doneMs{margin-bottom:16px}
+.tabs{display:flex;gap:6px;margin-bottom:12px}
+.tabs button{flex:1;padding:10px;border:0;border-radius:10px;background:var(--card);color:var(--mut);font-size:15px;font-weight:700;cursor:pointer}
+.tabs button.on{background:var(--acc);color:#000}
+.chal{background:var(--card);border-radius:14px;padding:16px;margin-bottom:12px}
+.chal .t{font-size:12px;color:var(--warn);letter-spacing:1px;font-weight:700}
+.chal b{display:block;font-size:18px;margin:6px 0}
+.chal p{color:var(--mut);font-size:14px;margin-bottom:10px}
+.chal button{width:100%;padding:12px;border:0;border-radius:10px;font-size:16px;font-weight:700;cursor:pointer;background:var(--warn);color:#000}
+.chal button:disabled{background:#1d4d33;color:#a8f0c6}
+.rk{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid #2a2e37}
+.rk:last-child{border:0}.rk.me{background:#1d2a22;border-radius:10px;padding:10px 8px}
+.rk .p{font-size:20px;width:34px;text-align:center;font-weight:800}
+.rk .nm{flex:1}.rk .nm small{display:block;color:var(--mut);font-size:12px}
+.rk .pt{font-size:20px;font-weight:800}
+input.txt{width:100%;padding:12px;border-radius:10px;border:1px solid #333;background:#0f1115;color:#fff;font-size:17px;margin-bottom:12px}
+.sk{display:block;margin:6px auto 4px;width:100%;max-width:300px;color:var(--fg)}
+.sk .g{stroke:#555}.sk .hl{stroke:var(--warn)}
+#help{display:none;position:fixed;inset:0;background:var(--bg);overflow:auto;padding:20px;z-index:7}
+#help h2{font-size:22px;margin:18px 0 8px}#help p,#help li{font-size:15px;line-height:1.5;color:#ddd}#help ul,#help ol{padding-left:20px;margin-bottom:8px}
+.pt-tbl{width:100%;border-collapse:collapse;font-size:15px;margin:6px 0 10px}.pt-tbl td{padding:7px 4px;border-bottom:1px solid #2a2e37}.pt-tbl td:last-child{text-align:right;font-weight:800}
+.exl{display:grid;grid-template-columns:1fr 1fr;gap:8px}.exl div{background:var(--card);border-radius:12px;padding:8px;text-align:center;font-size:13px}
+.note{color:var(--mut);font-size:13px;line-height:1.4}
+#modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);align-items:center;justify-content:center;padding:20px}
+#modal .card{max-width:360px;width:100%}
+#modal .row button{flex:1;padding:12px;border:0;border-radius:10px;font-size:16px;font-weight:700;cursor:pointer}
+#sync{font-size:12px;color:var(--mut);text-align:right;margin-top:-8px;margin-bottom:8px}
+</style>
+</head>
+<body>
+<div id="menu">
+  <h1>💪 Workout-Coach</h1>
+  <div class="row" style="justify-content:space-between;margin-bottom:8px"><div id="sync" style="margin:0">…</div><button class="chip" id="bHelp">❓ Anleitung</button></div>
+  <div class="stats">
+    <div class="stat"><b id="sPts">0</b><span>Punkte</span></div>
+    <div class="stat"><b id="sStreak">0</b><span>🔥 Serie</span></div>
+    <div class="stat"><b id="sTot">0</b><span>Workouts</span></div>
+  </div>
+  <div id="banners"></div>
+  <div class="tabs"><button data-t="train" class="on">🏋️ Training</button><button data-t="chal">⚡ Challenges</button><button data-t="rank">🏆 Ranking</button></div>
+  <div id="tab-chal" style="display:none"><div id="chalBox"></div><div class="note">Challenges sind zum Punkte-Aufholen. Jede zählt einmal pro Tag bzw. Woche. Ehrlich bleiben – Ausreden und Schummeln gibt's nicht. Über den Tag verteilt ist erlaubt, Liegestütze auch auf den Knien.</div></div>
+  <div id="tab-rank" style="display:none"><div class="card"><h3>🏆 Ranking</h3><div id="rankList"></div></div><div class="note" id="rankNote">Freunde einladen: einfach den Link zu dieser Seite schicken. Jede/r registriert sich mit Benutzername + PIN.</div><button class="wbtn" id="bAcc" style="text-align:center;margin-top:12px"><b>⚙️ Mein Konto (E-Mail, Abmelden)</b></button>
+  <div id="tab-train">
+
+  <button class="wbtn" data-w="A"><b>Tag A · Mo + Fr</b><span>Liegestütz halten · Ausfallschritt halten · Glute Bridge · Plank · ca. 13 Min.</span></button>
+  <button class="wbtn" data-w="B"><b>Tag B · Mi</b><span>5 Bursts · Hollow Body · Seitstütz · Y-Halten · Plank · ca. 13 Min.</span></button>
+  <button class="wbtn" data-w="K"><b>Kurztag · Di, Do, Sa</b><span>Plank · Hüftbeuger-Dehnung · Brustdehnung · ca. 5 Min.</span></button>
+
+  <div class="card">
+    <div class="cal-h"><button id="calPrev">‹</button><h3 id="calTitle" style="margin:0"></h3><button id="calNext">›</button></div>
+    <div class="grid" id="cal"></div>
+    <div class="legend">✓ erledigt +1 · ↺ nachgeholt −3 +2 · ✗ verpasst −3 · So = Ruhetag (Bonus +1)<br>Tippe auf <b>heute</b>, um ohne Coach abzuhaken (z. B. nach dem Vereinstraining).</div>
+  </div>
+
+  <div class="card">
+    <h3>🏆 Meilensteine</h3>
+    <div id="msList"></div>
+  </div>
+
+  <div class="card">
+    <label>Steigerung (Sekunden extra pro Halteübung)</label>
+    <div class="row" id="bonus" style="margin-top:8px"></div>
+    <label style="display:block;margin-top:14px">Sprechtempo</label>
+    <div class="row" id="rate" style="margin-top:8px"></div>
+  </div>
+  </div>
+  <div class="note">Regeln: Erledigt +1 · Nicht erledigt −3 · Am nächsten Tag nachgeholt +2 · Volle Woche Mo–Sa ohne Lücke +3 Bonus · Challenges +2 bis +5. Ausreden gibt's keine. 😉<br><br>Beim Drücken immer ausatmen. Stechender Gelenkschmerz = abbrechen. Bei Bluthochdruck vorher ärztlich abklären.</div>
+</div>
+
+<div id="run">
+  <div id="prog"></div>
+  <div id="phase"></div>
+  <div id="ex"></div>
+  <svg id="runSk" class="sk" viewBox="0 0 200 110"></svg>
+  <div id="cue"></div>
+  <div id="time">0</div>
+  <div class="bar"><div id="barf"></div></div>
+  <div id="next"></div>
+  <div class="ctl">
+    <button id="bPause">Pause</button>
+    <button id="bSkip">Weiter ⏭</button>
+    <button id="bStop">Stopp</button>
+  </div>
+</div>
+
+<div id="done">
+  <h2>🔥 Geschafft!</h2>
+  <div id="doneTxt"></div>
+  <div id="doneMs"></div>
+  <button class="wbtn" id="bBack" style="text-align:center"><b>Zum Kalender</b></button>
+</div>
+
+<div id="login" style="display:none;position:fixed;inset:0;background:var(--bg);overflow:auto;padding:20px;z-index:5"><div style="max-width:400px;margin:30px auto">
+<h1>💪 Workout-Coach</h1><p class="sub" style="margin-bottom:18px">Trainieren, Punkte sammeln, gegeneinander antreten.</p>
+<div class="tabs"><button id="lgIn" class="on">Anmelden</button><button id="lgReg">Registrieren</button></div>
+<div class="card">
+<label>Benutzername</label><input class="txt" id="lgName" maxlength="20" autocomplete="username" placeholder="z. B. MacherMax">
+<label>PIN (4 Ziffern)</label><input class="txt" id="lgPin" maxlength="4" inputmode="numeric" type="password" autocomplete="current-password" placeholder="••••">
+<div id="regExtra" style="display:none"><label>E-Mail für die 18-Uhr-Erinnerung (optional)</label><input class="txt" id="lgMail" type="email" placeholder="name@beispiel.de">
+<label style="display:flex;gap:8px;align-items:flex-start;margin-bottom:12px"><input type="checkbox" id="lgOk" style="margin-top:3px"><span>Ich bin einverstanden, dass Benutzername, Trainingsdaten und ggf. E-Mail für dieses private Ranking gespeichert werden. Löschen jederzeit auf Zuruf bei Max.</span></label></div>
+<div id="lgErr" style="color:var(--bad);font-size:14px;min-height:20px;margin-bottom:8px"></div>
+<button class="wbtn" id="lgGo" style="text-align:center;background:var(--acc);color:#000;margin:0"><b>Anmelden</b></button>
+</div><p class="note">PIN vergessen? Bei Max melden.</p></div></div>
+<div id="acc" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.8);align-items:center;justify-content:center;padding:20px;z-index:6"><div class="card" style="max-width:380px;width:100%">
+<h3>⚙️ Mein Konto</h3><p class="sub" id="accName"></p>
+<label>E-Mail für die 18-Uhr-Erinnerung</label><input class="txt" id="accMail" type="email" placeholder="leer = keine Mails">
+<div id="accMsg" style="font-size:14px;min-height:20px;margin-bottom:8px;color:var(--mut)"></div>
+<div class="row"><button class="chip" id="accSave" style="flex:1">Speichern</button><button class="chip" id="accOut" style="flex:1">Abmelden</button><button class="chip" id="accX" style="flex:1">Schließen</button></div>
+</div></div>
+<div id="help"><div style="max-width:480px;margin:0 auto">
+<div class="row" style="justify-content:space-between"><h1>❓ Erste Schritte</h1><button class="chip" id="helpX">Schließen ✕</button></div>
+<h2>1. Anmelden</h2><ul><li>Benutzername + 4-stellige PIN wählen – fertig. Kein Konto, kein Passwort.</li><li>E-Mail ist freiwillig: Dann kommt um 18 Uhr eine Erinnerung, falls du noch nicht trainiert hast. 😢</li><li>Tipp: Seite zum Startbildschirm hinzufügen (Browser-Menü ⋮ → „Zum Startbildschirm“). Dann ist sie wie eine App.</li></ul>
+<h2>2. Trainieren</h2><ol><li><b>Ton laut</b> machen, Handy hinlegen.</li><li>Das Workout für heute ist grün umrandet – antippen.</li><li>Der Coach sagt alles an: Übung, Ausführung, Countdown, Pausen. Die Skizze zeigt die Haltung.</li><li>Am Ende wird der Tag automatisch im Kalender abgehakt.</li></ol>
+<p><b>Wochenplan:</b> Mo + Fr = Tag A · Mi = Tag B · Di, Do, Sa = Kurztag (5 Min.) · So = Ruhetag</p>
+<p>Ohne Coach trainiert (z. B. im Verein)? Im Kalender auf <b>heute</b> tippen und ehrlich abhaken.</p>
+<h2>3. Punkte</h2>
+<table class="pt-tbl">
+<tr><td>✓ Workout am Tag erledigt</td><td style="color:var(--acc)">+1</td></tr>
+<tr><td>✗ Trainingstag verpasst</td><td style="color:var(--bad)">−3</td></tr>
+<tr><td>↺ Am nächsten Tag nachgeholt</td><td style="color:var(--warn)">+2</td></tr>
+<tr><td>📅 Volle Woche Mo–Sa ohne Lücke</td><td style="color:var(--acc)">+3</td></tr>
+<tr><td>⚡ Tages-Challenge geschafft</td><td style="color:var(--acc)">+2</td></tr>
+<tr><td>⚡ Wochen-Challenge geschafft</td><td style="color:var(--acc)">+5</td></tr>
+<tr><td>😴 Freiwilliges Workout am Sonntag</td><td style="color:var(--acc)">+1</td></tr>
+</table>
+<ul><li><b>Nachholen:</b> Erst das heutige Workout, dann ein zweites – das zählt für gestern. Aus −3 wird so −1.</li><li><b>🔥 Serie:</b> Trainingstage am Stück ohne Lücke. Sonntag unterbricht nicht.</li><li>Ausreden gibt's keine. Es gibt keinen „Krank“-Knopf – wer ehrlich krank ist, schont sich und holt Punkte später über Challenges auf.</li></ul>
+<h2>4. Challenges & Ranking</h2><ul><li>Jeden Tag eine neue Tages-Challenge, jede Woche eine Wochen-Challenge – für alle dieselbe.</li><li>Nur abhaken, wenn wirklich komplett geschafft. Über den Tag verteilt ist erlaubt.</li><li>Im Ranking siehst du Punkte, Serie und wer heute schon trainiert hat.</li></ul>
+<h2>5. Meilensteine</h2><p>Für Serien, Punkte und Anzahl Workouts gibt es Meilensteine mit Lob und Belohnungsideen. Belohn dich wirklich – das hält dich dran.</p>
+<h2>6. Steigern</h2><p>Alle 2 Wochen unter „Steigerung“ +5 s einstellen. Wenn es leicht wird: härtere Variante (z. B. Liegestütz ohne Knie).</p>
+<h2>Die Übungen</h2><div class="exl" id="exList"></div>
+<h2>Sicherheit</h2><ul><li>Beim Drücken ausatmen, nie die Luft anhalten.</li><li>Brennen im Muskel ist okay, stechender Gelenkschmerz nicht → abbrechen.</li><li>Bei Bluthochdruck, Herzproblemen oder Verletzungen vorher ärztlich abklären.</li></ul>
+<button class="wbtn" id="helpX2" style="text-align:center;background:var(--acc);color:#000;margin-top:16px"><b>Los geht's! 💪</b></button>
+</div></div>
+<div id="modal"><div class="card"><p id="mTxt" style="margin-bottom:14px;line-height:1.4"></p><div class="row"><button id="mNo" style="background:#2a2e37;color:#fff">Abbrechen</button><button id="mYes" style="background:var(--acc);color:#000">Ja</button></div></div></div>
+
+<script src="config.js"></script>
+<script>
+// ---------- Übungen ----------
+const EX={
+ push:{n:"Liegestütz halten",c:"Brust eine Faust über dem Boden, Ellbogen eng am Körper. Drück den Boden aktiv weg! Notfalls auf den Knien.",hold:true},
+ splitL:{n:"Ausfallschritt halten – linkes Bein vorne",c:"Hinteres Knie knapp über dem Boden, Brust hoch. Unten bleiben!",hold:true},
+ splitR:{n:"Ausfallschritt halten – rechtes Bein vorne",c:"Hinteres Knie knapp über dem Boden, Brust hoch. Unten bleiben!",hold:true},
+ bridge:{n:"Glute Bridge halten",c:"Rückenlage, Füße aufstellen, Po hoch und fest anspannen. Kein Hohlkreuz.",hold:true},
+ plank:{n:"Plank",c:"Unterarme unter den Schultern, Körper eine Linie, Bauch und Po fest.",hold:true,long:true},
+ burst:{n:"Burst – Türrahmen wegdrücken",c:"Von null auf hundert! Mit voller Kraft drücken und dabei ausatmen.",hold:false},
+ hollow:{n:"Hollow Body Hold",c:"Unteren Rücken fest in den Boden drücken, Schultern und Füße leicht anheben. Knie angewinkelt ist okay.",hold:true},
+ sideL:{n:"Seitstütz – linke Seite",c:"Ellbogen unter der Schulter, Hüfte hoch, Körper eine Linie. Knie am Boden ist okay.",hold:true},
+ sideR:{n:"Seitstütz – rechte Seite",c:"Ellbogen unter der Schulter, Hüfte hoch, Körper eine Linie. Knie am Boden ist okay.",hold:true},
+ yhold:{n:"Y-Halten",c:"Bauchlage, Arme schräg nach vorne als Y, Daumen hoch. Arme und Brust leicht anheben, Blick zum Boden.",hold:true},
+ hipL:{n:"Hüftbeuger-Dehnung – linkes Knie unten",c:"Halbkniestand, Po anspannen, Hüfte leicht nach vorne schieben. Ruhig atmen.",hold:false},
+ hipR:{n:"Hüftbeuger-Dehnung – rechtes Knie unten",c:"Halbkniestand, Po anspannen, Hüfte leicht nach vorne schieben. Ruhig atmen.",hold:false},
+ chest:{n:"Brustdehnung im Türrahmen",c:"Unterarm an den Türrahmen, Ellbogen auf Schulterhöhe, kleiner Schritt nach vorne.",hold:false}
+};
+const W={
+ A:{t:"Tag A",s:[["push",30,45],["push",30,45],["push",30,45],["splitL",30,15],["splitR",30,45],["splitL",30,15],["splitR",30,45],["bridge",30,40],["bridge",30,40],["bridge",30,45],["plank",120,0]]},
+ B:{t:"Tag B",s:[["burst",5,20],["burst",5,20],["burst",5,20],["burst",5,20],["burst",5,40],["hollow",20,40],["hollow",20,40],["hollow",20,45],["sideL",25,15],["sideR",25,40],["sideL",25,15],["sideR",25,45],["yhold",20,40],["yhold",20,40],["yhold",20,45],["plank",120,0]]},
+ K:{t:"Kurztag",s:[["plank",120,20],["hipL",45,12],["hipR",45,12],["chest",45,0]]}
+};
+const PLAN={1:"A",2:"K",3:"B",4:"K",5:"A",6:"K",0:null}; // 0 = Sonntag Ruhetag
+const API_URL=window.API_URL||"";
+const START="2026-11-23";
+const MYS=()=>state.start||START;
+const rnd=n=>Math.floor(Math.random()*n);
+const $=id=>document.getElementById(id);
+
+// ---------- Datum ----------
+const key=d=>d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
+const parse=k=>{const[a,b,c]=k.split("-").map(Number);return new Date(a,b-1,c)};
+const addDays=(k,n)=>{const d=parse(k);d.setDate(d.getDate()+n);return key(d)};
+const todayK=()=>key(new Date());
+const isRest=k=>parse(k).getDay()===0;
+
+// ---------- Speicher (db, Fallback localStorage) ----------
+function ls(k,d){try{const v=localStorage.getItem(k);return v===null?d:JSON.parse(v)}catch(e){return d}}
+function lsSet(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
+let state={days:{},ms:[],ch:{},name:"",start:""};
+let token=ls("token",""),email="",others=[],online=false;
+state=Object.assign(state,ls("state",{}));
+async function api(a,body){
+  if(!API_URL)throw new Error("noapi");
+  const r=await fetch(API_URL,{method:"POST",body:JSON.stringify(Object.assign({a},body||{}))});
+  return r.json();
+}
+function setSync(t){$("sync").textContent=t+(state.name?" · "+state.name:"")}
+async function initApi(){
+  if(!API_URL){setSync("⚠️ Offline-Modus (Server noch nicht eingerichtet)");if(!state.name){state.name="Ich";state.start=START}renderMenu();return}
+  if(!token){showLogin();return}
+  try{const r=await api("me",{token});
+    if(!r.ok){token="";lsSet("token","");showLogin();return}
+    applyServer(r);online=true;setSync("☁️ synchronisiert");
+    // lokal Neueres (offline erledigt) zusammenführen
+    loadRank();
+  }catch(e){setSync("⚠️ offline – wird später synchronisiert");renderMenu()}
+}
+function applyServer(r){
+  const d=r.data||{},loc=ls("state",{});
+  const days=Object.assign({},d.days||{}),ch=Object.assign({},d.ch||{});
+  if(loc.name===r.name){Object.assign(days,loc.days||{});Object.assign(ch,loc.ch||{})}
+  state={days,ch,ms:Array.from(new Set([...(d.ms||[]),...((loc.name===r.name&&loc.ms)||[])])),name:r.name,start:r.start||START};
+  email=r.email||"";lsSet("state",state);renderMenu();
+  if(JSON.stringify(days)!==JSON.stringify(d.days||{})||JSON.stringify(ch)!==JSON.stringify(d.ch||{}))save();
+}
+let saveT=null;
+function save(){
+  lsSet("state",state);
+  if(!API_URL||!token)return;
+  clearTimeout(saveT);saveT=setTimeout(async()=>{
+    try{const r=await api("save",{token,data:{days:state.days,ms:state.ms,ch:state.ch}});setSync(r.ok?"☁️ synchronisiert":"⚠️ Speichern fehlgeschlagen");loadRank()}
+    catch(e){setSync("⚠️ offline – wird später synchronisiert")}
+  },400);
+}
+async function loadRank(){try{const r=await api("list");if(r.ok){others=r.users||[];renderRank()}}catch(e){}}
+setInterval(()=>{if(token&&document.visibilityState==="visible"&&!running)loadRank()},60000);
+// Login
+let regMode=false;
+function showLogin(){$("login").style.display="block";setMode(false)}
+function setMode(r){regMode=r;$("lgIn").classList.toggle("on",!r);$("lgReg").classList.toggle("on",r);$("regExtra").style.display=r?"block":"none";$("lgGo").innerHTML="<b>"+(r?"Registrieren":"Anmelden")+"</b>";$("lgErr").textContent=""}
+$("lgIn").onclick=()=>setMode(false);$("lgReg").onclick=()=>setMode(true);
+$("lgGo").onclick=async()=>{
+  const name=$("lgName").value.trim(),pin=$("lgPin").value.trim(),mail=$("lgMail").value.trim();
+  if(name.length<2){$("lgErr").textContent="Benutzername eingeben";return}
+  if(!/^\d{4}$/.test(pin)){$("lgErr").textContent="PIN = 4 Ziffern";return}
+  if(regMode&&!$("lgOk").checked){$("lgErr").textContent="Bitte Einverständnis bestätigen";return}
+  $("lgErr").textContent="…";
+  try{const r=await api(regMode?"register":"login",{name,pin,email:mail});
+    if(!r.ok){$("lgErr").textContent=r.err||"Fehler";return}
+    token=r.token;lsSet("token",token);$("login").style.display="none";if(regMode||!ls("helpSeen",0))showHelp();applyServer(r);online=true;setSync("☁️ synchronisiert");loadRank();
+  }catch(e){$("lgErr").textContent="Keine Verbindung zum Server"}
+};
+$("bAcc").onclick=()=>{if(!token){showLogin();return}$("accName").textContent="Angemeldet als "+state.name;$("accMail").value=email;$("accMsg").textContent="";$("acc").style.display="flex"};
+$("accX").onclick=()=>$("acc").style.display="none";
+$("accSave").onclick=async()=>{try{const r=await api("email",{token,email:$("accMail").value.trim()});$("accMsg").textContent=r.ok?"✅ Gespeichert":(r.err||"Fehler");if(r.ok)email=r.email}catch(e){$("accMsg").textContent="Keine Verbindung"}};
+$("accOut").onclick=()=>{token="";lsSet("token","");lsSet("state",{});state={days:{},ms:[],ch:{},name:"",start:""};$("acc").style.display="none";showLogin();renderMenu()};
+
+// ---------- Punkte ----------
+function compute(S){
+  S=S||state;const t=todayK();const st0=S.start||START;let pts=0,streak=0,best=0,total=0,bonus=0,weekRun=0;
+  const log={};
+  let k=st0;
+  while(k<=t){
+    const d=(S.days||{})[k],rest=isRest(k),past=k<t;
+    if(d&&d.done){
+      total++;
+      if(d.at===k){pts+=1;log[k]="done";}
+      else{pts+=-3+2;log[k]="late";}
+      if(!rest){streak++;weekRun++;}
+    }else if(rest){log[k]="rest";}
+    else if(past){pts-=3;log[k]="miss";streak=0;weekRun=0;}
+    else{log[k]="open";}
+    if(rest&&!(d&&d.done)){}
+    if(parse(k).getDay()===6){ if(weekRun>=6&&log[k]!=="open"){pts+=3;bonus++;} weekRun=0; }
+    best=Math.max(best,streak);
+    k=addDays(k,1);
+  }
+  let chp=0;Object.keys(S.ch||{}).forEach(x=>{chp+=(S.ch[x]&&S.ch[x].p)||0});pts+=chp;
+  return {pts,streak,best,total,bonus,log,chp};
+}
+
+// ---------- Meilensteine ----------
+const MS=[
+ {id:"w1",ic:"🎬",n:"Erster Schritt",d:"1. Workout",t:s=>s.total>=1,r:"Lob: Der schwerste Teil ist geschafft!"},
+ {id:"s3",ic:"🔥",n:"Warmgelaufen",d:"3 Tage Serie",t:s=>s.best>=3,r:"Belohnung: Lieblingsgetränk ohne schlechtes Gewissen"},
+ {id:"wk",ic:"📅",n:"Volle Woche",d:"Mo–Sa ohne Lücke",t:s=>s.bonus>=1,r:"+3 Bonus & Abend auf der Couch – verdient"},
+ {id:"p10",ic:"⭐",n:"10 Punkte",d:"Punktestand 10",t:s=>s.pts>=10,r:"Belohnung: neues Trainings-Shirt"},
+ {id:"w10",ic:"💪",n:"10 Workouts",d:"10 Einheiten gesamt",t:s=>s.total>=10,r:"Lob: Du bist nicht mehr der von letzter Woche"},
+ {id:"s14",ic:"⚡",n:"Zwei Wochen am Stück",d:"14 Tage Serie",t:s=>s.best>=14,r:"Belohnung: Massage oder Sauna-Besuch"},
+ {id:"p25",ic:"🥉",n:"25 Punkte",d:"Punktestand 25",t:s=>s.pts>=25,r:"Belohnung: schön essen gehen"},
+ {id:"w25",ic:"🏋️",n:"25 Workouts",d:"25 Einheiten gesamt",t:s=>s.total>=25,r:"Steigerung auf +10 s freigeschaltet"},
+ {id:"s30",ic:"🏅",n:"Ein Monat Disziplin",d:"30 Tage Serie",t:s=>s.best>=30,r:"Belohnung: neue Sportschuhe"},
+ {id:"p50",ic:"🥈",n:"50 Punkte",d:"Punktestand 50",t:s=>s.pts>=50,r:"Belohnung: Kurzhanteln oder Klimmzugstange"},
+ {id:"w50",ic:"🦾",n:"50 Workouts",d:"50 Einheiten gesamt",t:s=>s.total>=50,r:"Lob: Das ist jetzt Gewohnheit, kein Vorsatz mehr"},
+ {id:"p100",ic:"🥇",n:"100 Punkte",d:"Punktestand 100",t:s=>s.pts>=100,r:"Belohnung: Wellness-Tag"},
+ {id:"w100",ic:"👑",n:"100 Workouts",d:"100 Einheiten gesamt",t:s=>s.total>=100,r:"Legende. Zeit für ein neues, härteres Ziel"}
+];
+function checkMs(st){const neu=[];MS.forEach(m=>{if(m.t(st)&&!state.ms.includes(m.id)){state.ms.push(m.id);neu.push(m)}});return neu}
+
+// ---------- Kalender & Menü ----------
+let calM=new Date();calM.setDate(1);
+const MON=["Januar","Februar","März","April","Mai","Juni","Juli","August","September","Oktober","November","Dezember"];
+function renderMenu(){
+  const st=compute(),t=todayK(),y=addDays(t,-1);
+  $("sPts").textContent=st.pts;$("sStreak").textContent=st.streak;$("sTot").textContent=st.total;
+  $("sPts").style.color=st.pts<0?"var(--bad)":"";
+  // Banner
+  let b="";const tw=PLAN[parse(t).getDay()];
+  if(y>=MYS()&&st.log[y]==="miss"&&!(state.days[y]&&state.days[y].done))
+    b+='<div class="banner bad">😢 Gestern verpasst (−3). <b>Heute nachholen = +2 zurück.</b> Erst das heutige Workout, dann ein zweites fürs Nachholen.</div>';
+  if(t>=MYS()&&!(state.days[t]&&state.days[t].done)&&tw)b+='<div class="banner bad">Heute dran: <b>'+W[tw].t+'</b>. Noch nicht erledigt'+(email?' – um 18 Uhr kommt sonst eine Mail':'')+'.</div>';
+  else if(state.days[t]&&state.days[t].done)b+='<div class="banner good">✅ Heute erledigt. Stark, '+(state.name||'')+'!</div>';
+  else if(!tw&&t>=MYS())b+='<div class="banner good">😴 Sonntag = Ruhetag. Freiwilliges Workout gibt +1 Bonus.</div>';
+  $("banners").innerHTML=b;
+  document.querySelectorAll(".wbtn[data-w]").forEach(x=>x.classList.toggle("today",x.dataset.w===tw));
+  // Kalender
+  const yv=calM.getFullYear(),mv=calM.getMonth();$("calTitle").textContent=MON[mv]+" "+yv;
+  let h=["Mo","Di","Mi","Do","Fr","Sa","So"].map(x=>'<div class="dow">'+x+'</div>').join("");
+  const off=(new Date(yv,mv,1).getDay()+6)%7;for(let i=0;i<off;i++)h+='<div class="d empty"></div>';
+  const days=new Date(yv,mv+1,0).getDate();
+  for(let i=1;i<=days;i++){
+    const k=key(new Date(yv,mv,i));let cls="d",ic="";
+    const L=st.log[k],d=state.days[k];
+    if(k<MYS()){cls+=" fut"}
+    else if(L==="done"){cls+=" done";ic="✓"}
+    else if(L==="late"){cls+=" late";ic="↺"}
+    else if(L==="miss"){cls+=" miss";ic="✗"}
+    else if(L==="rest"){cls+=" rest";ic="·"}
+    else if(k>t){cls+=" fut";if(isRest(k))ic="·"}
+    if(k===t)cls+=" today";
+    h+='<div class="'+cls+'" data-k="'+k+'">'+i+'<i>'+ic+'</i></div>';
+  }
+  $("cal").innerHTML=h;
+  $("cal").querySelectorAll(".d[data-k]").forEach(el=>el.onclick=()=>dayTap(el.dataset.k));
+  // Meilensteine
+  renderChal();renderRank();
+  $("msList").innerHTML=MS.map(m=>{const on=state.ms.includes(m.id);return '<div class="ms'+(on?"":" lock")+'"><div class="ic">'+(on?m.ic:"🔒")+'</div><div><b>'+m.n+'</b> – '+m.d+'<small>'+m.r+'</small></div></div>'}).join("");
+}
+$("calPrev").onclick=()=>{calM.setMonth(calM.getMonth()-1);renderMenu()};
+$("calNext").onclick=()=>{calM.setMonth(calM.getMonth()+1);renderMenu()};
+
+function ask(txt,yes){$("mTxt").innerHTML=txt;$("modal").style.display="flex";$("mYes").onclick=()=>{$("modal").style.display="none";yes()};$("mNo").onclick=()=>{$("modal").style.display="none"}}
+function dayTap(k){
+  const t=todayK(),y=addDays(t,-1);
+  if(k<MYS())return;
+  if(k===t&&!(state.days[t]&&state.days[t].done))ask("Heute ohne Coach trainiert und <b>ehrlich</b> erledigt? Dann abhaken (+1).",()=>markDay("manual"));
+  else if(k===y&&compute().log[y]==="miss")ask("Gestern hast du verpasst. Hast du es heute <b>wirklich nachgeholt</b>? (+2)",()=>{state.days[y]={done:true,at:t,w:"manual"};afterMark("nach")});
+}
+// Workout abschließen: zuerst heute, dann gestern nachholen
+function markDay(w){
+  const t=todayK(),y=addDays(t,-1);
+  if(t<MYS()){afterMark(null);return}
+  if(!(state.days[t]&&state.days[t].done)){state.days[t]={done:true,at:t,w};return afterMark("today")}
+  if(y>=MYS()&&compute().log[y]==="miss"){state.days[y]={done:true,at:t,w};return afterMark("nach")}
+  afterMark("extra");
+}
+let lastMs=[];
+function afterMark(kind){
+  const before=compute();const neu=checkMs(before);lastMs=neu;save();renderMenu();
+  return {kind,st:before,neu};
+}
+
+// ---------- Challenges ----------
+const DAILY=[
+ {n:"100 Liegestütze",d:"Über den Tag verteilt, Knie erlaubt. Saubere Wiederholungen!",p:2},
+ {n:"100 Kniebeugen",d:"Über den Tag verteilt. Po nach hinten, Brust hoch.",p:2},
+ {n:"3 Minuten Plank",d:"Gesamtzeit, maximal 3 Sätze.",p:2},
+ {n:"10.000 Schritte",d:"Tipp: Kundentelefonate im Gehen führen.",p:2},
+ {n:"Wandsitzen 3 × 60 s",d:"Rücken an die Wand, Oberschenkel waagerecht.",p:2},
+ {n:"60 Ausfallschritte",d:"30 pro Bein, über den Tag verteilt.",p:2},
+ {n:"5 × 1 Min. Liegestütz-Halten",d:"Über den Tag verteilt, Brust eine Faust über dem Boden (Knie erlaubt).",p:2},
+ {n:"30 Min. zügig gehen",d:"Am Stück, Handy in der Tasche lassen.",p:2},
+ {n:"Kein Sitzen über 45 Min.",d:"Den ganzen Arbeitstag: spätestens alle 45 Min. aufstehen und 2 Min. bewegen.",p:2},
+ {n:"50 Burpees",d:"Ohne Sprung erlaubt. Über den Tag verteilt.",p:3}
+];
+const WEEKLY=[
+ {n:"500 Liegestütze diese Woche",d:"Mo–So, Knie erlaubt. Mitzählen!",p:5},
+ {n:"70.000 Schritte diese Woche",d:"Im Schnitt 10.000 am Tag.",p:5},
+ {n:"Plank jeden Tag",d:"7 von 7 Tagen mindestens 2 Min. Plank – auch Sonntag.",p:5},
+ {n:"20 Min. Plank gesamt",d:"Alle Plank-Sätze der Woche zusammengezählt.",p:5},
+ {n:"300 Kniebeugen diese Woche",d:"Über die Woche verteilt.",p:5}
+];
+const hash=s=>{let x=0;for(const c of s)x=(x*31+c.charCodeAt(0))>>>0;return x};
+function weekKey(k){const d=parse(k);const day=(d.getDay()+6)%7;d.setDate(d.getDate()-day);return key(d)}
+function todaysChal(){const t=todayK(),w=weekKey(t);
+  return [{id:"d:"+t,type:"Tages-Challenge",...DAILY[hash(t)%DAILY.length]},{id:"w:"+w,type:"Wochen-Challenge (Mo–So)",...WEEKLY[hash(w)%WEEKLY.length]}]}
+function renderChal(){
+  $("chalBox").innerHTML=todaysChal().map(c=>{const done=state.ch&&state.ch[c.id];
+    return '<div class="chal"><div class="t">'+c.type.toUpperCase()+' · +'+c.p+' PUNKTE</div><b>'+c.n+'</b><p>'+c.d+'</p><button data-c="'+c.id+'" '+(done?"disabled":"")+'>'+(done?"✅ Geschafft (+"+c.p+")":"Geschafft – ehrlich! 💪")+'</button></div>'}).join("");
+  $("chalBox").querySelectorAll("button[data-c]").forEach(b=>b.onclick=()=>{const c=todaysChal().find(x=>x.id===b.dataset.c);
+    ask("<b>"+c.n+"</b> wirklich komplett geschafft? Keine Ausreden, kein Schummeln.",()=>{state.ch=state.ch||{};state.ch[c.id]={p:c.p,n:c.n,at:todayK()};
+      const neu=checkMs(compute());save();renderMenu();unlockAudio().then(()=>say(neu.length?["pr_"+rnd(5),"ms"]:["pr_"+rnd(5)],true))})});
+}
+// ---------- Ranking ----------
+function renderRank(){
+  const list=others.filter(u=>u.name!==state.name).concat(state.name?[{name:state.name,start:state.start,days:state.days,ch:state.ch,me:true}]:[]);
+  const t=todayK();
+  const rows=list.map(u=>{const c=compute({days:u.days||{},ch:u.ch||{},start:u.start||START});return {me:!!u.me,name:u.name,pts:c.pts,streak:c.streak,total:c.total,today:!!(u.days&&u.days[t]&&u.days[t].done)}})
+    .sort((a,b)=>b.pts-a.pts||b.streak-a.streak);
+  const med=["🥇","🥈","🥉"];
+  $("rankList").innerHTML=rows.length?rows.map((r,i)=>'<div class="rk'+(r.me?" me":"")+'"><div class="p">'+(med[i]||(i+1))+'</div><div class="nm"><b></b><small>🔥 '+r.streak+' · '+r.total+' Workouts'+(r.today?' · heute ✓':'')+'</small></div><div class="pt">'+r.pts+'</div></div>').join(""):'<p class="sub">Noch niemand im Ranking.</p>';
+  $("rankList").querySelectorAll(".rk b").forEach((b,i)=>b.textContent=rows[i].name);
+}
+document.querySelectorAll(".tabs button").forEach(b=>b.onclick=()=>{document.querySelectorAll(".tabs button").forEach(x=>x.classList.toggle("on",x===b));
+  ["train","chal","rank"].forEach(t=>$("tab-"+t).style.display=t===b.dataset.t?"block":"none");renderMenu()});
+
+// ---------- Einstellungen ----------
+let bonus=ls("bonus",0), rate=ls("rate",1.1);
+function chips(id,vals,cur,lab,set){const el=$(id);el.innerHTML="";vals.forEach(v=>{const b=document.createElement("button");b.className="chip"+(v===cur?" on":"");b.textContent=lab(v);b.onclick=()=>{set(v);chips(id,vals,v,lab,set)};el.appendChild(b)})}
+chips("bonus",[0,5,10,15,20,30],bonus,v=>"+"+v+" s",v=>{bonus=v;lsSet("bonus",v)});
+chips("rate",[1,1.1,1.2],rate,v=>v===1?"normal":v===1.1?"zügig":"schnell",v=>{rate=v;lsSet("rate",v);unlockAudio().then(()=>say(["test"],true))});
+
+// ---------- Audio (fertige Sprachaufnahmen) ----------
+const CLIPS=["n1","n2","n3","los","first","stop","next","in5","noch90","noch60","noch30","alles","paused","weiter","done","sA","sB","sK","test","ms","nach","bonus"]
+ .concat(Object.keys(EX).flatMap(k=>["n_"+k,"c_"+k]))
+ .concat([0,1,2,3,4].map(i=>"m10_"+i),[0,1,2,3].map(i=>"mm_"+i),[0,1,2,3,4,5].map(i=>"ml_"+i),[0,1,2].map(i=>"ms_"+i),[0,1,2,3,4].map(i=>"pr_"+i));
+const raw={},buf={};let ac=null,cur=null,queue=[];
+CLIPS.forEach(k=>fetch("a/"+k+".mp3").then(r=>r.ok?r.arrayBuffer():null).then(b=>{if(b)raw[k]=b}).catch(()=>{}));
+async function unlockAudio(){
+  try{if(!ac)ac=new (window.AudioContext||window.webkitAudioContext)();if(ac.state==="suspended")await ac.resume()}catch(e){}
+  for(const k of Object.keys(raw)){if(!buf[k]){try{buf[k]=await ac.decodeAudioData(raw[k].slice(0))}catch(e){}}}
+}
+function decodeLate(k){if(!buf[k]&&raw[k]&&ac){ac.decodeAudioData(raw[k].slice(0)).then(b=>buf[k]=b).catch(()=>{})}}
+function say(keys,interrupt){
+  if(!ac)return;
+  if(interrupt){queue=[];if(cur){try{cur.onended=null;cur.stop()}catch(e){}cur=null}}
+  keys.forEach(k=>{if(buf[k])queue.push(buf[k]);else decodeLate(k)});
+  if(!cur)playNext();
+}
+function playNext(){
+  const b=queue.shift();if(!b){cur=null;return}
+  try{const s=ac.createBufferSource();s.buffer=b;s.playbackRate.value=rate;s.connect(ac.destination);s.onended=()=>{cur=null;playNext()};cur=s;s.start()}catch(e){cur=null}
+}
+function beep(f,d){try{if(!ac)return;const o=ac.createOscillator(),g=ac.createGain();o.frequency.value=f;o.connect(g);g.connect(ac.destination);g.gain.setValueAtTime(.2,ac.currentTime);g.gain.exponentialRampToValueAtTime(.001,ac.currentTime+d);o.start();o.stop(ac.currentTime+d)}catch(e){}}
+
+// ---------- Skizzen ----------
+const G='<line class="g" x1="5" y1="100" x2="195" y2="100"/>';
+const P=pts=>'<polyline points="'+pts+'"/>';
+const H=(x,y)=>'<circle cx="'+x+'" cy="'+y+'" r="8" fill="currentColor" stroke="none"/>';
+const SK={
+ push:G+H(174,72)+P("160,78 100,85 35,96")+P("160,78 154,89 158,99")+'<line class="hl" x1="172" y1="85" x2="172" y2="96" stroke-dasharray="3 3"/>',
+ split:G+H(100,14)+P("100,24 100,58")+P("100,58 135,62 135,99")+P("100,58 80,93 52,97")+P("100,30 112,52"),
+ bridge:G+H(28,90)+P("38,94 100,64 140,58 150,99")+P("40,96 78,99"),
+ plank:G+H(168,58)+P("152,66 95,72 32,96")+P("152,66 150,98 172,98"),
+ burst:'<line class="g" x1="45" y1="8" x2="45" y2="100"/><line class="g" x1="155" y1="8" x2="155" y2="100"/>'+G+H(100,22)+P("100,32 100,64")+P("100,64 88,99")+P("100,64 112,99")+P("100,38 74,42 48,40")+P("100,38 126,42 152,40")+'<polyline class="hl" points="38,34 30,40 38,46" stroke-width="4"/><polyline class="hl" points="162,34 170,40 162,46" stroke-width="4"/>',
+ hollow:G+H(38,72)+P("50,80 100,96")+P("100,96 126,72 154,78")+P("50,80 88,78"),
+ side:G+H(40,66)+P("24,98 48,98 48,78")+P("48,78 105,86 170,97")+P("48,78 66,58"),
+ yhold:G+H(160,86)+P("142,88 90,96 30,98")+P("142,86 176,50"),
+ hip:G+H(96,16)+P("96,26 92,60")+P("92,60 126,62 126,99")+P("92,60 78,98 44,99")+P("96,32 90,58"),
+ chest:'<line class="g" x1="60" y1="5" x2="60" y2="100"/>'+G+H(110,18)+P("110,28 108,64")+P("108,64 98,99")+P("108,64 124,99")+P("110,34 64,38 64,14")
+};
+const SKMAP={push:"push",splitL:"split",splitR:"split",bridge:"bridge",plank:"plank",burst:"burst",hollow:"hollow",sideL:"side",sideR:"side",yhold:"yhold",hipL:"hip",hipR:"hip",chest:"chest"};
+function skSvg(k){return '<g fill="none" stroke="currentColor" stroke-width="6" stroke-linecap="round" stroke-linejoin="round">'+SK[SKMAP[k]]+'</g>'}
+function renderExList(){const seen={};$("exList").innerHTML=Object.keys(EX).filter(k=>{const s=SKMAP[k];if(seen[s])return false;return seen[s]=1}).map(k=>'<div><svg class="sk" viewBox="0 0 200 110">'+skSvg(k)+'</svg><b>'+EX[k].n.replace(/ – .*/,"")+'</b></div>').join("")}
+function showHelp(){renderExList();$("help").style.display="block";$("help").scrollTop=0}
+$("bHelp").onclick=showHelp;$("helpX").onclick=$("helpX2").onclick=()=>{$("help").style.display="none";lsSet("helpSeen",1)};
+
+// ---------- Ablauf ----------
+let steps=[],idx=0,remain=0,total=0,running=false,paused=false,lastTick=0,timer=null,wl=null,said={},curW="A";
+function build(k){
+  const s=[];const w=W[k].s;
+  s.push({type:"prep",sec:15,ex:w[0][0]});
+  w.forEach((x,i)=>{const e=EX[x[0]];let sec=x[1];if(e.hold)sec+=bonus;
+    s.push({type:"work",sec,ex:x[0]});
+    if(x[2]>0&&i<w.length-1)s.push({type:"rest",sec:x[2],ex:w[i+1][0]});});
+  return s;
+}
+async function lock(){try{if(navigator.wakeLock)wl=await navigator.wakeLock.request("screen")}catch(e){}}
+async function start(k){
+  curW=k;
+  const p=unlockAudio();
+  steps=build(k);idx=0;running=true;paused=false;
+  $("menu").style.display="none";$("done").style.display="none";$("run").style.display="block";
+  lock();
+  await p;
+  say(["s"+k],true);
+  enter();
+  lastTick=Date.now();clearInterval(timer);timer=setInterval(tick,100);
+}
+function enter(){
+  const st=steps[idx];said={};remain=st.sec;total=st.sec;
+  const e=EX[st.ex];
+  $("run").className=st.type;
+  $("phase").textContent=st.type==="work"?"JETZT":st.type==="rest"?"PAUSE":"GLEICH GEHT'S LOS";
+  $("ex").textContent=e.n;$("runSk").innerHTML=skSvg(st.ex);$("cue").textContent=e.c;
+  const works=steps.filter(x=>x.type==="work").length,done=steps.slice(0,idx).filter(x=>x.type==="work").length;
+  $("prog").textContent="Übung "+Math.min(done+(st.type==="work"?1:0),works)+" von "+works;
+  const nx=steps.slice(idx+1).find(x=>x.type==="work");
+  $("next").textContent=st.type==="work"?(nx?"Danach: "+EX[nx.ex].n:"Letzte Übung!"):"";
+  if(st.type==="work"){say(["los"],true);beep(1200,.25)}
+  else if(st.type==="rest"){beep(500,.3);say(st.sec>=15?["stop","next","n_"+st.ex,"c_"+st.ex]:["stop","next","n_"+st.ex],true)}
+  else{say(["first","n_"+st.ex,"c_"+st.ex])}
+  render();
+}
+function render(){$("time").textContent=Math.ceil(remain);$("barf").style.width=(100*(1-remain/total))+"%"}
+function once(k,f){if(!said[k]){said[k]=1;f()}}
+function tick(){
+  const now=Date.now(),dt=(now-lastTick)/1000;lastTick=now;
+  if(!running||paused)return;
+  remain-=dt;const st=steps[idx],s=Math.ceil(remain),e=EX[st.ex];
+  if(st.type==="work"){
+    if(total>=40&&!e.long&&remain<=total/2)once("half",()=>say([e.hold?"mm_"+rnd(4):"ms_"+rnd(3)]));
+    if(e.long)[90,60,30].forEach(t=>{if(total>t+5&&s===t)once("l"+t,()=>say(["noch"+t,"ml_"+rnd(6)]))});
+    if(e.hold&&total>=20&&s===10)once("m10",()=>say(["m10_"+rnd(5)],true));
+    if(st.ex==="burst"&&s===3)once("b",()=>say(["alles"],true));
+    else if(total>=10&&s<=3&&s>=1)once("c"+s,()=>{beep(800,.12);say(["n"+s],true)});
+  }else{
+    if(total>=12&&s===5)once("f5",()=>say(["in5","n_"+st.ex],true));
+    if(s<=3&&s>=1)once("c"+s,()=>{beep(800,.12);say(["n"+s],true)});
+  }
+  if(remain<=0){idx++;if(idx>=steps.length)finish();else enter();return}
+  render();
+}
+function finish(){
+  running=false;clearInterval(timer);beep(1000,.2);setTimeout(()=>beep(1300,.4),250);
+  try{if(wl)wl.release()}catch(e){}
+  const r=markDay(curW);
+  const st=compute();
+  let txt="",voice=["done"];
+  if(r.kind==="today")txt="✅ Heute abgehakt: <b>+1 Punkt</b>";
+  else if(r.kind==="nach"){txt="↺ Gestern nachgeholt: <b>+2 Punkte</b>";voice=["nach"]}
+  else if(r.kind==="extra")txt="Extra-Runde! Zählt nicht doppelt, aber macht stärker. 💪";
+  else txt="Probelauf – ab "+MYS().split("-").reverse().join(".")+" zählen die Punkte.";
+  txt+="<br>Punktestand: <b>"+st.pts+"</b> · Serie: <b>"+st.streak+"</b> 🔥";
+  voice.push("pr_"+rnd(5));
+  if(r.neu&&r.neu.length){voice.push("ms");
+    $("doneMs").innerHTML=r.neu.map(m=>'<div class="banner good" style="font-size:16px">'+m.ic+' <b>Meilenstein: '+m.n+'</b><br>'+m.r+'</div>').join("");
+  }else $("doneMs").innerHTML="";
+  say(voice,true);
+  $("doneTxt").innerHTML=txt;
+  $("run").style.display="none";$("done").style.display="block";
+}
+function stop(){running=false;clearInterval(timer);say([],true);try{if(wl)wl.release()}catch(e){}
+  $("run").style.display="none";$("menu").style.display="block";renderMenu()}
+
+document.querySelectorAll(".wbtn[data-w]").forEach(b=>b.onclick=()=>start(b.dataset.w));
+$("bPause").onclick=()=>{paused=!paused;$("bPause").textContent=paused?"Weiter ▶":"Pause";if(paused)say(["paused"],true);else{lastTick=Date.now();say(["weiter"],true)}};
+$("bSkip").onclick=()=>{if(running){idx++;if(idx>=steps.length)finish();else enter()}};
+$("bStop").onclick=stop;
+$("bBack").onclick=()=>{$("done").style.display="none";$("menu").style.display="block";renderMenu();window.scrollTo(0,0)};
+document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible"){if(running)lock();else renderMenu()}});
+renderMenu();initApi();if(!API_URL&&!ls("helpSeen",0))showHelp();
+</script>
+</body>
+</html>
