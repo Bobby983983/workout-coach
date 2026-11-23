@@ -26,6 +26,11 @@ function finish_(d, start0, s, t, easy) {
   if (t >= CH_START && start < CH_START) start = CH_START;
   if (s.w === 'C') {
     const id = String(s.c || ''), n = String(s.n || '').slice(0, 40);
+    // Easter Egg: Dauer-Plank für Gestörte – keine Punkte, nur Abzeichen (zählt immer, auch in der Testphase)
+    if (id === 'e:' + t) {
+      if (d.ch[id] && !d.ch[id].failed) return 'dup';
+      d.ch[id] = { p: 0, n: n, at: t }; return 'egg';
+    }
     if (id === 'd:' + t) {
       if (d.ch[id] && !d.ch[id].failed) return 'dup';
       d.ch[id] = { p: CH_P.d, n: n, at: t }; return 'chal';

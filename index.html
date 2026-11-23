@@ -127,7 +127,7 @@ select.txt{appearance:auto}
     <div class="legend">✓ erledigt +3 (leicht +2) · ↺ nachgeholt +1 · ✗ verpasst −3 · So = Ruhetag (freiwillig +1)<br><span id="wkPlan"></span></div>
   </div>
   </div>
-  <div id="tab-chal" style="display:none"><div id="chalBox"></div><div class="note">Challenges laufen wie ein Workout: starten, komplett durchziehen, Punkte kassieren. Kein Abhaken von Hand.<br>Wochen-Challenge: 7 von 7 Tagen, sonst keine Punkte. Einen verpassten Tag darfst du 1× pro Woche am nächsten Tag nachholen (dann zweimal machen).</div></div>
+  <div id="tab-chal" style="display:none"><div id="chalBox"></div><div class="note">Challenges laufen wie ein Workout: starten, komplett durchziehen, Punkte kassieren. Kein Abhaken von Hand.<br>Wochen-Challenge: 7 von 7 Tagen, sonst keine Punkte. Einen verpassten Tag darfst du 1× pro Woche am nächsten Tag nachholen (dann zweimal machen).</div><div id="eggBox"></div></div>
   <div id="tab-rank" style="display:none"><div id="bossBox"></div><div class="card"><h3>🏆 Ranking</h3><div id="rankList"></div></div><div class="note" id="rankNote">Bei Punktgleichheit liegt vorne, wer mehr Extra-Sekunden eingestellt hat (Mehr → Steigerung).<br>Freunde einladen: einfach den Link zu dieser Seite schicken. Jede/r registriert sich mit Benutzername + PIN.</div></div>
   <div id="tab-more" style="display:none">
   <button class="wbtn" id="bHelp" style="text-align:center;padding:12px"><b style="font-size:16px;margin:0">❓ Anleitung &amp; Übungen</b><span>Regeln, Punkte, alle Übungen erklärt</span></button>
@@ -511,8 +511,25 @@ function weekOpen(){const t=todayK(),y=addDays(t,-1),wk=weekKey(t);let miss=[];f
 function weekCount(wk){let n=0;for(let i=0;i<7;i++){const e=state.ch&&state.ch["wd:"+addDays(wk,i)];if(e&&!e.failed)n++}return n}
 const hash=s=>{let x=0;for(const c of s)x=(x*31+c.charCodeAt(0))>>>0;return x};
 function weekKey(k){const d=parse(k);const day=(d.getDay()+6)%7;d.setDate(d.getDate()-day);return key(d)}
+// Wochen-Challenges in fester Reihenfolge (jede kommt dran): KW ab 23.11. Rücken, 30.11. Plank, 7.12. Liegestütz, 14.12. Bridge, 21.12. Rücken …
+function weeklyFor(w){const n=Math.round((parse(w)-parse("2026-11-23"))/6048e5);return WEEKLY[(((n+3)%4)+4)%4]}
 function todaysChal(){const t=todayK(),w=weekKey(t);
-  return [{id:"d:"+t,type:"Tages-Challenge",...DAILY[hash(t)%DAILY.length]},{id:"w:"+w,type:"Wochen-Challenge (Mo–So)",...WEEKLY[hash(w)%WEEKLY.length]}]}
+  return [{id:"d:"+t,type:"Tages-Challenge",...DAILY[hash(t)%DAILY.length]},{id:"w:"+w,type:"Wochen-Challenge (Mo–So)",...weeklyFor(w)}]}
+// ---------- Easter Egg: Dauer-Challenge für Gestörte (keine Punkte, nur Abzeichen) ----------
+const EGG={n:"Dauer-Plank für Gestörte",d:"2 Min. Plank am Stück. Jeden Tag. Warum? Weil du es kannst. Weil du es willst. Weil du ein bisschen gestört bist.",p:0,ex:"plank",sec:120,sets:1,rest:0};
+const EGGB=[{n:1,ic:"🥚",t:"Ei gefunden"},{n:7,ic:"🤪",t:"Leicht gestört"},{n:30,ic:"🌀",t:"Komplett gestört"},{n:100,ic:"🧱",t:"Plank-Psycho"}];
+function eggCount(ch){return Object.keys(ch||{}).filter(k=>k.slice(0,2)==="e:"&&ch[k]&&!ch[k].failed).length}
+function eggBadge(n){let b=null;EGGB.forEach(x=>{if(n>=x.n)b=x});return b}
+function eggChal(){return {id:"e:"+todayK(),type:"🥚 Dauer-Challenge",...EGG}}
+function renderEgg(){const el=$("eggBox");if(!el)return;const n=eggCount(state.ch);
+  if(!ls("egg",0)&&!n){el.innerHTML='<div style="text-align:center;margin:26px 0 6px"><span id="eggT" style="font-size:26px;opacity:.35;cursor:pointer;user-select:none">🥚</span></div>';$("eggT").onclick=()=>{lsSet("egg",1);renderEgg()};return}
+  const c=eggChal(),e=state.ch&&state.ch[c.id],done=!!(e&&!e.failed),fail=!!(e&&e.failed),b=eggBadge(n),nx=EGGB.find(x=>x.n>n);
+  el.innerHTML='<div class="chal"><div class="t">🥚 EASTER EGG · KEINE PUNKTE · NUR EHRE</div><b>'+c.n+'</b><p>'+c.d+'</p><p><b>'+n+' '+(n===1?"Tag":"Tage")+'</b>'+(b?'<br>'+b.ic+' '+b.t:'')+(nx?'<br><small>Nächstes Abzeichen: '+nx.ic+' '+nx.t+' ab '+nx.n+' Tagen</small>':'')+'</p>'
+   +'<button id="eggGo" '+(done?"disabled":"")+'>'+(done?"✅ Heute erledigt – du bist gestört 🤪":fail?"↻ Nochmal versuchen":"▶ 2 Min. Plank starten")+'</button>'
+   +(done&&e.at===todayK()?'<a class="undo" id="eggU">Doch nicht geschafft? Zurücknehmen oder erneut versuchen</a>':'')
+   +'<div class="note" style="margin-top:8px">'+EGGB.map(x=>(n>=x.n?x.ic:"🔒")+" "+x.n).join(" · ")+'</div></div>';
+  const g=$("eggGo");if(g)g.onclick=()=>{curChal=eggChal();W.C={t:curChal.n,s:chalSteps(curChal)};start("C")};
+  const u=$("eggU");if(u)u.onclick=()=>undoChal(eggChal())}
 function renderChal(){const t=todayK();
   $("chalBox").innerHTML=todaysChal().map(c=>{const E=k=>state.ch&&state.ch[k];let done=!!(E(c.id)&&!E(c.id).failed),info="",fail=!!(E(c.id)&&E(c.id).failed&&c.id[0]==="d");
     if(c.id[0]==="w"){const n=weekCount(c.id.slice(2)),tdE=E("wd:"+t),td=!!(tdE&&!tdE.failed);fail=!!(tdE&&tdE.failed);info='<p><b>Fortschritt: '+n+'/7 Tage</b>'+(td?' · heute ✅':fail?' · heute ❌':'')+(!done&&!weekOpen()?'<br>⚠️ Diese Woche sind 7 von 7 nicht mehr möglich.':'')+'</p>';if(!done&&td)done=canMk()?"mk":"today"}
@@ -521,15 +538,19 @@ function renderChal(){const t=todayK();
     return '<div class="chal"><div class="t">'+c.type.toUpperCase()+' · +'+c.p+' PUNKTE</div><b>'+c.n+'</b><p>'+c.d+'</p>'+info+'<button data-c="'+c.id+'" '+(done&&done!=="mk"?"disabled":"")+'>'+lab+'</button>'+(undo?'<a class="undo" data-u="'+c.id+'">Doch nicht geschafft? Punkte zurückgeben oder erneut versuchen</a>':'')+'</div>'}).join("");
   $("chalBox").querySelectorAll("a[data-u]").forEach(a=>a.onclick=()=>undoChal(todaysChal().find(x=>x.id===a.dataset.u)));
   $("chalBox").querySelectorAll("button[data-c]").forEach(b=>b.onclick=()=>{const c=todaysChal().find(x=>x.id===b.dataset.c);curChal=c;W.C={t:c.n,s:chalSteps(c)};start("C")});
+  renderEgg();
 }
-function undoChal(c){ask("<b>"+c.n+"</b> doch nicht geschafft? Dann werden die Punkte zurückgenommen. Ehrlich währt am längsten 👍<br>Du kannst es direkt nochmal versuchen – oder später.<a class=\"undo\" id=\"uX\">Abbrechen</a>",()=>undoGo(c,true),()=>undoGo(c,false),"↻ Erneut versuchen","Nur zurückgeben");
+function undoChal(c){ask("<b>"+c.n+"</b> doch nicht geschafft? Dann wird "+(c.id[0]==="e"?"der Tag":"die Punkte")+" zurückgenommen. Ehrlich währt am längsten 👍<br>Du kannst es direkt nochmal versuchen – oder später.<a class=\"undo\" id=\"uX\">Abbrechen</a>",()=>undoGo(c,true),()=>undoGo(c,false),"↻ Erneut versuchen","Nur zurückgeben");
   $("uX").onclick=()=>{$("modal").style.display="none"}}
 function undoGo(c,retry){{const t=todayK();state.ch=state.ch||{};
-  if(c.id[0]==="d")state.ch[c.id]={p:0,n:c.n,at:t,failed:true};
+  if(c.id[0]==="d"||c.id[0]==="e")state.ch[c.id]={p:0,n:c.n,at:t,failed:true};
   else{state.ch["wd:"+t]={p:0,at:t,failed:true};if(state.ch[c.id]&&state.ch[c.id].at===t)state.ch[c.id]={p:0,n:c.n,at:t,failed:true}}
   save();renderMenu();$("done").style.display="none";$("menu").style.display="block";
   if(retry){setTimeout(()=>{curChal=c;W.C={t:c.n,s:chalSteps(c)};start("C")},300)}}}
 function chalDone(){const c=curChal,t=todayK();state.ch=state.ch||{};let txt;
+  if(c.id[0]==="e"){const n0=eggCount(state.ch);state.ch[c.id]={p:0,n:c.n,at:t};const n=eggCount(state.ch),b=EGGB.find(x=>x.n===n&&n>n0);
+    txt="🤪 2 Min. Plank – einfach so. Tag <b>"+n+"</b>. Keine Punkte, aber Respekt."+(b?'<br><span style="font-size:20px">'+b.ic+'</span> <b>Neues Abzeichen: '+b.t+'</b>':'');
+    return Object.assign(afterMark("chal"),{txt,egg:b})}
   if(c.id[0]==="d"){state.ch[c.id]={p:c.p,n:c.n,at:t};txt="⚡ Challenge geschafft: <b>+"+c.p+" Punkte</b>"}
   else{const y=addDays(t,-1);if(!wdOk(t))state.ch["wd:"+t]={p:0,at:t};else if(canMk())state.ch["wd:"+y]={p:0,at:t,mk:1};const n=weekCount(c.id.slice(2));
     if(n>=7&&!(state.ch[c.id]&&!state.ch[c.id].failed)){state.ch[c.id]={p:c.p,n:c.n,at:t};txt="🏆 Wochen-Challenge komplett: <b>+"+c.p+" Punkte</b>"}else txt="✅ "+n+" von 7 Tagen der Wochen-Challenge geschafft. Morgen wieder starten!"}
@@ -549,13 +570,13 @@ function renderBoss(rows){const lead=rows.filter(r=>r.pl===1),meLead=lead.some(r
 function renderRank(){
   const list=others.filter(u=>u.name!==state.name).concat(state.name?[{name:state.name,start:state.start,days:state.days,ch:state.ch,me:true}]:[]);
   const t=todayK();
-  const rows=list.map(u=>{const c=compute({days:u.days||{},ch:u.ch||{},start:u.start||START});return {me:!!u.me,name:u.name,pts:c.pts,streak:c.streak,total:c.total,bx:u.me?bonus:(+u.bx||0),today:!!(u.days&&u.days[t]&&u.days[t].done),msg:u.ch&&u.ch.msg}})
+  const rows=list.map(u=>{const c=compute({days:u.days||{},ch:u.ch||{},start:u.start||START});return {me:!!u.me,name:u.name,pts:c.pts,streak:c.streak,total:c.total,bx:u.me?bonus:(+u.bx||0),today:!!(u.days&&u.days[t]&&u.days[t].done),msg:u.ch&&u.ch.msg,egg:eggBadge(eggCount(u.ch))}})
     .sort((a,b)=>b.pts-a.pts||b.bx-a.bx||b.streak-a.streak||b.total-a.total);
   rows.forEach((r,i)=>{const q=rows[i-1];r.pl=i&&r.pts===q.pts&&r.bx===q.bx&&r.streak===q.streak&&r.total===q.total?q.pl:i+1});
   {const me=rows.find(r=>r.me);$("sRank").textContent=me&&others.length?me.pl+".":"–"}
   const med=["🥇","🥈","🥉"];
   renderBoss(rows);
-  $("rankList").innerHTML=rows.length?rows.map((r,i)=>'<div class="rk'+(r.me?" me":"")+'"><div class="p">'+(med[r.pl-1]||r.pl)+'</div><div class="nm"><b></b><small>🔥 '+r.streak+' · '+r.total+' Workouts'+(r.bx?' · +'+r.bx+' s':'')+(r.today?' · heute ✓':'')+'</small></div><div class="pt">'+r.pts+'</div></div>').join(""):'<p class="sub">Noch niemand im Ranking.</p>';
+  $("rankList").innerHTML=rows.length?rows.map((r,i)=>'<div class="rk'+(r.me?" me":"")+'"><div class="p">'+(med[r.pl-1]||r.pl)+'</div><div class="nm"><b></b><small>🔥 '+r.streak+' · '+r.total+' Workouts'+(r.bx?' · +'+r.bx+' s':'')+(r.today?' · heute ✓':'')+(r.egg?' · '+r.egg.ic:'')+'</small></div><div class="pt">'+r.pts+'</div></div>').join(""):'<p class="sub">Noch niemand im Ranking.</p>';
   $("rankList").querySelectorAll(".rk b").forEach((b,i)=>b.textContent=rows[i].name);
 }
 document.querySelectorAll("#menu .tabs button").forEach(b=>b.onclick=()=>{document.querySelectorAll("#menu .tabs button").forEach(x=>x.classList.toggle("on",x===b));
@@ -848,6 +869,7 @@ function txtOf(k){return typeof k==="string"?(TXT[k]||""):(k.t||"")}
 function estSec(keys){return keys.reduce((a,k)=>a+txtOf(k).length/(13*rate)+.35,0)}
 function introKeys(k,ex){const C=k==="C",X=k==="X",nm=(state.name||"").trim(),ch=W[k]&&W[k].chair,tw=W[k]&&W[k].towel;
   if(X)return ["single","n_"+ex,"c_"+ex];
+  if(C&&curChal&&curChal.id[0]==="e")return [{t:"Hallo"+(nm?" "+nm:"")+"! Willkommen zur Dauer-Challenge für Gestörte. Zwei Minuten Plank. Einfach so. Weil du es kannst. Mach dich bereit:",k:["hiC","ready"]},"n_"+ex,"c_"+ex];
   return [{t:"Hallo"+(nm?" "+nm:"")+"! Willkommen zu "+(C?"deiner heutigen Challenge":"deinem Workout"+(W[k]?", "+W[k].t:""))+"."+(ch?" Du brauchst einen stabilen Stuhl oder Hocker.":"")+(tw?" Leg dir ein Handtuch bereit, etwa einen Meter lang.":"")+(easy&&isPlan(k)?" Du trainierst heute die leichte Variante.":"")+" Wenn du möchtest, kannst du dich vorher ein wenig lockern oder warm machen. Dann drück kurz auf Pause. Sonst mach dich bereit für die erste Übung:",k:[C?"hiC":"hi"].concat(ch?["chair"]:[],["ready"])},"n_"+ex,"c_"+ex];
 }
 const STOPMAX={t:"x".repeat(26)};
@@ -965,6 +987,7 @@ function finish(){
   else txt="Probelauf – ab "+MYS().split("-").reverse().join(".")+" zählen die Punkte.";
   txt+="<br>Punktestand: <b>"+st.pts+"</b> · Serie: <b>"+st.streak+"</b> 🔥";
   voice.push(pk("pr_"));
+  if(r.egg)voice.push({t:"Neues Abzeichen: "+r.egg.t+"!",k:["ms"]});
   if(r.neu&&r.neu.length){voice.push("ms");
     $("doneMs").innerHTML=r.neu.map(m=>'<div class="banner good" style="font-size:16px">'+m.ic+' <b>Meilenstein: '+m.n+'</b><br>'+m.r+'</div>').join("");
   }else $("doneMs").innerHTML="";
