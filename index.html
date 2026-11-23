@@ -229,7 +229,7 @@ select.txt{appearance:auto}
 <tr><td>😴 Freiwilliges Workout am Sonntag</td><td style="color:var(--acc)">+1</td></tr>
 <tr><td>🎄 24.–26.12.: Workout und Tages-Challenge</td><td style="color:var(--acc)">× 2</td></tr>
 </table>
-<ul><li><b>Zu schwer?</b> Wähle vor dem Start „Leicht“ oder tippe im Workout auf „Zu schwer? Leichter weitermachen“. Dann werden die Haltezeiten kürzer, die Pausen länger, und aus 2 Min. Plank werden 2 × 60 s. Dafür gibt es 1 Punkt weniger.</li><li><b>Nachholen:</b> Erst das heutige Workout, dann ein zweites – das zählt für gestern. Aus −3 wird so +1.</li><li><b>🔥 Serie:</b> Trainingstage am Stück ohne Lücke. Sonntag unterbricht nicht.</li><li><b>Gleichstand:</b> Bei gleichen Punkten liegt vorne, wer mehr Extra-Sekunden eingestellt hat.</li><li>Ausreden gibt's keine. Es gibt keinen „Krank“-Knopf – wer ehrlich krank ist, schont sich und holt Punkte später über Challenges auf.</li></ul>
+<ul><li><b>Zu schwer?</b> Wähle vor dem Start „Leicht“ oder tippe im Workout auf „Zu schwer? Leichter weitermachen“. Dann werden die Haltezeiten kürzer, die Pausen länger, aus 2 Min. Plank werden 2 × 60 s und aus 30 s Liegestütz halten 2 × 15 s mit kurzer Pause (Knie oder normal – deine Wahl). Dafür gibt es 1 Punkt weniger.</li><li><b>Nachholen:</b> Erst das heutige Workout, dann ein zweites – das zählt für gestern. Aus −3 wird so +1.</li><li><b>🔥 Serie:</b> Trainingstage am Stück ohne Lücke. Sonntag unterbricht nicht.</li><li><b>Gleichstand:</b> Bei gleichen Punkten liegt vorne, wer mehr Extra-Sekunden eingestellt hat.</li><li>Ausreden gibt's keine. Es gibt keinen „Krank“-Knopf – wer ehrlich krank ist, schont sich und holt Punkte später über Challenges auf.</li></ul>
 <h2>4. Challenges & Ranking</h2><ul><li>Jeden Tag eine neue Tages-Challenge, jede Woche eine Wochen-Challenge – für alle dieselbe.</li><li>Challenges startest du in der App – sie laufen wie ein Workout komplett durch. Nur dann gibt's Punkte.</li><li>Wochen-Challenge: jeden Tag (Mo–So) neu starten, die +5 gibt's nur bei 7 von 7 Tagen. Einen verpassten Tag darfst du 1× pro Woche am nächsten Tag nachholen – dann die Challenge zweimal machen.</li><li>Im Ranking siehst du Punkte, Serie und wer heute schon trainiert hat.</li></ul>
 <h2>5. Meilensteine</h2><p>Für Serien, Punkte und Anzahl Workouts gibt es Meilensteine mit Lob und Belohnungsideen. Belohn dich wirklich – das hält dich dran.</p>
 <h2>6. Steigern</h2><p>Alle 2 Wochen unter „Mehr“ → „Steigerung“ +5 s einstellen. Das gibt keine Extra-Punkte, entscheidet aber bei Punktgleichheit im Ranking.</p>
@@ -518,14 +518,17 @@ function renderChal(){const t=todayK();
     if(c.id[0]==="w"){const n=weekCount(c.id.slice(2)),tdE=E("wd:"+t),td=!!(tdE&&!tdE.failed);fail=!!(tdE&&tdE.failed);info='<p><b>Fortschritt: '+n+'/7 Tage</b>'+(td?' · heute ✅':fail?' · heute ❌':'')+(!done&&!weekOpen()?'<br>⚠️ Diese Woche sind 7 von 7 nicht mehr möglich.':'')+'</p>';if(!done&&td)done=canMk()?"mk":"today"}
     const lab=done===true?"✅ Geschafft (+"+c.p+")":done==="mk"?"↺ Gestern nachholen (1× pro Woche)":done==="today"?"✅ Heute erledigt – morgen wieder":fail?"↻ Nochmal versuchen":"▶ Challenge starten";
     const undo=(done===true&&E(c.id).at===t)||done==="today"||done==="mk";
-    return '<div class="chal"><div class="t">'+c.type.toUpperCase()+' · +'+c.p+' PUNKTE</div><b>'+c.n+'</b><p>'+c.d+'</p>'+info+'<button data-c="'+c.id+'" '+(done&&done!=="mk"?"disabled":"")+'>'+lab+'</button>'+(undo?'<a class="undo" data-u="'+c.id+'">Doch nicht geschafft? Punkte zurückgeben</a>':'')+'</div>'}).join("");
+    return '<div class="chal"><div class="t">'+c.type.toUpperCase()+' · +'+c.p+' PUNKTE</div><b>'+c.n+'</b><p>'+c.d+'</p>'+info+'<button data-c="'+c.id+'" '+(done&&done!=="mk"?"disabled":"")+'>'+lab+'</button>'+(undo?'<a class="undo" data-u="'+c.id+'">Doch nicht geschafft? Punkte zurückgeben oder erneut versuchen</a>':'')+'</div>'}).join("");
   $("chalBox").querySelectorAll("a[data-u]").forEach(a=>a.onclick=()=>undoChal(todaysChal().find(x=>x.id===a.dataset.u)));
   $("chalBox").querySelectorAll("button[data-c]").forEach(b=>b.onclick=()=>{const c=todaysChal().find(x=>x.id===b.dataset.c);curChal=c;W.C={t:c.n,s:chalSteps(c)};start("C")});
 }
-function undoChal(c){ask("<b>"+c.n+"</b> doch nicht geschafft? Dann werden die Punkte zurückgenommen. Ehrlich währt am längsten 👍",()=>{const t=todayK();state.ch=state.ch||{};
+function undoChal(c){ask("<b>"+c.n+"</b> doch nicht geschafft? Dann werden die Punkte zurückgenommen. Ehrlich währt am längsten 👍<br>Du kannst es direkt nochmal versuchen – oder später.<a class=\"undo\" id=\"uX\">Abbrechen</a>",()=>undoGo(c,true),()=>undoGo(c,false),"↻ Erneut versuchen","Nur zurückgeben");
+  $("uX").onclick=()=>{$("modal").style.display="none"}}
+function undoGo(c,retry){{const t=todayK();state.ch=state.ch||{};
   if(c.id[0]==="d")state.ch[c.id]={p:0,n:c.n,at:t,failed:true};
   else{state.ch["wd:"+t]={p:0,at:t,failed:true};if(state.ch[c.id]&&state.ch[c.id].at===t)state.ch[c.id]={p:0,n:c.n,at:t,failed:true}}
-  save();renderMenu();$("done").style.display="none";$("menu").style.display="block"})}
+  save();renderMenu();$("done").style.display="none";$("menu").style.display="block";
+  if(retry){setTimeout(()=>{curChal=c;W.C={t:c.n,s:chalSteps(c)};start("C")},300)}}}
 function chalDone(){const c=curChal,t=todayK();state.ch=state.ch||{};let txt;
   if(c.id[0]==="d"){state.ch[c.id]={p:c.p,n:c.n,at:t};txt="⚡ Challenge geschafft: <b>+"+c.p+" Punkte</b>"}
   else{const y=addDays(t,-1);if(!wdOk(t))state.ch["wd:"+t]={p:0,at:t};else if(canMk())state.ch["wd:"+y]={p:0,at:t,mk:1};const n=weekCount(c.id.slice(2));
@@ -853,7 +856,7 @@ const isPlan=k=>k==="A"||k==="B"||k==="K";
 function easify(s,from){
   for(let i=from;i<s.length;i++){const st=s[i];if(st.type!=="work"||st.ez)continue;const e=EX[st.ex];if(!e.hold)continue;
     st.ez=1;
-    if(e.long){const hf=Math.round(st.base/2);st.sec=hf;s.splice(i+1,0,{type:"rest",sec:20,ex:st.ex},{type:"work",sec:hf,base:st.base,ex:st.ex,set:2,ez:1});i+=2;continue}
+    if(e.long||st.ex==="push"){const hf=Math.round(st.base/2);st.sec=hf;s.splice(i+1,0,{type:"rest",sec:e.long?20:15,ex:st.ex},{type:"work",sec:hf,base:st.base,ex:st.ex,set:st.set,ez:1});i+=2;continue}
     const n=Math.max(10,Math.round(st.base*.7/5)*5);if(s[i+1]&&s[i+1].type==="rest")s[i+1].sec+=st.base-n;st.sec=n}
 }
 async function lock(){try{if(navigator.wakeLock)wl=await navigator.wakeLock.request("screen")}catch(e){}}
@@ -944,7 +947,7 @@ function finish(){
     $("doneMs").innerHTML=r.neu.map(m=>'<div class="banner good" style="font-size:16px">'+m.ic+' <b>Meilenstein: '+m.n+'</b><br>'+m.r+'</div>').join("");
   }else $("doneMs").innerHTML="";
   say(voice,true);
-  if(curW==="C"&&curChal){const c=curChal;txt+='<br><a class="undo" id="bUndo">Doch nicht geschafft? Punkte zurückgeben</a>';setTimeout(()=>{const u=$("bUndo");if(u)u.onclick=()=>undoChal(c)},0)}
+  if(curW==="C"&&curChal){const c=curChal;txt+='<br><a class="undo" id="bUndo">Doch nicht geschafft? Punkte zurückgeben oder erneut versuchen</a>';setTimeout(()=>{const u=$("bUndo");if(u)u.onclick=()=>undoChal(c)},0)}
   $("doneTxt").innerHTML=txt;
   $("run").style.display="none";$("done").style.display="block";
 }
@@ -956,7 +959,7 @@ function startChk(k){const w=W[k]||{},need=[];if(w.chair)need.push("🪑 einen <
   if(need.length)ask("Für dieses Workout brauchst du "+need.join(" und ")+". Bereit?",()=>start(k));else start(k)}
 $("bEasy").onclick=()=>{if(!running||easy)return;const was=paused;paused=true;musOn(false);say([],true);
   const go=()=>{if(!was){paused=false;lastTick=Date.now();musOn(steps[idx]&&steps[idx].type==="work")}};
-  ask("<b>Leichter weitermachen?</b><br>Ab der nächsten Übung: kürzere Haltezeiten, längere Pausen, Plank 2 × 60 s statt 2 Min. am Stück.<br><br>Dafür gibt es heute <b>1 Punkt weniger</b> (+2 statt +3). Gilt für den Rest dieses Workouts.",
+  ask("<b>Leichter weitermachen?</b><br>Ab der nächsten Übung: kürzere Haltezeiten, längere Pausen, Plank 2 × 60 s statt 2 Min. am Stück, Liegestütz halten 2 × 15 s statt 30 s (ob auf den Knien oder normal, entscheidest du).<br><br>Dafür gibt es heute <b>1 Punkt weniger</b> (+2 statt +3). Gilt für den Rest dieses Workouts.",
    ()=>{easy=1;easify(steps,idx+1);$("bEasy").style.display="none";go();say([{t:"Okay, leichte Variante. Kürzere Haltezeiten, längere Pausen. Dranbleiben zählt!",k:[]}])},go,"Ja, leichter","Nein, weiter so")};
 // ---------- Erinnerung im Handy-Kalender ----------
 const MPT=["Keine Mails. Alle Infos findest du in der App.","1 Mail um 18 Uhr – nur wenn dein Workout noch offen ist. Sonntags die Wochenübersicht.","2 Mails: morgens um 7 Uhr und um 18 Uhr, falls noch offen. Sonntags die Wochenübersicht."];
