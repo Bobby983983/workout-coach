@@ -247,6 +247,7 @@ function dailyReminder() {
     body += '\nZum Coach: ' + APP_LINK + '\n\nZieh durch! 💪';
     MailApp.sendEmail({ to: o.email, subject: '😢 ' + o.name + ', vergiss nicht dein Workout!', body: body, name: 'Workout-Coach' });
   });
+  archiveCopies_();
 }
 
 function weeklySummary() {
@@ -269,6 +270,7 @@ function weeklySummary() {
       '\n🏆 Gesamt-Ranking\n' + table + '\nNeue Woche, neue Chance: ' + APP_LINK + '\n\nZieh durch! 💪';
     MailApp.sendEmail({ to: o.email, subject: '🏆 Workout-Challenge: deine Wochenübersicht', body: body, name: 'Workout-Coach' });
   });
+  archiveCopies_();
 }
 
 function morningReminder() {
@@ -286,6 +288,46 @@ function morningReminder() {
       '\nJetzt starten: ' + APP_LINK + '\n\nZieh durch! 💪';
     MailApp.sendEmail({ to: o.email, subject: '☀️ Denk an dein Workout heute, ' + o.name + '!', body: body, name: 'Workout-Coach' });
   });
+  archiveCopies_();
+}
+
+// Kopien der Mails an andere landen (weil über Max' Gmail verschickt) auch in seinem Posteingang – die werden archiviert.
+function normMail_(s) {
+  const m = String(s || '').match(/<([^>]+)>/); let a = (m ? m[1] : String(s || '')).trim().toLowerCase();
+  const p = a.split('@'); if (p.length !== 2) return a;
+  let dom = p[1] === 'googlemail.com' ? 'gmail.com' : p[1], loc = p[0];
+  if (dom === 'gmail.com') loc = loc.split('+')[0].replace(/\./g, '');
+  return loc + '@' + dom;
+}
+function archiveCopies_() {
+  try {
+    Utilities.sleep(8000);
+    const me = normMail_(Session.getEffectiveUser().getEmail());
+    GmailApp.search('in:inbox from:me subject:(Workout OR CYF) newer_than:2d', 0, 100).forEach(t => {
+      const forOthers = t.getMessages().every(m => String(m.getTo()).split(',').every(x => normMail_(x) !== me));
+      if (forOthers) t.moveToArchive();
+    });
+  } catch (e) { Logger.log('Archivieren fehlgeschlagen: ' + e); }
+}
+
+// Einmalige Info an alle: neue Adresse der App, Verknüpfung neu anlegen
+const NEW_LINK = 'https://challenge-your-friends.github.io/';
+function linkNotice() {
+  const { rows } = rows_();
+  rows.forEach(r => {
+    const o = r.o; if (!o.email || !o.name) return;
+    const body = 'Hey ' + o.name + ',\n\nkurze Info vor dem Start der Challenge am 1.12.: CYF hat eine neue Adresse 🎉\n\n👉 ' + NEW_LINK + '\n\n' +
+      'Bitte leg die Verknüpfung auf deinem Startbildschirm einmal neu an:\n' +
+      '1. Den Link oben im Browser öffnen (du bist automatisch angemeldet, falls nicht: Name + PIN wie bisher).\n' +
+      '2. Android/Chrome: Menü ⋮ → „Zum Startbildschirm hinzufügen“. iPhone/Safari: Teilen-Symbol → „Zum Home-Bildschirm“.\n' +
+      '3. Die alte Verknüpfung kannst du löschen.\n\nDeine Punkte und dein Konto bleiben erhalten.\n\nAb morgen zählt\'s – zieh durch! 💪';
+    MailApp.sendEmail({ to: o.email, subject: '📲 CYF: neue Adresse – bitte Verknüpfung neu anlegen', body: body, name: 'CYF Challenge' });
+  });
+  archiveCopies_();
+}
+// einmal im Editor ausführen: plant linkNotice für Mo 30.11.2026, 9 Uhr
+function planLinkNotice() {
+  ScriptApp.newTrigger('linkNotice').timeBased().at(new Date('2026-11-30T09:00:00+01:00')).create();
 }
 
 // Test: zeigt die Mail im Ausführungsprotokoll, ohne etwas zu senden
