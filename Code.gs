@@ -1,7 +1,7 @@
 /**
  * Workout-Coach – Backend (Google Apps Script)
  * Speichert Benutzer + Fortschritt in einer Google-Tabelle und
- * schickt täglich um 18 Uhr Erinnerungs-Mails (Mo–Sa), wenn das Workout fehlt.
+ * schickt Erinnerungs-Mails (Mo–Sa) – jede/r wählt in der App: keine, 1 (18 Uhr) oder 2 (7 + 18 Uhr).
  *
  * Einrichtung: einmal die Funktion setup() ausführen, dann
  * "Bereitstellen > Neue Bereitstellung > Web-App", Ausführen als: Ich,
@@ -136,7 +136,7 @@ function doPost(e) {
       if (cd.msg && cd.msg.t) cur.ch.msg = { p: 0, t: String(cd.msg.t).slice(0, 140), ts: String(cd.msg.ts || new Date().toISOString()).slice(0, 30) };
       else delete cur.ch.msg;
       Object.keys(cd).forEach(k => { const v = cd[k]; if (k !== 'msg' && v && v.failed && v.at === t) cur.ch[k] = { p: 0, n: String((cur.ch[k] || {}).n || v.n || '').slice(0, 40), at: t, failed: true }; });
-      const clean = JSON.stringify({ days: cur.days, ms: cur.ms, ch: cur.ch, bx: cur.bx || 0 });
+      const clean = JSON.stringify(Object.assign({ days: cur.days, ms: cur.ms, ch: cur.ch, bx: cur.bx || 0 }, cur.mp === 0 || cur.mp === 1 ? { mp: cur.mp } : {}));
       if (clean.length > 45000) return out_({ ok: false, err: 'zu groß' });
       sh.getRange(r.row, HEAD.indexOf('data') + 1).setValue(clean);
       sh.getRange(r.row, HEAD.indexOf('updated') + 1).setValue(new Date());
@@ -171,7 +171,13 @@ function doPost(e) {
       const email = String(q.email || '').trim().slice(0, 100);
       if (!validEmail_(email)) return out_({ ok: false, err: 'E-Mail ungültig' });
       sh.getRange(r.row, HEAD.indexOf('email') + 1).setValue(email);
-      return out_({ ok: true, email });
+      // Mails pro Tag: 0 = keine, 1 = nur 18 Uhr (falls offen), 2 = 7 + 18 Uhr (Standard)
+      const mp = Number(q.mp);
+      if (mp === 0 || mp === 1 || mp === 2) {
+        const d = parseData_(r.o); if (mp === 2) delete d.mp; else d.mp = mp;
+        sh.getRange(r.row, HEAD.indexOf('data') + 1).setValue(JSON.stringify(d));
+      }
+      return out_({ ok: true, email, mp: (mp === 0 || mp === 1) ? mp : 2 });
     }
     if (q.a === 'list') {
       return out_({ ok: true, users: rows.map(r => {
@@ -210,7 +216,7 @@ function compute_(o, tt) {
     if (dow_(k) === 6) { if (weekRun >= 6 && st !== 'open') pts += 3; weekRun = 0; }
   }
   Object.keys(ch).forEach(x => { const c = ch[x]; if (c && (c.at || '') >= start && (c.at || '') <= CH_END) pts += (c.p || 0) * (x.slice(0, 2) === 'd:' && xmas_(c.at) ? 2 : 1); });
-  return { pts, streak, total, bx: +data.bx || 0, done: !!(days[tt] && days[tt].done), days };
+  return { pts, streak, total, bx: +data.bx || 0, mp: (data.mp === 0 || data.mp === 1) ? data.mp : 2, done: !!(days[tt] && days[tt].done), days };
 }
 
 function ranking_(rows, t) {
@@ -228,7 +234,7 @@ function dailyReminder() {
   const medal = ['🥇', '🥈', '🥉'];
   rank.forEach((me, i) => {
     const o = me.row.o;
-    if (!o.email || !o.start || t < o.start || me.done) return;
+    if (!o.email || me.mp < 1 || !o.start || t < o.start || me.done) return;
     const missedY = dow_(y) !== 0 && y >= o.start && !(me.days[y] && me.days[y].done);
     let body = 'Hey ' + o.name + ',\n\n' +
       'dein Workout für heute (' + planName_(t) + ') ist noch offen! 😢\n' +
@@ -254,7 +260,7 @@ function weeklySummary() {
   rank.forEach((r, j) => { table += (medal[j] || (j + 1) + '.') + ' ' + r.name + ' – ' + r.pts + ' Punkte (🔥 ' + r.streak + ', ' + r.total + ' Workouts)\n'; });
   rank.forEach((me, i) => {
     const o = me.row.o;
-    if (!o.email) return;
+    if (!o.email || me.mp === 0) return;
     let week = 0; for (let k = mon; k <= t; k = addDays_(k, 1)) if (me.days[k] && me.days[k].done) week++;
     let body = 'Hey ' + o.name + ',\n\nhier deine Wochenübersicht 💪\n\n' +
       (t < CH_START ? '🧪 Testphase – ab 1.12. startet die Challenge, dann beginnen alle bei 0 Punkten.\n\n' : '') +
@@ -273,7 +279,7 @@ function morningReminder() {
   const rank = ranking_(rows, t);
   rank.forEach((me, i) => {
     const o = me.row.o;
-    if (!o.email || !o.start || t < o.start) return;
+    if (!o.email || me.mp < 2 || !o.start || t < o.start) return;
     const body = 'Guten Morgen ' + o.name + '! ☀️\n\nDenk an dein Workout heute: ' + planName_(t) + ' (max. 15 Minuten).\n' +
       'Aktuell: Platz ' + (i + 1) + ' von ' + rank.length + ' mit ' + me.pts + ' Punkten, Serie 🔥 ' + me.streak + '.\n' +
       (t < CH_START ? '🧪 Testphase – ab 1.12. zählt\'s richtig.\n' : '') +

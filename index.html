@@ -132,8 +132,8 @@ select.txt{appearance:auto}
   <div id="tab-more" style="display:none">
   <button class="wbtn" id="bHelp" style="text-align:center;padding:12px"><b style="font-size:16px;margin:0">❓ Anleitung &amp; Übungen</b><span>Regeln, Punkte, alle Übungen erklärt</span></button>
   <button class="wbtn" id="bSingle" style="text-align:center;padding:12px"><b style="font-size:16px;margin:0">🎯 Einzelne Übung starten</b><span>zum Testen &amp; Üben – zählt nicht für Punkte</span></button>
-  <button class="wbtn" id="bRem" style="text-align:center;padding:12px"><b style="font-size:16px;margin:0">🔔 Erinnerung in meinen Kalender</b><span>täglicher Termin mit Alarm zur Wunschzeit</span></button>
-  <button class="wbtn" id="bAcc" style="text-align:center;padding:12px"><b style="font-size:16px;margin:0">⚙️ Mein Konto</b><span>E-Mail, Abmelden</span></button>
+  <button class="wbtn" id="bRem" style="text-align:center;padding:12px"><b style="font-size:16px;margin:0">🔔 Erinnerungen</b><span>Mails (keine, 1 oder 2 pro Tag) &amp; Kalender-Alarm zur Wunschzeit</span></button>
+  <button class="wbtn" id="bAcc" style="text-align:center;padding:12px"><b style="font-size:16px;margin:0">⚙️ Mein Konto</b><span>Abmelden</span></button>
   <div class="card">
     <h3>⚙️ Einstellungen</h3>
     <label>Steigerung (Sekunden extra pro Halteübung)</label>
@@ -192,15 +192,27 @@ select.txt{appearance:auto}
 </div><p class="note">PIN vergessen? Bei Max melden.</p></div></div>
 <div id="acc" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.8);align-items:center;justify-content:center;padding:20px;z-index:6"><div class="card" style="max-width:380px;width:100%">
 <h3>⚙️ Mein Konto</h3><p class="sub" id="accName"></p>
-<label>E-Mail für Erinnerungen (7 und 18 Uhr)</label><input class="txt" id="accMail" type="email" placeholder="leer = keine Mails">
-<div id="accMsg" style="font-size:14px;min-height:20px;margin-bottom:8px;color:var(--mut)"></div>
-<div class="row"><button class="chip" id="accSave" style="flex:1">Speichern</button><button class="chip" id="accOut" style="flex:1">Abmelden</button><button class="chip" id="accX" style="flex:1">Schließen</button></div>
+<p class="note">E-Mail und Mail-Erinnerungen findest du jetzt unter „Mehr“ → „🔔 Erinnerungen“.</p>
+<div class="row"><button class="chip" id="accOut" style="flex:1">Abmelden</button><button class="chip" id="accX" style="flex:1">Schließen</button></div>
+</div></div>
+<div id="rem" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.8);align-items:center;justify-content:center;padding:20px;z-index:6;overflow:auto"><div class="card" style="max-width:380px;width:100%">
+<h3>🔔 Erinnerungen</h3>
+<label>📧 Mails pro Tag (Mo–Sa)</label><div class="row" id="remMp" style="margin:8px 0"></div>
+<p class="note" id="remMpTxt" style="margin-top:0"></p>
+<label>E-Mail-Adresse</label><input class="txt" id="remMail" type="email" placeholder="name@beispiel.de">
+<div id="remMsg" style="font-size:14px;min-height:20px;margin-bottom:8px;color:var(--mut)"></div>
+<button class="chip" id="remSave" style="width:100%;margin-bottom:14px">Mail-Einstellung speichern</button>
+<label>📅 Kalender-Alarm (wie eine Push-Nachricht)</label>
+<p class="note" style="margin-top:4px">Legt einen täglichen Termin Mo–Sa bis 31.12. in deinem Handy-Kalender an. Uhrzeit frei wählbar.</p>
+<input class="txt" id="remT" type="time" value="18:00" step="300">
+<div class="row" style="margin-bottom:12px"><button class="chip" id="remG" style="flex:1">Google Kalender</button><button class="chip" id="remI" style="flex:1">iPhone / anderer</button></div>
+<button class="chip" id="remX" style="width:100%">Schließen</button>
 </div></div>
 <div id="pick" style="display:none;position:fixed;inset:0;background:var(--bg);overflow:auto;padding:20px;z-index:8"><div style="max-width:480px;margin:0 auto"><div class="row" style="justify-content:space-between"><h1>🎯 Einzelne Übung</h1><button class="chip" id="pickX">Schließen ✕</button></div><p class="sub">Antippen = starten. ℹ️ = Erklärung. Zählt nicht für Punkte.</p><div class="exl" id="pickList"></div></div></div>
 <div id="exd"><div style="max-width:480px;margin:0 auto"><div class="row" style="justify-content:space-between"><span class="note">Übung</span><button class="chip" id="exdX">Zurück ✕</button></div><div id="exdBody"></div><button class="wbtn" id="exdX2" style="text-align:center;margin-top:16px"><b>Verstanden 👍</b></button></div></div>
 <div id="help"><div style="max-width:480px;margin:0 auto">
 <div class="row" style="justify-content:space-between"><h1>❓ Erste Schritte</h1><button class="chip" id="helpX">Schließen ✕</button></div>
-<h2>1. Anmelden</h2><ul><li>Benutzername + 4-stellige PIN wählen – fertig. Kein Konto, kein Passwort.</li><li>E-Mail ist freiwillig: Dann kommt morgens und um 18 Uhr eine Erinnerung, falls du noch nicht trainiert hast. 😢</li><li>Lieber ein Alarm aufs Handy? Unter „Mehr“ → „Erinnerung in meinen Kalender“.</li><li>Tipp: Seite zum Startbildschirm hinzufügen (Browser-Menü ⋮ → „Zum Startbildschirm“). Dann ist sie wie eine App.</li></ul>
+<h2>1. Anmelden</h2><ul><li>Benutzername + 4-stellige PIN wählen – fertig. Kein Konto, kein Passwort.</li><li>E-Mail ist freiwillig. Unter „Mehr“ → „🔔 Erinnerungen“ wählst du selbst: keine Mail, 1 Mail (18 Uhr, nur wenn noch offen) oder 2 Mails (7 + 18 Uhr). Alle Infos stehen sowieso in der App.</li><li>Lieber ein Alarm aufs Handy? Ebenfalls unter „🔔 Erinnerungen“ – Uhrzeit frei wählbar.</li><li>Tipp: Seite zum Startbildschirm hinzufügen (Browser-Menü ⋮ → „Zum Startbildschirm“). Dann ist sie wie eine App.</li></ul>
 <h2>2. Trainieren</h2><ol><li><b>Ton laut</b> machen, Handy hinlegen.</li><li>Auf <b>„▶ Heutiges Workout starten“</b> tippen – die App weiß, welcher Tag dran ist.</li><li>Der Coach sagt alles an: Übung, Ausführung, Countdown, Pausen. Die Skizze zeigt die Haltung.</li><li>Am Ende wird der Tag automatisch im Kalender abgehakt.</li></ol>
 <p><b>Wochenplan:</b> Mo, Mi, Fr = Tag A und Tag B im Wechsel (eine Woche A-B-A, die nächste B-A-B) · Di, Do, Sa = Kurztag (7 Min.) · 🪑 Tag A braucht einen Stuhl oder Hocker · 🧻 Tag A und B ein normales Handtuch (ca. 50 × 100 cm, kein Gästehandtuch) · So = Ruhetag</p>
 
@@ -292,7 +304,7 @@ const isRest=k=>parse(k).getDay()===0;
 function ls(k,d){try{const v=localStorage.getItem(k);return v===null?d:JSON.parse(v)}catch(e){return d}}
 function lsSet(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
 let state={days:{},ms:[],ch:{},name:"",start:""};
-let token=ls("token",""),email="",others=[],online=false;
+let token=ls("token",""),email="",mp=2,others=[],online=false;
 state=Object.assign(state,ls("state",{}));
 async function api(a,body){
   if(!API_URL)throw new Error("noapi");
@@ -316,7 +328,7 @@ function applyServer(r){
   if(loc.name===r.name&&!r.v){Object.assign(days,loc.days||{});Object.assign(ch,loc.ch||{})}
   if(r.v)setTimeout(runPend,500);
   state={days,ch,ms:Array.from(new Set([...(d.ms||[]),...((loc.name===r.name&&loc.ms)||[])])),name:r.name,start:r.start||START};
-  email=r.email||"";lsSet("state",state);renderMenu();
+  email=r.email||"";mp=(d.mp===0||d.mp===1)?d.mp:2;lsSet("state",state);renderMenu();
   if(JSON.stringify(days)!==JSON.stringify(d.days||{})||JSON.stringify(ch)!==JSON.stringify(d.ch||{}))save();
 }
 let saveT=null;
@@ -348,9 +360,8 @@ $("lgGo").onclick=async()=>{
     token=r.token;lsSet("token",token);$("login").style.display="none";if(regMode||!ls("helpSeen",0))showHelp();applyServer(r);online=true;setSync("☁️ synchronisiert");loadRank();
   }catch(e){$("lgErr").textContent="Keine Verbindung zum Server"}
 };
-$("bAcc").onclick=()=>{if(!token){showLogin();return}$("accName").textContent="Angemeldet als "+state.name;$("accMail").value=email;$("accMsg").textContent="";$("acc").style.display="flex"};
+$("bAcc").onclick=()=>{if(!token){showLogin();return}$("accName").textContent="Angemeldet als "+state.name;$("acc").style.display="flex"};
 $("accX").onclick=()=>$("acc").style.display="none";
-$("accSave").onclick=async()=>{try{const r=await api("email",{token,email:$("accMail").value.trim()});$("accMsg").textContent=r.ok?"✅ Gespeichert":(r.err||"Fehler");if(r.ok)email=r.email}catch(e){$("accMsg").textContent="Keine Verbindung"}};
 $("accOut").onclick=()=>{token="";lsSet("token","");lsSet("state",{});state={days:{},ms:[],ch:{},name:"",start:""};$("acc").style.display="none";showLogin();renderMenu()};
 
 // ---------- Punkte ----------
@@ -411,7 +422,7 @@ function renderMenu(){
   else if(tDone&&yMiss){cls="bad";b="✅ Heute erledigt. Gestern fehlt noch (−3) – <b>jetzt nachholen holt 4 Punkte zurück.</b>"}
   else if(tDone){cls="good";b="✅ Heute erledigt. Stark, "+(state.name||"")+"!"}
   else if(yMiss){cls="bad";b="😢 Gestern verpasst (−3). Erst das heutige Workout, dann ein zweites zum Nachholen."}
-  else if(tw)b="Heute dran: <b>"+W[tw].t+"</b> – noch offen."+(email?" Um 18 Uhr kommt sonst eine Mail.":"");
+  else if(tw)b="Heute dran: <b>"+W[tw].t+"</b> – noch offen."+(email&&mp?" Um 18 Uhr kommt sonst eine Mail.":"");
   else{cls="good";b="😴 Sonntag = Ruhetag. Freiwilliges Workout gibt +1."}
   if(XMAS(t))b+=" 🎄 Heute doppelte Punkte!";
   if(t<CH_START)b+=' <span style="opacity:.75">· 🧪 Testphase bis 30.11., am 1.12. starten alle bei 0.</span>';
@@ -948,9 +959,14 @@ $("bEasy").onclick=()=>{if(!running||easy)return;const was=paused;paused=true;mu
   ask("<b>Leichter weitermachen?</b><br>Ab der nächsten Übung: kürzere Haltezeiten, längere Pausen, Plank 2 × 60 s statt 2 Min. am Stück.<br><br>Dafür gibt es heute <b>1 Punkt weniger</b> (+2 statt +3). Gilt für den Rest dieses Workouts.",
    ()=>{easy=1;easify(steps,idx+1);$("bEasy").style.display="none";go();say([{t:"Okay, leichte Variante. Kürzere Haltezeiten, längere Pausen. Dranbleiben zählt!",k:[]}])},go,"Ja, leichter","Nein, weiter so")};
 // ---------- Erinnerung im Handy-Kalender ----------
-$("bRem").onclick=()=>{let o="";for(let hh=5;hh<=22;hh++)["00","30"].forEach(m=>{const v=String(hh).padStart(2,"0")+":"+m;o+='<option'+(v==="18:00"?" selected":"")+'>'+v+'</option>'});
-  ask('<b>🔔 Tägliche Erinnerung im Kalender</b><br><span class="note">Legt einen Termin Mo–Sa bis 31.12. an. Dein Kalender erinnert dich dann wie eine Push-Nachricht.</span><br><label>Uhrzeit</label><select id="remT" class="txt" style="margin-top:6px">'+o+'</select><a class="undo" id="remX" style="margin-top:0">Abbrechen</a>',()=>remGo("g"),()=>remGo("i"),"Google Kalender","iPhone / anderer");
-  $("remX").onclick=()=>{$("modal").style.display="none"}};
+const MPT=["Keine Mails. Alle Infos findest du in der App.","1 Mail um 18 Uhr – nur wenn dein Workout noch offen ist. Sonntags die Wochenübersicht.","2 Mails: morgens um 7 Uhr und um 18 Uhr, falls noch offen. Sonntags die Wochenübersicht."];
+let mpSel=2;
+function renderMp(){chips("remMp",[0,1,2],mpSel,v=>v===0?"keine":v===1?"1 Mail":"2 Mails",v=>{mpSel=v;renderMp()});$("remMpTxt").textContent=MPT[mpSel]}
+$("bRem").onclick=()=>{if(!token){showLogin();return}mpSel=mp;renderMp();$("remMail").value=email;$("remMsg").textContent="";$("rem").style.display="flex"};
+$("remX").onclick=()=>$("rem").style.display="none";
+$("remSave").onclick=async()=>{const m=$("remMail").value.trim();if(mpSel&&!m){$("remMsg").textContent="Bitte E-Mail-Adresse eintragen – oder „keine“ wählen.";return}
+  try{const r=await api("email",{token,email:m,mp:mpSel});if(r.ok){email=r.email;mp=mpSel;$("remMsg").textContent="✅ Gespeichert";renderMenu()}else $("remMsg").textContent=r.err||"Fehler"}catch(e){$("remMsg").textContent="Keine Verbindung"}};
+$("remG").onclick=()=>remGo("g");$("remI").onclick=()=>remGo("i");
 function remGo(kind){const v=($("remT")&&$("remT").value)||"18:00",hh=v.slice(0,2),mm=v.slice(3,5);let d=new Date();if(d.getDay()===0)d.setDate(d.getDate()+1);
   const ds=key(d).replace(/-/g,""),e=new Date(2000,0,1,+hh,+mm+15),et=String(e.getHours()).padStart(2,"0")+String(e.getMinutes()).padStart(2,"0");
   const link=location.origin+location.pathname,rr="RRULE:FREQ=WEEKLY;BYDAY=MO,TU,WE,TH,FR,SA;UNTIL=20261231T225959Z";
