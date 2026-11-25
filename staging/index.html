@@ -126,7 +126,7 @@ select.txt{appearance:auto}
   <div id="tab-train">
   <button class="wbtn today" id="bToday"><b id="bTodayT">▶ Heutiges Workout starten</b><span id="bTodayS"></span></button>
   <div class="lvl" id="lvl"></div>
-  <div class="note" style="margin:0 0 12px">Leicht = kürzere Haltezeiten, längere Pausen, Plank 2 × 60 s – dafür 1 Punkt weniger. Umschalten geht auch mitten im Workout.</div>
+  <div class="note" style="margin:0 0 12px">Leicht = kürzere Haltezeiten, längere Pausen, Plank 2 × 30 s – dafür 1 Punkt weniger. Umschalten geht auch mitten im Workout.</div>
   <div id="bossBox2"></div>
   <div class="card">
     <div class="cal-h"><button id="calPrev">‹</button><h3 id="calTitle" style="margin:0"></h3><button id="calNext">›</button></div>
@@ -148,6 +148,9 @@ select.txt{appearance:auto}
     <label>Steigerung (Sekunden extra pro Halteübung)</label>
     <div class="row" id="bonus" style="margin-top:8px"></div>
     <div class="note" style="margin-top:6px">Persönlicher Ehrgeiz: gibt keine Extra-Punkte, entscheidet aber bei Punktgleichheit im Ranking. Gilt nicht in der leichten Variante.</div>
+    <label style="display:block;margin-top:14px">Ansagen</label>
+    <div class="row" id="quiet" style="margin-top:8px"></div>
+    <div class="note" style="margin-top:6px">„Nur Piepen“: keine Stimme – Start, Ende und die letzten 3 Sekunden jeder Pause werden nur angepiept.</div>
     <label style="display:block;margin-top:14px">Stimme</label>
     <select class="txt" id="vsel" style="display:none;margin:8px 0 0;font-size:15px"></select>
     <div class="note" id="vnote" style="margin-top:6px"></div>
@@ -281,7 +284,7 @@ select.txt{appearance:auto}
 <tr><td>😴 Freiwilliges Workout am Sonntag</td><td style="color:var(--acc)">+1</td></tr>
 <tr><td>🎄 24.–26.12.: Workout und Tages-Challenge</td><td style="color:var(--acc)">× 2</td></tr>
 </table>
-<ul><li><b>Zu schwer?</b> Wähle vor dem Start „Leicht“ oder tippe im Workout auf „Zu schwer? Leichter weitermachen“. Dann werden die Haltezeiten kürzer, die Pausen länger, aus 2 Min. Plank werden 2 × 60 s und aus 20 s Liegestütz halten 2 × 10 s mit kurzer Pause (Knie oder normal – deine Wahl). Dafür gibt es 1 Punkt weniger.</li><li><b>Nachholen:</b> Erst das heutige Workout, dann ein zweites – das zählt für gestern und holt <b>4 Punkte zurück</b> (aus −3 wird +1).</li><li><b>🔥 Serie:</b> Trainingstage am Stück ohne Lücke. Sonntag unterbricht nicht.</li><li><b>Gleichstand:</b> Bei gleichen Punkten liegt vorne, wer mehr Extra-Sekunden eingestellt hat.</li><li>Ausreden gibt's keine. Es gibt keinen „Krank“-Knopf – wer ehrlich krank ist, schont sich und holt Punkte später über Challenges auf.</li></ul>
+<ul><li><b>Zu schwer?</b> Wähle vor dem Start „Leicht“ oder tippe im Workout auf „Zu schwer? Leichter weitermachen“. Dann werden die Haltezeiten kürzer, die Pausen länger, aus 60 s Plank werden 2 × 30 s und aus 20 s Liegestütz halten 2 × 10 s mit kurzer Pause (Knie oder normal – deine Wahl). Dafür gibt es 1 Punkt weniger.</li><li><b>Nachholen:</b> Erst das heutige Workout, dann ein zweites – das zählt für gestern und holt <b>4 Punkte zurück</b> (aus −3 wird +1).</li><li><b>🔥 Serie:</b> Trainingstage am Stück ohne Lücke. Sonntag unterbricht nicht.</li><li><b>Gleichstand:</b> Bei gleichen Punkten liegt vorne, wer mehr Extra-Sekunden eingestellt hat.</li><li>Ausreden gibt's keine. Es gibt keinen „Krank“-Knopf – wer ehrlich krank ist, schont sich und holt Punkte später über Challenges auf.</li></ul>
 <h2>4. Challenges & Ranking</h2><ul><li>Jeden Tag eine neue Tages-Challenge, jede Woche eine Wochen-Challenge – für alle dieselbe.</li><li>Challenges startest du in der App – sie laufen wie ein Workout komplett durch. Nur dann gibt's Punkte.</li><li>Wochen-Challenge: jeden Tag (Mo–So) neu starten, die +5 gibt's nur bei 7 von 7 Tagen. Einen verpassten Tag darfst du 1× pro Woche am nächsten Tag nachholen – dann die Challenge zweimal machen.</li><li>Im Ranking siehst du Punkte, Serie und wer heute schon trainiert hat.</li></ul>
 <h2>5. Meilensteine</h2><p>Für Serien, Punkte und Anzahl Workouts gibt es Meilensteine mit Lob und Belohnungsideen. Belohn dich wirklich – das hält dich dran.</p>
 <h2>6. Steigern</h2><p>Alle 2 Wochen unter „Mehr“ → „Steigerung“ +5 s einstellen. Das gibt keine Extra-Punkte, entscheidet aber bei Punktgleichheit im Ranking.</p>
@@ -329,9 +332,9 @@ const EX={
  tpull:{n:"Handtuch auseinanderziehen",c:"Handtuch schulterbreit vor der Brust greifen und mit voller Kraft auseinanderziehen. Schulterblätter zusammen.",hold:true}
 };
 const W={
- A:{t:"Tag A",chair:true,towel:true,s:[["push",20,45],["wallsit",40,40],["push",20,45],["splitL",30,15],["splitR",30,40],["palms",20,30],["bridge",30,30],["dips",20,40],["bridge1L",25,15],["bridge1R",25,40],["tpull",25,40],["pike",20,35],["revplank",20,40],["plank",120,0]]},
- B:{t:"Tag B",towel:true,s:[["burst",5,15],["burst",5,15],["burst",5,15],["burst",5,15],["burst",5,40],["row",30,40],["trow",30,40],["trow",30,40],["yhold",20,30],["wy",20,30],["curl",25,40],["hollow",20,30],["deadbugL",20,10],["deadbugR",20,40],["sideL",25,15],["sideR",25,40],["birddogL",20,10],["birddogR",20,40],["plank",120,0]]},
- K:{t:"Kurztag",s:[["plank",120,20],["squat",30,15],["calf",30,15],["hipL",45,12],["hipR",45,12],["chest",45,0]]}
+ A:{t:"Tag A",chair:true,towel:true,s:[["push",20,45],["wallsit",40,40],["push",20,45],["splitL",30,15],["splitR",30,40],["palms",20,30],["bridge",30,30],["dips",20,40],["bridge1L",25,15],["bridge1R",25,40],["tpull",25,40],["pike",20,35],["revplank",20,40],["plank",60,0]]},
+ B:{t:"Tag B",towel:true,s:[["burst",5,15],["burst",5,15],["burst",5,15],["burst",5,15],["burst",5,40],["row",30,40],["trow",30,40],["trow",30,40],["yhold",20,30],["wy",20,30],["curl",25,40],["hollow",20,30],["deadbugL",20,10],["deadbugR",20,40],["sideL",25,15],["sideR",25,40],["birddogL",20,10],["birddogR",20,40],["plank",60,0]]},
+ K:{t:"Kurztag",s:[["plank",60,20],["squat",30,15],["calf",30,15],["hipL",45,12],["hipR",45,12],["chest",45,0]]}
 };
 const PLAN={1:"A",2:"K",3:"B",4:"K",5:"A",6:"K",0:null}; // 0 = Sonntag Ruhetag
 // A und B wechseln wöchentlich: Woche ab 23.11. A-B-A, die nächste B-A-B usw. – für alle gleich
@@ -342,7 +345,7 @@ const START="2026-11-23";
 const CH_START="2026-12-01",CH_END="2026-12-31";
 let todayW="K",curChal=null,easy=0,noPts=false;
 const XMAS=k=>k>="2026-12-24"&&k<="2026-12-26";
-const DESC={A:"🪑 Stuhl + Handtuch (ca. 1 m) · Oberkörper und Beine im Wechsel: Liegestütz · Wandsitzen · Ausfallschritt · Hände pressen · Bridge · Dips · Handtuch ziehen · Pike · Reverse Plank · Plank · ca. 15 Min.",B:"Handtuch (ca. 1 m) · Bursts · Ellbogen-Drücken · Handtuch-Rudern · Y/W-Halten · Bizeps · Hollow · Dead Bug · Seitstütz · Bird-Dog · Plank · ca. 15 Min.",K:"Plank · Kniebeuge · Waden · Hüftbeuger- und Brustdehnung · ca. 7 Min."};
+const DESC={A:"🪑 Stuhl + Handtuch (ca. 1 m) · Oberkörper und Beine im Wechsel: Liegestütz · Wandsitzen · Ausfallschritt · Hände pressen · Bridge · Dips · Handtuch ziehen · Pike · Reverse Plank · Plank · ca. 12 Min.",B:"Handtuch (ca. 1 m) · Bursts · Ellbogen-Drücken · Handtuch-Rudern · Y/W-Halten · Bizeps · Hollow · Dead Bug · Seitstütz · Bird-Dog · Plank · ca. 13 Min.",K:"Plank · Kniebeuge · Waden · Hüftbeuger- und Brustdehnung · ca. 6 Min."};
 const MYS=()=>state.start||START;
 const rnd=n=>Math.floor(Math.random()*n);
 const $=id=>document.getElementById(id);
@@ -644,9 +647,10 @@ document.querySelectorAll("#menu .tabs button").forEach(b=>b.onclick=()=>{docume
   ["train","chal","rank","more"].forEach(t=>$("tab-"+t).style.display=t===b.dataset.t?"block":"none");renderMenu()});
 
 // ---------- Einstellungen ----------
-let bonus=ls("bonus",0), rate=ls("rate",1.2);
+let bonus=ls("bonus",0), rate=ls("rate",1.2), quiet=ls("quiet",0);
 function chips(id,vals,cur,lab,set){const el=$(id);el.innerHTML="";vals.forEach(v=>{const b=document.createElement("button");b.className="chip"+(v===cur?" on":"");b.textContent=lab(v);b.onclick=()=>{set(v);chips(id,vals,v,lab,set)};el.appendChild(b)})}
 chips("bonus",[0,5,10,15,20,30],bonus,v=>"+"+v+" s",v=>{bonus=v;lsSet("bonus",v);save();renderRank()});
+chips("quiet",[0,1],quiet,v=>v?"🔕 nur Piepen":"🗣️ Stimme",v=>{quiet=v;lsSet("quiet",v);unlockAudio().then(()=>v?beep(800,.12):say(["test"],true))});
 chips("rate",[1,1.1,1.2],rate,v=>v===1?"normal":v===1.1?"zügig":"schnell",v=>{rate=v;lsSet("rate",v);unlockAudio().then(()=>say(["test"],true))});
 
 // ---------- Audio: Handy-Stimme (Sprachausgabe des Geräts) oder Coach-Aufnahme ----------
@@ -699,6 +703,7 @@ async function unlockAudio(){
 }
 function decodeLate(k){if(!buf[k]&&raw[k]&&ac){ac.decodeAudioData(raw[k].slice(0)).then(b=>buf[k]=b).catch(()=>{})}}
 function say(keys,interrupt){
+  if(quiet){if(interrupt){try{speechSynthesis.cancel()}catch(e){}queue=[];if(cur){try{cur.onended=null;cur.stop()}catch(e){}cur=null}}return}
   if(useTTS())return ttsSay(keys,interrupt);
   if(!ac)return;
   keys=[].concat(...keys.map(k=>typeof k==="string"?[k]:(k.k||[])));
@@ -828,6 +833,9 @@ function skWrap(x){return '<g fill="none" stroke="currentColor" stroke-width="6"
 function skDraw(P,p,showD2){return skWrap(poseSvg(p,P.d,P.fr,showD2?P.d2:"",P.top))}
 function skSvg(k,w){const P=POSE[SKMAP[k]];return skDraw(P,P[w||"e"],w!=="s")}
 let skAnim=0;
+// In der Pause/Vorbereitung: nächste Übung vormachen, ab 8 s vor Start in der Ausgangsposition warten
+function demoLoop(me){cancelAnimationFrame(skAnim);const P=POSE[SKMAP[me.ex]];$("runSk").innerHTML=skSvg(me.ex,"s");if(!P||remain<=10)return;const t0=performance.now();
+  const f=now=>{if(steps[idx]!==me)return;if(remain<=8){$("runSk").innerHTML=skSvg(me.ex,"s");return}const x=loopX(now-t0);$("runSk").innerHTML=skDraw(P,lerpP(P.s,P.e,x),x>.99);skAnim=requestAnimationFrame(f)};skAnim=requestAnimationFrame(f)}
 function animSk(k,from,to,ms,then){cancelAnimationFrame(skAnim);const P=POSE[SKMAP[k]],t0=performance.now();const f=now=>{const x=Math.min(1,(now-t0)/ms),t=x<.5?2*x*x:1-Math.pow(-2*x+2,2)/2;$("runSk").innerHTML=skDraw(P,lerpP(P[from],P[to],t),to==="e"&&x>=1);if(x<1)skAnim=requestAnimationFrame(f);else if(then)then()};skAnim=requestAnimationFrame(f)}
 // ---------- Übungs-Erklärungen ----------
 const INFO={
@@ -964,7 +972,9 @@ function orderFor(k,day){const src=W[k].s,bl=[];src.forEach(x=>{const f=famOf(x[
   for(let t=0;t<400;t++){const a=mid.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(r()*(i+1));[a[i],a[j]]=[a[j],a[i]]}
     let sc=(a[0]&&a[0].f==="burst")?100:0;for(let i=1;i<a.length;i++){if(a[i].f===a[i-1].f)sc+=50;if(GRP[a[i].f]===GRP[a[i-1].f])sc+=1}
     if(sc<bs){bs=sc;best=a}if(!sc)break}
-  const out=[].concat(...best.concat(end).map(b=>b.x));out.forEach((x,i)=>{if(i===out.length-1)x[2]=0;else if(!x[2])x[2]=30});return out}
+  const all=best.concat(end);all.forEach((b,i)=>{const nb=all[i+1];if(!nb)return;const lx=b.x[b.x.length-1];
+    if(b.f!=="burst"&&GRP[b.f]!==GRP[nb.f]&&Math.max(...b.x.map(x=>x[1]))<=30&&lx[2]>15)lx[2]=15});
+  const out=[].concat(...all.map(b=>b.x));out.forEach((x,i)=>{if(i===out.length-1)x[2]=0;else if(!x[2])x[2]=30});return out}
 function build(k){
   const s=[],cnt={};const w=isPlan(k)?orderFor(k,todayK()):W[k].s;
   s.push({type:"prep",sec:15,ex:w[0][0]});
@@ -1016,7 +1026,7 @@ function enter(){
   const e=EX[st.ex];
   $("run").className=st.type;
   $("phase").textContent=st.type==="work"?"JETZT":st.type==="rest"?"PAUSE":"GLEICH GEHT'S LOS";
-  $("ex").textContent=e.n;if(st.type==="work")animSk(st.ex,"s","e",900);else if(st.type==="rest"&&idx>0&&steps[idx-1].type==="work"){const pk=steps[idx-1].ex,me=st;animSk(pk,"e","s",700,()=>setTimeout(()=>{if(steps[idx]===me)$("runSk").innerHTML=skSvg(me.ex,"s")},500))}else $("runSk").innerHTML=skSvg(st.ex,"s");$("cue").textContent=e.c;
+  $("ex").textContent=e.n;if(st.type==="work")animSk(st.ex,"s","e",900);else if(st.type==="rest"&&idx>0&&steps[idx-1].type==="work"){const pk=steps[idx-1].ex,me=st;animSk(pk,"e","s",700,()=>setTimeout(()=>{if(steps[idx]===me)demoLoop(me)},500))}else demoLoop(st);$("cue").textContent=e.c;
   const works=steps.filter(x=>x.type==="work").length,done=steps.slice(0,idx).filter(x=>x.type==="work").length;
   $("prog").textContent="Übung "+Math.min(done+(st.type==="work"?1:0),works)+" von "+works;
   const nx=steps.slice(idx+1).find(x=>x.type==="work");
@@ -1114,7 +1124,7 @@ function startChk(k){const w=W[k]||{},need=[];if(w.chair)need.push("🪑 einen <
   if(need.length)ask("Für dieses Workout brauchst du "+need.join(" und ")+". Bereit?",()=>start(k));else start(k)}
 $("bEasy").onclick=()=>{if(!running||easy)return;const was=paused;paused=true;musOn(false);say([],true);
   const go=()=>{if(!was){paused=false;lastTick=Date.now();musOn(steps[idx]&&steps[idx].type==="work")}};
-  ask("<b>Leichter weitermachen?</b><br>Ab der nächsten Übung: kürzere Haltezeiten, längere Pausen, Plank 2 × 60 s statt 2 Min. am Stück, Liegestütz halten 2 × 10 s statt 20 s (ob auf den Knien oder normal, entscheidest du).<br><br>Dafür gibt es heute <b>1 Punkt weniger</b> (+2 statt +3). Gilt für den Rest dieses Workouts.",
+  ask("<b>Leichter weitermachen?</b><br>Ab der nächsten Übung: kürzere Haltezeiten, längere Pausen, Plank 2 × 30 s statt 60 s am Stück, Liegestütz halten 2 × 10 s statt 20 s (ob auf den Knien oder normal, entscheidest du).<br><br>Dafür gibt es heute <b>1 Punkt weniger</b> (+2 statt +3). Gilt für den Rest dieses Workouts.",
    ()=>{easy=1;easify(steps,idx+1);$("bEasy").style.display="none";go();say([{t:"Okay, leichte Variante. Kürzere Haltezeiten, längere Pausen. Dranbleiben zählt!",k:[]}])},go,"Ja, leichter","Nein, weiter so")};
 // ---------- Erinnerung im Handy-Kalender ----------
 const MPT=["Keine Mails. Alle Infos findest du in der App.","1 Mail um 18 Uhr – nur wenn dein Workout noch offen ist. Sonntags die Wochenübersicht.","2 Mails: morgens um 7 Uhr und um 18 Uhr, falls noch offen. Sonntags die Wochenübersicht."];
