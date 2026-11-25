@@ -119,7 +119,7 @@ select.txt{appearance:auto}
   <div class="stats">
     <div class="stat"><b id="sRank">–</b><span>Platz</span></div>
     <div class="stat"><b id="sPts">0</b><span>Punkte</span></div>
-    <div class="stat"><b id="sStreak">0</b><span>🔥 Serie</span></div>
+    <div class="stat"><b id="sStreak">0</b><span>Serie</span></div>
   </div>
   <div id="banners"></div>
   <div class="tabs"><button data-t="train" class="on"><i>🏋️</i>Training</button><button data-t="chal"><i>⚡</i>Challenges</button><button data-t="rank"><i>🏆</i>Ranking</button><button data-t="more"><i>☰</i>Mehr</button></div>
@@ -426,8 +426,14 @@ $("accX").onclick=()=>$("acc").style.display="none";
 $("accOut").onclick=()=>{token="";lsSet("token","");lsSet("state",{});state={days:{},ms:[],ch:{},name:"",start:""};$("acc").style.display="none";showLogin();renderMenu()};
 
 // ---------- Punkte ----------
+// Flammen erst ab 3 Workouts in Folge: "4🔥"
+const flame=n=>n>=3?n+"🔥":String(n);
+// Flammen verloren – einmal melden (Nachholen rettet die Serie noch)
+function lostCheck(st){const L=st.lost;if(!L||L.k<addDays(todayK(),-2)||ls("lostSeen","")===L.k||st.streak>=3)return;lsSet("lostSeen",L.k);
+  setTimeout(()=>ask("😢 <b>Flammen verloren!</b><br>Deine Serie von <b>"+L.n+"🔥</b> ist gerissen."+(canMkSoon(L.k)?"<br><br>💡 Noch zu retten: heute dein Workout machen und danach eins zum Nachholen – dann brennt die Serie weiter.":"<br><br>Kopf hoch – nach 3 Workouts in Folge brennt sie wieder. 💪"),()=>{},null,"Los geht's","Schließen"),600)}
+const canMkSoon=k=>addDays(k,1)===todayK();
 function compute(S){
-  S=S||state;const tt=todayK();const t=tt>CH_END?CH_END:tt;let st0=S.start||START;if(tt>=CH_START&&st0<CH_START)st0=CH_START;let pts=0,streak=0,best=0,total=0,bonus=0,weekRun=0;
+  S=S||state;const tt=todayK();const t=tt>CH_END?CH_END:tt;let st0=S.start||START;if(tt>=CH_START&&st0<CH_START)st0=CH_START;let pts=0,streak=0,best=0,total=0,bonus=0,weekRun=0,lost=null;
   const log={};
   let k=st0;
   while(k<=t){
@@ -440,7 +446,7 @@ function compute(S){
       else{pts+=1-ez;log[k]="late";}
       if(!rest){streak++;weekRun++;}
     }else if(rest){log[k]="rest";}
-    else if(past){pts-=3;log[k]="miss";streak=0;weekRun=0;}
+    else if(past){pts-=3;log[k]="miss";if(streak>=3)lost={n:streak,k};streak=0;weekRun=0;}
     else{log[k]="open";}
     if(rest&&!(d&&d.done)){}
     if(parse(k).getDay()===6){ if(weekRun>=6&&log[k]!=="open"){pts+=3;bonus++;} weekRun=0; }
@@ -448,7 +454,7 @@ function compute(S){
     k=addDays(k,1);
   }
   let chp=0;Object.keys(S.ch||{}).forEach(x=>{const c=S.ch[x];if(c&&(c.at||"")>=st0&&(c.at||"")<=CH_END)chp+=(c.p||0)*(x.slice(0,2)==="d:"&&XMAS(c.at)?2:1)});pts+=chp;
-  return {pts,streak,best,total,bonus,log,chp};
+  return {pts,streak,best,total,bonus,log,chp,lost};
 }
 
 // ---------- Meilensteine ----------
@@ -474,7 +480,7 @@ let calM=new Date();calM.setDate(1);
 const MON=["Januar","Februar","März","April","Mai","Juni","Juli","August","September","Oktober","November","Dezember"];
 function renderMenu(){
   const st=compute(),t=todayK(),y=addDays(t,-1);
-  $("sPts").textContent=st.pts;$("sStreak").textContent=st.streak;
+  $("sPts").textContent=st.pts;$("sStreak").textContent=flame(st.streak);lostCheck(st);
   $("sPts").style.color=st.pts<0?"var(--bad)":"";
   // eine Statuszeile
   const tw=planFor(t),tDone=!!(state.days[t]&&state.days[t].done),yMiss=y>=MYS()&&st.log[y]==="miss"&&!(state.days[y]&&state.days[y].done);
@@ -640,7 +646,7 @@ function renderRank(){
   {const me=rows.find(r=>r.me);$("sRank").textContent=me&&others.length?me.pl+".":"–"}
   const med=["🥇","🥈","🥉"];
   renderBoss(rows);
-  $("rankList").innerHTML=rows.length?rows.map((r,i)=>'<div class="rk'+(r.me?" me":"")+'"><div class="p">'+(med[r.pl-1]||r.pl)+'</div><div class="nm"><b></b><small>🔥 '+r.streak+' · '+r.total+' Workouts'+(r.bx?' · +'+r.bx+' s':'')+(r.today?' · heute ✓':'')+(r.egg?' · '+r.egg.ic:'')+'</small></div><div class="pt">'+r.pts+'</div></div>').join(""):'<p class="sub">Noch niemand im Ranking.</p>';
+  $("rankList").innerHTML=rows.length?rows.map((r,i)=>'<div class="rk'+(r.me?" me":"")+'"><div class="p">'+(med[r.pl-1]||r.pl)+'</div><div class="nm"><b></b><small>'+(r.streak>=3?r.streak+'🔥 · ':'')+r.total+' Workouts'+(r.bx?' · +'+r.bx+' s':'')+(r.today?' · heute ✓':'')+(r.egg?' · '+r.egg.ic:'')+'</small></div><div class="pt">'+r.pts+'</div></div>').join(""):'<p class="sub">Noch niemand im Ranking.</p>';
   $("rankList").querySelectorAll(".rk b").forEach((b,i)=>b.textContent=rows[i].name);
 }
 document.querySelectorAll("#menu .tabs button").forEach(b=>b.onclick=()=>{document.querySelectorAll("#menu .tabs button").forEach(x=>x.classList.toggle("on",x===b));
@@ -1105,7 +1111,7 @@ function finish(){
   else if(r.kind==="nach"){txt="↺ Gestern nachgeholt: <b>"+gs+" zurückgeholt</b> (aus −3 wird +1)"+(ez?" (leichte Variante)":"");voice=["nach"]}
   else if(r.kind==="extra")txt="Extra-Runde! Zählt nicht doppelt, aber macht stärker. 💪";
   else txt="Probelauf – ab "+MYS().split("-").reverse().join(".")+" zählen die Punkte.";
-  txt+="<br>Punktestand: <b>"+st.pts+"</b> · Serie: <b>"+st.streak+"</b> 🔥";
+  txt+="<br>Punktestand: <b>"+st.pts+"</b> · Serie: <b>"+flame(st.streak)+"</b>"+(st.streak<3?" (ab 3 in Folge gibt’s 🔥)":"");
   voice.push(V("pr",pk("pr_")));
   if(r.egg)voice.push({t:"Neues Abzeichen: "+r.egg.t+"!",k:["ms"]});
   if(r.neu&&r.neu.length){voice.push("ms");
