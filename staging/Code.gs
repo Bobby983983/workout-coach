@@ -316,13 +316,25 @@ function normMail_(s) {
 }
 function archiveCopies_(tage) {
   try {
-    if (!tage) Utilities.sleep(8000);
+    if (!tage) { Utilities.sleep(30000); planAufraeumen_(); } // 26.11.2026: länger warten + 2. Durchgang
     const me = normMail_(OWNER);
     GmailApp.search('in:sent subject:(Workout OR CYF) newer_than:' + (tage || 2) + 'd -in:trash', 0, 200).forEach(t => {
       const forOthers = t.getMessages().every(m => String(m.getTo()).split(',').every(x => normMail_(x) !== me));
       if (forOthers) t.moveToTrash();
     });
   } catch (e) { Logger.log('Archivieren fehlgeschlagen: ' + e); }
+}
+
+// 2. Aufräum-Durchgang 15 Min. nach jeder Mailrunde (fängt Kopien ab, die Gmail beim 1. Mal noch nicht gefunden hat)
+function planAufraeumen_() {
+  try {
+    ScriptApp.getProjectTriggers().filter(t => t.getHandlerFunction() === 'aufraeumenNach').forEach(t => ScriptApp.deleteTrigger(t));
+    ScriptApp.newTrigger('aufraeumenNach').timeBased().after(15 * 60 * 1000).create();
+  } catch (e) { Logger.log('Aufräum-Trigger fehlgeschlagen: ' + e); }
+}
+function aufraeumenNach() {
+  ScriptApp.getProjectTriggers().filter(t => t.getHandlerFunction() === 'aufraeumenNach').forEach(t => ScriptApp.deleteTrigger(t));
+  archiveCopies_(1);
 }
 
 // Feedback-Button & Umfrage: landet in der Tabelle (Blatt "Feedback") und als Mail bei Max (Antworten gehen direkt an die Person)
