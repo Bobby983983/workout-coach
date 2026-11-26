@@ -141,10 +141,11 @@ function doPost(e) {
       const d = q.data || {}, cd = d.ch || {}, cur = parseData_(r.o), t = today_();
       if (Array.isArray(d.ms)) cur.ms = d.ms.slice(0, 60).map(x => String(x).slice(0, 10));
       if (typeof d.bx === 'number' && isFinite(d.bx)) cur.bx = Math.max(0, Math.min(30, Math.round(d.bx)));
+      if (d.g === 'w' || d.g === 'm') cur.g = d.g; // Wertung: Frauen bekommen auf "Leicht" die vollen Punkte
       if (cd.msg && cd.msg.t) cur.ch.msg = { p: 0, t: String(cd.msg.t).slice(0, 140), ts: String(cd.msg.ts || new Date().toISOString()).slice(0, 30) };
       else delete cur.ch.msg;
       Object.keys(cd).forEach(k => { const v = cd[k]; if (k !== 'msg' && v && v.failed && v.at === t) cur.ch[k] = { p: 0, n: String((cur.ch[k] || {}).n || v.n || '').slice(0, 40), at: t, failed: true }; });
-      const clean = JSON.stringify(Object.assign({ days: cur.days, ms: cur.ms, ch: cur.ch, bx: cur.bx || 0 }, cur.mp === 0 || cur.mp === 1 ? { mp: cur.mp } : {}));
+      const clean = JSON.stringify(Object.assign({ days: cur.days, ms: cur.ms, ch: cur.ch, bx: cur.bx || 0 }, cur.g ? { g: cur.g } : {}, cur.mp === 0 || cur.mp === 1 ? { mp: cur.mp } : {}));
       if (clean.length > 45000) return out_({ ok: false, err: 'zu groß' });
       sh.getRange(r.row, HEAD.indexOf('data') + 1).setValue(clean);
       sh.getRange(r.row, HEAD.indexOf('updated') + 1).setValue(new Date());
@@ -190,7 +191,7 @@ function doPost(e) {
     if (q.a === 'list') {
       return out_({ ok: true, users: rows.map(r => {
         let d = {}; try { d = JSON.parse(r.o.data || '{}'); } catch (e) {}
-        return { name: r.o.name, start: dstr_(r.o.start), days: d.days || {}, ch: d.ch || {}, bx: +d.bx || 0 };
+        return { name: r.o.name, start: dstr_(r.o.start), days: d.days || {}, ch: d.ch || {}, bx: +d.bx || 0, g: d.g || '' };
       }) });
     }
     if (q.a === 'feedback') {
@@ -223,7 +224,7 @@ function compute_(o, tt) {
   for (let k = start; k <= t; k = addDays_(k, 1)) {
     const d = days[k], rest = dow_(k) === 0, past = k < t;
     let st = 'open';
-    if (d && d.done) { total++; const ez = d.e ? 1 : 0; pts += rest ? 1 : (d.at === k) ? (3 - ez) * (xmas_(k) ? 2 : 1) : 1 - ez; st = 'done'; if (!rest) { streak++; weekRun++; } }
+    if (d && d.done) { total++; const ez = d.e && data.g !== 'w' ? 1 : 0; pts += rest ? 1 : (d.at === k) ? (3 - ez) * (xmas_(k) ? 2 : 1) : 1 - ez; st = 'done'; if (!rest) { streak++; weekRun++; } }
     else if (rest) st = 'rest';
     else if (past) { pts -= 3; streak = 0; weekRun = 0; st = 'miss'; }
     if (dow_(k) === 6) { if (weekRun >= 6 && st !== 'open') pts += 3; weekRun = 0; }
