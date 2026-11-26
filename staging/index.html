@@ -163,7 +163,7 @@ select.txt{appearance:auto}
     <h3>🏆 Meilensteine</h3>
     <div id="msList"></div>
   </div>
-  <div class="note">Regeln: Erledigt +3 (leicht +2) · Nicht erledigt −3 · Am nächsten Tag nachgeholt: +4 zurück (aus −3 wird +1) · Volle Woche Mo–Sa ohne Lücke +3 Bonus · Tages-Challenge +2 · Wochen-Challenge +5 · 24.–26.12. doppelte Punkte. Ausreden gibt's keine. 😉<br><br>Beim Drücken immer ausatmen. Stechender Gelenkschmerz = abbrechen. Bei Bluthochdruck vorher ärztlich abklären.</div>
+  <div class="note">Regeln: Erledigt +3 (leicht +2, Frauen auch auf leicht +3; bei Punktgleichheit liegt vorn, wer öfter „Normal“ gemacht hat – Frauen zuerst) · Nicht erledigt −3 · Am nächsten Tag nachgeholt: +4 zurück (aus −3 wird +1) · Volle Woche Mo–Sa ohne Lücke +3 Bonus · Tages-Challenge +2 · Wochen-Challenge +5 · 24.–26.12. doppelte Punkte. Ausreden gibt's keine. 😉<br><br>Beim Drücken immer ausatmen. Stechender Gelenkschmerz = abbrechen. Bei Bluthochdruck vorher ärztlich abklären.</div>
   </div>
 </div>
 
@@ -387,7 +387,7 @@ function applyServer(r){
   const days=Object.assign({},d.days||{}),ch=Object.assign({},d.ch||{});
   if(loc.name===r.name&&!r.v){Object.assign(days,loc.days||{});Object.assign(ch,loc.ch||{})}
   if(r.v)setTimeout(runPend,500);
-  state={days,ch,ms:Array.from(new Set([...(d.ms||[]),...((loc.name===r.name&&loc.ms)||[])])),name:r.name,start:r.start||START};
+  state={days,ch,ms:Array.from(new Set([...(d.ms||[]),...((loc.name===r.name&&loc.ms)||[])])),name:r.name,start:r.start||START,g:d.g||""};setTimeout(askG,1200);
   email=r.email||"";mp=(d.mp===0||d.mp===1)?d.mp:2;lsSet("state",state);renderMenu();
   if(JSON.stringify(days)!==JSON.stringify(d.days||{})||JSON.stringify(ch)!==JSON.stringify(d.ch||{}))save();
 }
@@ -396,7 +396,7 @@ function save(){
   lsSet("state",state);
   if(!API_URL||!token)return;
   clearTimeout(saveT);saveT=setTimeout(async()=>{
-    try{const r=await api("save",{token,data:{days:state.days,ms:state.ms,ch:state.ch,bx:bonus}});setSync(r.ok?"☁️ synchronisiert":"⚠️ Speichern fehlgeschlagen");loadRank()}
+    try{const r=await api("save",{token,data:{days:state.days,ms:state.ms,ch:state.ch,bx:bonus,g:state.g||undefined}});setSync(r.ok?"☁️ synchronisiert":"⚠️ Speichern fehlgeschlagen");loadRank()}
     catch(e){setSync("⚠️ offline – wird später synchronisiert")}
   },400);
 }
@@ -432,15 +432,19 @@ const flame=n=>n>=3?n+"🔥":String(n);
 function lostCheck(st){const L=st.lost;if(!L||L.k<addDays(todayK(),-2)||ls("lostSeen","")===L.k||st.streak>=3)return;lsSet("lostSeen",L.k);
   setTimeout(()=>ask("😢 <b>Flammen verloren!</b><br>Deine Serie von <b>"+L.n+"🔥</b> ist gerissen."+(canMkSoon(L.k)?"<br><br>💡 Noch zu retten: heute dein Workout machen und danach eins zum Nachholen – dann brennt die Serie weiter.":"<br><br>Kopf hoch – nach 3 Workouts in Folge brennt sie wieder. 💪"),()=>{},null,"Los geht's","Schließen"),600)}
 const canMkSoon=k=>addDays(k,1)===todayK();
+// Wertung: Frauen bekommen auf "Leicht" die vollen Punkte; bei Punktgleichheit zählen zuerst die Normal-Workouts der Frauen, dann alle Normal-Workouts
+function askG(){if(!state||!state.name||state.g)return;if($("modal").style.display==="flex"){setTimeout(askG,3000);return}
+  ask("⚖️ <b>Für die faire Wertung:</b> Bist du eine Frau oder ein Mann?<br><small>Frauen bekommen auf „Leicht“ die vollen Punkte. Sonst wird nichts gespeichert.</small>",()=>setG("w"),()=>setG("m"),"Frau","Mann")}
+function setG(v){state.g=v;lsSet("state",state);save();renderMenu()}
 function compute(S){
-  S=S||state;const tt=todayK();const t=tt>CH_END?CH_END:tt;let st0=S.start||START;if(tt>=CH_START&&st0<CH_START)st0=CH_START;let pts=0,streak=0,best=0,total=0,bonus=0,weekRun=0,lost=null;
+  S=S||state;const tt=todayK();const t=tt>CH_END?CH_END:tt;let st0=S.start||START;if(tt>=CH_START&&st0<CH_START)st0=CH_START;let pts=0,streak=0,best=0,total=0,bonus=0,weekRun=0,lost=null,hard=0;
   const log={};
   let k=st0;
   while(k<=t){
     const d=(S.days||{})[k],rest=isRest(k),past=k<t;
     if(d&&d.done){
       total++;
-      const ez=d.e?1:0;
+      const ez=d.e&&S.g!=="w"?1:0;if(!d.e&&d.at===k&&!rest)hard++;
       if(rest){pts+=1;log[k]="done";}
       else if(d.at===k){pts+=(3-ez)*(XMAS(k)?2:1);log[k]="done";}
       else{pts+=1-ez;log[k]="late";}
@@ -454,7 +458,7 @@ function compute(S){
     k=addDays(k,1);
   }
   let chp=0;Object.keys(S.ch||{}).forEach(x=>{const c=S.ch[x];if(c&&(c.at||"")>=st0&&(c.at||"")<=CH_END)chp+=(c.p||0)*(x.slice(0,2)==="d:"&&XMAS(c.at)?2:1)});pts+=chp;
-  return {pts,streak,best,total,bonus,log,chp,lost};
+  return {pts,streak,best,total,bonus,log,chp,lost,hard};
 }
 
 // ---------- Meilensteine ----------
@@ -500,7 +504,7 @@ function renderMenu(){
   {let wk=tw||"K",lab="▶ Heutiges Workout starten";
   if(tDone&&yMiss){wk=planFor(y)||"K";lab="↺ Gestern nachholen (+4 zurück)"}else if(tDone)lab="💪 Extra-Runde (zählt nicht doppelt)";else if(!tw)lab="😴 Sonntag: freiwilliges Workout (+1)";
   todayW=wk;$("bTodayT").textContent=lab;$("bTodayS").textContent=W[wk].t+" · "+DESC[wk];}
-  {const el=$("lvl");el.innerHTML="";[0,1].forEach(v=>{const c=document.createElement("button");c.className="chip"+(v===easy?" on":"");c.textContent=v?"🪶 Leicht (+2)":"💪 Normal (+3)";c.onclick=()=>{easy=v;renderMenu()};el.appendChild(c)})}
+  {const el=$("lvl");el.innerHTML="";[0,1].forEach(v=>{const c=document.createElement("button");c.className="chip"+(v===easy?" on":"");c.textContent=v?(state.g==="w"?"🪶 Leicht (+3)":"🪶 Leicht (+2)"):"💪 Normal (+3)";c.onclick=()=>{easy=v;renderMenu()};el.appendChild(c)})}
   $("wkPlan").textContent="Diese Woche: Mo "+planFor(weekKey(t))+" · Mi "+planFor(addDays(weekKey(t),2))+" · Fr "+planFor(addDays(weekKey(t),4))+" (A und B wechseln jede Woche) · Di, Do, Sa = Kurztag";
   // Kalender
   const yv=calM.getFullYear(),mv=calM.getMonth();$("calTitle").textContent=MON[mv]+" "+yv;
@@ -640,8 +644,8 @@ function renderBoss(rows){const lead=rows.filter(r=>r.pl===1),meLead=lead.some(r
 function renderRank(){
   const list=others.filter(u=>u.name!==state.name).concat(state.name?[{name:state.name,start:state.start,days:state.days,ch:state.ch,me:true}]:[]);
   const t=todayK();
-  const rows=list.map(u=>{const c=compute({days:u.days||{},ch:u.ch||{},start:u.start||START});return {me:!!u.me,name:u.name,pts:c.pts,streak:c.streak,total:c.total,bx:u.me?bonus:(+u.bx||0),today:!!(u.days&&u.days[t]&&u.days[t].done),msg:u.ch&&u.ch.msg,egg:eggBadge(eggCount(u.ch))}})
-    .sort((a,b)=>b.pts-a.pts||b.bx-a.bx||b.streak-a.streak||b.total-a.total);
+  const rows=list.map(u=>{const c=compute({days:u.days||{},ch:u.ch||{},start:u.start||START,g:u.me?state.g:u.g});return {me:!!u.me,name:u.name,pts:c.pts,fh:(u.me?state.g:u.g)==="w"?c.hard:0,hard:c.hard,streak:c.streak,total:c.total,bx:u.me?bonus:(+u.bx||0),today:!!(u.days&&u.days[t]&&u.days[t].done),msg:u.ch&&u.ch.msg,egg:eggBadge(eggCount(u.ch))}})
+    .sort((a,b)=>b.pts-a.pts||b.fh-a.fh||b.hard-a.hard||b.bx-a.bx||b.streak-a.streak||b.total-a.total);
   rows.forEach((r,i)=>{const q=rows[i-1];r.pl=i&&r.pts===q.pts&&r.bx===q.bx&&r.streak===q.streak&&r.total===q.total?q.pl:i+1});
   {const me=rows.find(r=>r.me);$("sRank").textContent=me&&others.length?me.pl+".":"–"}
   const med=["🥇","🥈","🥉"];
