@@ -124,6 +124,7 @@ select.txt{appearance:auto}
   <div id="banners"></div>
   <div class="tabs"><button data-t="train" class="on"><i>🏋️</i>Training</button><button data-t="chal"><i>⚡</i>Challenges</button><button data-t="rank"><i>🏆</i>Ranking</button><button data-t="more"><i>☰</i>Mehr</button></div>
   <div id="tab-train">
+  <div id="whoBox"></div>
   <button class="wbtn today" id="bToday"><b id="bTodayT">▶ Heutiges Workout starten</b><span id="bTodayS"></span></button>
   <div class="lvl" id="lvl"></div>
   <div class="note" style="margin:0 0 12px">Leicht = kürzere Haltezeiten, längere Pausen, Plank 2 × 30 s – dafür 1 Punkt weniger. Umschalten geht auch mitten im Workout.</div>
@@ -131,17 +132,18 @@ select.txt{appearance:auto}
   <div class="card">
     <div class="cal-h"><button id="calPrev">‹</button><h3 id="calTitle" style="margin:0"></h3><button id="calNext">›</button></div>
     <div class="grid" id="cal"></div>
-    <div class="legend">✓ erledigt +3 (leicht +2) · ↺ nachgeholt +4 zurück (aus −3 wird +1) · ✗ verpasst −3 · So = Ruhetag (freiwillig +1)<br><span id="wkPlan"></span></div>
+    <div class="legend">✓ erledigt +3 (leicht +2) · ↺ nachgeholt +4 zurück (aus −3 wird +1) · ✗ verpasst −3 · 🔁 Comeback: danach 3 in Folge = +3 zurück · So = Ruhetag (freiwillig +1)<br><span id="wkPlan"></span></div>
   </div>
   </div>
   <div id="tab-chal" style="display:none"><div id="chalBox"></div><div class="note">Challenges laufen wie ein Workout: starten, komplett durchziehen, Punkte kassieren. Kein Abhaken von Hand.<br>Wochen-Challenge: 7 von 7 Tagen, sonst keine Punkte. Einen verpassten Tag darfst du 1× pro Woche am nächsten Tag nachholen (dann zweimal machen).</div><div id="eggBox"></div></div>
-  <div id="tab-rank" style="display:none"><div id="bossBox"></div><div class="card"><h3>🏆 Ranking</h3><div id="rankList"></div></div><div class="note" id="rankNote">Bei Punktgleichheit liegt vorne, wer mehr Extra-Sekunden eingestellt hat (Mehr → Steigerung).<br>Freunde einladen: einfach den Link zu dieser Seite schicken. Jede/r registriert sich mit Benutzername + PIN.</div></div>
+  <div id="tab-rank" style="display:none"><div id="bossBox"></div><div class="card"><h3>🏆 Ranking</h3><div id="rankList"></div></div><button class="wbtn" id="bShareRk" style="text-align:center;padding:12px"><b style="font-size:16px;margin:0">📤 Meinen Stand teilen</b><span>als Bild für WhatsApp, Status oder Story</span></button><div class="note" id="grpNote" style="margin-bottom:10px"></div><div class="note" id="rankNote">Bei Punktgleichheit liegt vorne, wer mehr Extra-Sekunden eingestellt hat (Mehr → Steigerung).<br>Freunde einladen: einfach den Link zu dieser Seite schicken. Jede/r registriert sich mit Benutzername + PIN.</div></div>
   <div id="tab-more" style="display:none">
   <button class="wbtn" id="bHelp" style="text-align:center;padding:12px"><b style="font-size:16px;margin:0">❓ Anleitung &amp; Übungen</b><span>Regeln, Punkte, alle Übungen erklärt</span></button>
   <button class="wbtn" id="bFb" style="text-align:center;padding:12px"><b style="font-size:16px;margin:0">💬 Feedback &amp; Fragen</b><span>Idee, Problem, Frage oder Lob – geht direkt an Max</span></button>
   <button class="wbtn" id="bPv" style="text-align:center;padding:12px"><b style="font-size:16px;margin:0">🔒 Meine Werte</b><span>Gewicht, Bauchumfang, Plank-Bestzeit – nur für dich sichtbar</span></button>
   <button class="wbtn" id="bSingle" style="text-align:center;padding:12px"><b style="font-size:16px;margin:0">🎯 Einzelne Übung starten</b><span>zum Testen &amp; Üben – zählt nicht für Punkte</span></button>
   <button class="wbtn" id="bRem" style="text-align:center;padding:12px"><b style="font-size:16px;margin:0">🔔 Erinnerungen</b><span>Mails (keine, 1 oder 2 pro Tag) &amp; Kalender-Alarm zur Wunschzeit</span></button>
+  <button class="wbtn" id="bPz" style="text-align:center;padding:12px"><b style="font-size:16px;margin:0">🤒 Krank / Pause</b><span id="bPzS">länger krank oder im Urlaub? Dann fliegst du nicht aus der Gruppe</span></button>
   <button class="wbtn" id="bAcc" style="text-align:center;padding:12px"><b style="font-size:16px;margin:0">⚙️ Mein Konto</b><span>Abmelden</span></button>
   <div class="card">
     <h3>⚙️ Einstellungen</h3>
@@ -163,7 +165,7 @@ select.txt{appearance:auto}
     <h3>🏆 Meilensteine</h3>
     <div id="msList"></div>
   </div>
-  <div class="note">Regeln: Erledigt +3 (leicht +2, Frauen auch auf leicht +3; bei Punktgleichheit liegt vorn, wer öfter „Normal“ gemacht hat – Frauen zuerst) · Nicht erledigt −3 · Am nächsten Tag nachgeholt: +4 zurück (aus −3 wird +1) · Volle Woche Mo–Sa ohne Lücke +3 Bonus · Tages-Challenge +2 · Wochen-Challenge +5 · 24.–26.12. doppelte Punkte. Ausreden gibt's keine. 😉<br><br>Beim Drücken immer ausatmen. Stechender Gelenkschmerz = abbrechen. Bei Bluthochdruck vorher ärztlich abklären.</div>
+  <div class="note">Regeln: Erledigt +3 (leicht +2, Frauen auch auf leicht +3; bei Punktgleichheit liegt vorn, wer öfter „Normal“ gemacht hat – Frauen zuerst) · Nicht erledigt −3 · Am nächsten Tag nachgeholt: +4 zurück (aus −3 wird +1) · 🔁 Comeback-Mission: nach einem verpassten Tag 3 Workouts in Folge = +3 zurück (1× pro Woche) · Volle Woche Mo–Sa ohne Lücke +3 Bonus · Tages-Challenge +2 · Wochen-Challenge +5 · 24.–26.12. doppelte Punkte. Ausreden gibt's keine. 😉<br><br>Beim Drücken immer ausatmen. Stechender Gelenkschmerz = abbrechen. Bei Bluthochdruck vorher ärztlich abklären.</div>
   </div>
 </div>
 
@@ -189,6 +191,7 @@ select.txt{appearance:auto}
   <h2>🔥 Geschafft!</h2>
   <div id="doneTxt"></div>
   <div id="doneMs"></div>
+  <button class="wbtn" id="bShare" style="text-align:center;background:var(--acc);color:#000;display:none"><b style="margin:0">📤 Ergebnis teilen</b></button>
   <button class="wbtn" id="bBack" style="text-align:center"><b>Zum Kalender</b></button>
 </div>
 
@@ -207,7 +210,7 @@ select.txt{appearance:auto}
 <div class="pvg2"><div><label>Zielgewicht (kg)</label><input class="txt" id="rgWz" inputmode="decimal" maxlength="5" placeholder="optional"></div><div><label>Bauchumfang (cm)</label><input class="txt" id="rgB0" inputmode="decimal" maxlength="5" placeholder="optional"></div></div></details>
 <div id="lgErr" style="color:var(--bad);font-size:14px;min-height:20px;margin-bottom:8px"></div>
 <button class="wbtn" id="lgGo" style="text-align:center;background:var(--acc);color:#000;margin:0"><b>Anmelden</b></button>
-</div><p class="note">PIN vergessen? Bei Max melden.</p></div></div>
+</div><p class="note">PIN vergessen? Bei Max melden. · <a id="lgLegal" style="color:inherit;text-decoration:underline;cursor:pointer">Datenschutz &amp; Kontakt</a></p></div></div>
 <div id="acc" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.8);align-items:center;justify-content:center;padding:20px;z-index:6"><div class="card" style="max-width:380px;width:100%">
 <h3>⚙️ Mein Konto</h3><p class="sub" id="accName"></p>
 <p class="note">E-Mail und Mail-Erinnerungen findest du jetzt unter „Mehr“ → „🔔 Erinnerungen“.</p>
@@ -255,13 +258,12 @@ select.txt{appearance:auto}
 <div class="card" id="pvSum"></div>
 <div class="card"><h3>📏 Start</h3><div class="pvg"><label>Geschlecht</label><select class="txt" id="pvSex"><option value="">keine Angabe</option><option value="m">Mann</option><option value="w">Frau</option><option value="d">divers</option></select></div>
 <div class="pvg2"><div><label>Größe (cm)</label><input class="txt" id="pvH" inputmode="numeric" maxlength="3" placeholder="z. B. 180"></div><div><label>Startgewicht (kg)</label><input class="txt" id="pvW0" inputmode="decimal" maxlength="5" placeholder="z. B. 85"></div></div>
-<div class="pvg2"><div><label>Zielgewicht (kg)</label><input class="txt" id="pvWz" inputmode="decimal" maxlength="5" placeholder="optional"></div><div><label>Bauchumfang (cm)</label><input class="txt" id="pvB0" inputmode="decimal" maxlength="5" placeholder="optional"></div></div><label>Plank-Bestzeit am Start (Sekunden)</label><input class="txt" id="pvP0" inputmode="numeric" maxlength="4" placeholder="optional, z. B. 60"></div>
+<div class="pvg2"><div><label>Zielgewicht (kg)</label><input class="txt" id="pvWz" inputmode="decimal" maxlength="5" placeholder="optional"></div><div><label>Bauchumfang (cm)</label><input class="txt" id="pvB0" inputmode="decimal" maxlength="5" placeholder="optional"></div></div><p class="note" style="margin:6px 0 0">⏱️ Plank kommt automatisch aus deinem Fitness-Test und den Rekorden.</p></div>
 <div class="card"><h3>📈 Neuer Messwert</h3><p class="note" style="margin-top:0">Am besten 1× pro Woche, morgens nüchtern, gleiche Waage.</p>
 <div class="pvg2"><div><label>Gewicht (kg)</label><input class="txt" id="pvNW" inputmode="decimal" maxlength="5"></div><div><label>Bauchumfang (cm)</label><input class="txt" id="pvNB" inputmode="decimal" maxlength="5"></div></div>
-<label>Plank-Bestzeit (Sekunden)</label><input class="txt" id="pvNP" inputmode="numeric" maxlength="4">
 <button class="wbtn" id="pvAdd" style="text-align:center;background:var(--acc);color:#000;margin:0"><b>Messwert speichern</b></button><div id="pvMsg" class="note" style="min-height:18px"></div></div>
 <div class="card"><h3>🗓️ Verlauf</h3><div id="pvLog"></div></div>
-<p class="note">Tipp: Halteübungen bauen vor allem Kraft auf – das Gewicht ändert sich oft nur wenig. Bauchumfang und Plank-Bestzeit zeigen den Fortschritt meist besser.<br>Achtung: Bei Handywechsel oder gelöschten Browserdaten sind die Werte weg.</p>
+<p class="note">Tipp: Halteübungen bauen vor allem Kraft auf – das Gewicht ändert sich oft nur wenig. Bauchumfang und Plank-Zeit (aus Test &amp; Rekorden) zeigen den Fortschritt meist besser.<br>Achtung: Bei Handywechsel oder gelöschten Browserdaten sind die Werte weg.</p>
 </div></div>
 <div id="pick" style="display:none;position:fixed;inset:0;background:var(--bg);overflow:auto;padding:20px;z-index:8"><div style="max-width:480px;margin:0 auto"><div class="row" style="justify-content:space-between"><h1>🎯 Einzelne Übung</h1><button class="chip" id="pickX">Schließen ✕</button></div><p class="sub">Antippen = starten. ℹ️ = Erklärung. Zählt nicht für Punkte.</p><div class="exl" id="pickList"></div></div></div>
 <div id="exd"><div style="max-width:480px;margin:0 auto"><div class="row" style="justify-content:space-between"><span class="note">Übung</span><button class="chip" id="exdX">Zurück ✕</button></div><div id="exdBody"></div><button class="wbtn" id="exdX2" style="text-align:center;margin-top:16px"><b>Verstanden 👍</b></button></div></div>
@@ -278,14 +280,16 @@ select.txt{appearance:auto}
 <tr><td>🪶 … in der leichten Variante</td><td style="color:var(--acc)">+2</td></tr>
 <tr><td>✗ Trainingstag verpasst</td><td style="color:var(--bad)">−3</td></tr>
 <tr><td>↺ Am nächsten Tag nachgeholt (statt −3)</td><td style="color:var(--warn)">+1</td></tr>
+<tr><td>🔁 Comeback-Mission: nach verpasstem Tag 3 Workouts in Folge (1× pro Woche)</td><td style="color:var(--acc)">+3</td></tr>
 <tr><td>📅 Volle Woche Mo–Sa ohne Lücke</td><td style="color:var(--acc)">+3</td></tr>
 <tr><td>⚡ Tages-Challenge geschafft</td><td style="color:var(--acc)">+2</td></tr>
 <tr><td>⚡ Wochen-Challenge geschafft (7 von 7)</td><td style="color:var(--acc)">+5</td></tr>
 <tr><td>😴 Freiwilliges Workout am Sonntag</td><td style="color:var(--acc)">+1</td></tr>
 <tr><td>🎄 24.–26.12.: Workout und Tages-Challenge</td><td style="color:var(--acc)">× 2</td></tr>
 </table>
-<ul><li><b>Zu schwer?</b> Wähle vor dem Start „Leicht“ oder tippe im Workout auf „Zu schwer? Leichter weitermachen“. Dann werden die Haltezeiten kürzer, die Pausen länger, aus 60 s Plank werden 2 × 30 s und aus 20 s Liegestütz halten 2 × 10 s mit kurzer Pause (Knie oder normal – deine Wahl). Dafür gibt es 1 Punkt weniger.</li><li><b>Nachholen:</b> Erst das heutige Workout, dann ein zweites – das zählt für gestern und holt <b>4 Punkte zurück</b> (aus −3 wird +1).</li><li><b>🔥 Serie:</b> Trainingstage am Stück ohne Lücke. Sonntag unterbricht nicht.</li><li><b>Gleichstand:</b> Bei gleichen Punkten liegt vorne, wer mehr Extra-Sekunden eingestellt hat.</li><li>Ausreden gibt's keine. Es gibt keinen „Krank“-Knopf – wer ehrlich krank ist, schont sich und holt Punkte später über Challenges auf.</li></ul>
-<h2>4. Challenges & Ranking</h2><ul><li>Jeden Tag eine neue Tages-Challenge, jede Woche eine Wochen-Challenge – für alle dieselbe.</li><li>Challenges startest du in der App – sie laufen wie ein Workout komplett durch. Nur dann gibt's Punkte.</li><li>Wochen-Challenge: jeden Tag (Mo–So) neu starten, die +5 gibt's nur bei 7 von 7 Tagen. Einen verpassten Tag darfst du 1× pro Woche am nächsten Tag nachholen – dann die Challenge zweimal machen.</li><li>Im Ranking siehst du Punkte, Serie und wer heute schon trainiert hat.</li></ul>
+<ul><li><b>Zu schwer?</b> Wähle vor dem Start „Leicht“ oder tippe im Workout auf „Zu schwer? Leichter weitermachen“. Dann werden die Haltezeiten kürzer, die Pausen länger, aus 60 s Plank werden 2 × 30 s und aus 20 s Liegestütz halten 2 × 10 s mit kurzer Pause (Knie oder normal – deine Wahl). Dafür gibt es 1 Punkt weniger.</li><li><b>Nachholen:</b> Erst das heutige Workout, dann ein zweites – das zählt für gestern und holt <b>4 Punkte zurück</b> (aus −3 wird +1).</li><li><b>🔁 Comeback-Mission:</b> Tag verpasst? Die −3 bleiben. Schaffst du danach 3 Trainingstage in Folge, bekommst du <b>+3 zurück</b> – einmal pro Woche. Hart bleibt hart, aber es gibt einen Weg zurück.</li><li><b>🔥 Serie:</b> Trainingstage am Stück ohne Lücke. Sonntag unterbricht nicht.</li><li><b>Gleichstand:</b> Bei gleichen Punkten liegt vorne, wer mehr Extra-Sekunden eingestellt hat.</li><li>Ausreden gibt's keine. Länger krank oder weg? Unter „Mehr“ → „🤒 Krank / Pause“ meldest du dich ab: Du fliegst nicht aus der Gruppe und zählst nicht bei „Wer fehlt“. Die −3 pro verpasstem Tag laufen trotzdem weiter – Punkte holst du über Challenges und die Comeback-Mission wieder auf.</li></ul>
+<h2>4. Challenges & Ranking</h2><ul><li>Jeden Tag eine neue Tages-Challenge, jede Woche eine Wochen-Challenge – für alle dieselbe.</li><li>Challenges startest du in der App – sie laufen wie ein Workout komplett durch. Nur dann gibt's Punkte.</li><li>Wochen-Challenge: jeden Tag (Mo–So) neu starten, die +5 gibt's nur bei 7 von 7 Tagen. Einen verpassten Tag darfst du 1× pro Woche am nächsten Tag nachholen – dann die Challenge zweimal machen.</li><li>Im Ranking siehst du Punkte, Serie und wer heute schon trainiert hat. Auf der Startseite steht, wie viele heute schon durch sind und wer noch fehlt.</li><li><b>📤 Teilen:</b> Nach jedem Workout, bei neuem Rekord und im Ranking kannst du deinen Stand als Bild teilen.</li></ul>
+<h2>👥 Die Gruppe</h2><ul><li><b>Wer ist dabei?</b> Im Ranking steht ab 1.12. nur, wer seitdem mindestens ein Workout gemacht hat. Wer nur angemeldet ist, taucht nicht auf.</li><li><b>🏅 Gruppenpunkt:</b> An jedem Trainingstag (Mo–Sa), an dem alle Aktiven durch sind, gibt es einen Punkt für die ganze Gruppe – plus Konfetti. Der Zähler steht auf der Startseite. Einzelne bekommen dafür keine Extra-Punkte: Das schafft ihr nur zusammen.</li><li><b>Nachholen rettet den Gruppenpunkt nicht:</b> Er zählt nur, wenn alle am selben Tag trainiert haben.</li><li><b>7 Tage ohne Training:</b> Du bekommst eine Warnung und zählst nicht mehr bei „Wer fehlt“ und beim Gruppenpunkt – so blockiert niemand die anderen.</li><li><b>14 Tage ohne Training:</b> Du fliegst aus Ranking und Gruppe. Deine Daten bleiben – mit dem nächsten Workout bist du wieder drin (mit allen Minuspunkten).</li><li><b>🤒 Krank / Pause</b> (unter „Mehr“): Dann fliegst du nicht raus. Die Pause endet automatisch mit deinem nächsten Workout.</li></ul>
 <h2>5. Meilensteine</h2><p>Für Serien, Punkte und Anzahl Workouts gibt es Meilensteine mit Lob und Belohnungsideen. Belohn dich wirklich – das hält dich dran.</p>
 <h2>6. Steigern</h2><p>Alle 2 Wochen unter „Mehr“ → „Steigerung“ +5 s einstellen. Das gibt keine Extra-Punkte, entscheidet aber bei Punktgleichheit im Ranking.</p>
 <h2>Die Übungen</h2><p class="sub" style="margin-bottom:8px">Tippe auf eine Übung für die genaue Erklärung.</p><div class="exl" id="exList"></div>
@@ -437,7 +441,7 @@ function askG(){if(!state||!state.name||state.g)return;if($("modal").style.displ
   ask("⚖️ <b>Für die faire Wertung:</b> Bist du eine Frau oder ein Mann?<br><small>Frauen bekommen auf „Leicht“ die vollen Punkte. Sonst wird nichts gespeichert.</small>",()=>setG("w"),()=>setG("m"),"Frau","Mann")}
 function setG(v){state.g=v;lsSet("state",state);save();renderMenu()}
 function compute(S){
-  S=S||state;const tt=todayK();const t=tt>CH_END?CH_END:tt;let st0=S.start||START;if(tt>=CH_START&&st0<CH_START)st0=CH_START;let pts=0,streak=0,best=0,total=0,bonus=0,weekRun=0,lost=null,hard=0;
+  S=S||state;const tt=todayK();const t=tt>CH_END?CH_END:tt;let st0=S.start||START;if(tt>=CH_START&&st0<CH_START)st0=CH_START;let pts=0,streak=0,best=0,total=0,bonus=0,weekRun=0,lost=null,hard=0,owed=false,cbC=0,cbWk="",cbLast="";
   const log={};
   let k=st0;
   while(k<=t){
@@ -448,9 +452,11 @@ function compute(S){
       if(rest){pts+=1;log[k]="done";}
       else if(d.at===k){pts+=(3-ez)*(XMAS(k)?2:1);log[k]="done";}
       else{pts+=1-ez;log[k]="late";}
-      if(!rest){streak++;weekRun++;}
+      if(!rest){streak++;weekRun++;
+        // Comeback-Mission: nach einem verpassten Tag 3 Trainingstage in Folge = +3 zurück (1× pro Woche)
+        if(owed&&streak>=3){owed=false;const wk=weekKey(k);if(wk!==cbWk){cbWk=wk;cbLast=k;cbC++;pts+=3}}}
     }else if(rest){log[k]="rest";}
-    else if(past){pts-=3;log[k]="miss";if(streak>=3)lost={n:streak,k};streak=0;weekRun=0;}
+    else if(past){pts-=3;log[k]="miss";if(streak>=3)lost={n:streak,k};streak=0;weekRun=0;owed=true;}
     else{log[k]="open";}
     if(rest&&!(d&&d.done)){}
     if(parse(k).getDay()===6){ if(weekRun>=6&&log[k]!=="open"){pts+=3;bonus++;} weekRun=0; }
@@ -458,7 +464,7 @@ function compute(S){
     k=addDays(k,1);
   }
   let chp=0;Object.keys(S.ch||{}).forEach(x=>{const c=S.ch[x];if(c&&(c.at||"")>=st0&&(c.at||"")<=CH_END)chp+=(c.p||0)*(x.slice(0,2)==="d:"&&XMAS(c.at)?2:1)});pts+=chp;
-  return {pts,streak,best,total,bonus,log,chp,lost,hard};
+  return {pts,streak,best,total,bonus,log,chp,lost,hard,cb:{on:owed,n:Math.min(streak,3),c:cbC,last:cbLast}};
 }
 
 // ---------- Meilensteine ----------
@@ -641,16 +647,37 @@ function renderBoss(rows){const lead=rows.filter(r=>r.pl===1),meLead=lead.some(r
     ask('<b>👑 Deine Ansage an alle</b> (max. 140 Zeichen):<textarea id="bossIn" maxlength="140" style="width:100%;margin-top:10px;min-height:80px;padding:10px;border-radius:10px;border:1px solid #333;background:#0f1115;color:#fff;font-size:16px"></textarea><span class="note">Motivieren, anstacheln, provozieren – aber fair bleiben. Sichtbar, solange du auf Platz 1 bist.</span>',()=>{
       const v=($("bossIn")&&$("bossIn").value||"").trim().slice(0,140);state.ch=state.ch||{};if(v)state.ch.msg={p:0,t:v,ts:new Date().toISOString()};else delete state.ch.msg;save();renderMenu()});
     setTimeout(()=>{const i=$("bossIn");if(i){i.value=cur;i.focus()}},50)}}
+let RK=[];
+// ---------- Aktive Gruppe (ab 1.12.): dabei ist, wer ab dem 1.12. mindestens ein Workout gemacht hat ----------
+// 7 Tage ohne Training: Warnung, zählt nicht mehr bei "Wer fehlt" und beim Gruppenpunkt · 14 Tage: raus aus Ranking und Gruppe
+// (außer "Krank / Pause" ist aktiv) · mit dem nächsten Workout ist man wieder drin
+const dDiff=(a,b)=>Math.round((parse(b)-parse(a))/864e5);
+function actKeys(u){return Object.keys(u.days||{}).filter(k=>k>=CH_START&&u.days[k]&&u.days[k].done).sort()}
+function lastAct(u,k){const a=actKeys(u);let l="";for(const x of a){if(x<=k)l=x;else break}return l}
+function pausedOn(u,k){const z=u.ch&&u.ch.pz;if(!Array.isArray(z))return false;return z.some(r=>Array.isArray(r)&&r[0]&&r[0]<=k&&(!r[1]||k<=r[1])&&!actKeys(u).some(d=>d>r[0]&&d<=k))}
+function grpInfo(u,t){if(t<CH_START)return {in:true,idle:0,pz:false,cnt:(u.start||START)<=t,pre:true};
+  const l=lastAct(u,t);if(!l)return {in:false,idle:-1,pz:false,cnt:false,never:true};
+  const idle=dDiff(l,t),pz=pausedOn(u,t);return {in:pz||idle<=14,idle,pz,cnt:!pz&&idle<=7}}
+// Gruppenpunkte: Trainingstage (Mo–Sa), an denen alle Aktiven am selben Tag durch waren (mind. 2 Aktive)
+function groupPts(list,t){if(t<CH_START)return 0;let n=0;const end=t>CH_END?CH_END:t;
+  for(let k=CH_START;k<=end;k=addDays(k,1)){if(isRest(k))continue;
+    const m=list.filter(u=>{const l=lastAct(u,k);return l&&dDiff(l,k)<=7&&!pausedOn(u,k)});
+    if(m.length>=2&&m.every(u=>u.days[k]&&u.days[k].done&&u.days[k].at===k))n++}
+  return n}
+let ALLU=[],GP=0,MYG={in:true,idle:0,pz:false,cnt:true};
 function renderRank(){
-  const list=others.filter(u=>u.name!==state.name).concat(state.name?[{name:state.name,start:state.start,days:state.days,ch:state.ch,me:true}]:[]);
   const t=todayK();
-  const rows=list.map(u=>{const c=compute({days:u.days||{},ch:u.ch||{},start:u.start||START,g:u.me?state.g:u.g});return {me:!!u.me,name:u.name,pts:c.pts,fh:(u.me?state.g:u.g)==="w"?c.hard:0,hard:c.hard,streak:c.streak,total:c.total,bx:u.me?bonus:(+u.bx||0),today:!!(u.days&&u.days[t]&&u.days[t].done),msg:u.ch&&u.ch.msg,egg:eggBadge(eggCount(u.ch))}})
+  ALLU=others.filter(u=>u.name!==state.name).concat(state.name?[{name:state.name,start:state.start,days:state.days,ch:state.ch,me:true}]:[]);
+  ALLU.forEach(u=>{u.G=grpInfo(u,t)});MYG=(ALLU.find(u=>u.me)||{}).G||{in:true,idle:0,pz:false,cnt:true};GP=groupPts(ALLU,t);
+  const list=ALLU.filter(u=>u.G.in);
+  const rows=list.map(u=>{const c=compute({days:u.days||{},ch:u.ch||{},start:u.start||START,g:u.me?state.g:u.g});return {me:!!u.me,name:u.name,start:u.start||START,idle:u.G.idle,pz:u.G.pz,cnt:u.G.cnt,pts:c.pts,fh:(u.me?state.g:u.g)==="w"?c.hard:0,hard:c.hard,streak:c.streak,total:c.total,bx:u.me?bonus:(+u.bx||0),today:!!(u.days&&u.days[t]&&u.days[t].done),msg:u.ch&&u.ch.msg,egg:eggBadge(eggCount(u.ch))}})
     .sort((a,b)=>b.pts-a.pts||b.fh-a.fh||b.hard-a.hard||b.bx-a.bx||b.streak-a.streak||b.total-a.total);
   rows.forEach((r,i)=>{const q=rows[i-1];r.pl=i&&r.pts===q.pts&&r.bx===q.bx&&r.streak===q.streak&&r.total===q.total?q.pl:i+1});
   {const me=rows.find(r=>r.me);$("sRank").textContent=me&&others.length?me.pl+".":"–"}
+  RK=rows;
   const med=["🥇","🥈","🥉"];
   renderBoss(rows);
-  $("rankList").innerHTML=rows.length?rows.map((r,i)=>'<div class="rk'+(r.me?" me":"")+'"><div class="p">'+(med[r.pl-1]||r.pl)+'</div><div class="nm"><b></b><small>'+(r.streak>=3?r.streak+'🔥 · ':'')+r.total+' Workouts'+(r.bx?' · +'+r.bx+' s':'')+(r.today?' · heute ✓':'')+(r.egg?' · '+r.egg.ic:'')+'</small></div><div class="pt">'+r.pts+'</div></div>').join(""):'<p class="sub">Noch niemand im Ranking.</p>';
+  $("rankList").innerHTML=rows.length?rows.map((r,i)=>'<div class="rk'+(r.me?" me":"")+'"><div class="p">'+(med[r.pl-1]||r.pl)+'</div><div class="nm"><b></b><small>'+(r.streak>=3?r.streak+'🔥 · ':'')+r.total+' Workouts'+(r.bx?' · +'+r.bx+' s':'')+(r.today?' · heute ✓':'')+(r.pz?' · ⏸ Pause':r.idle>7?' · 💤 '+r.idle+' Tage ohne Training':'')+(r.egg?' · '+r.egg.ic:'')+'</small></div><div class="pt">'+r.pts+'</div></div>').join(""):'<p class="sub">Noch niemand im Ranking.</p>';
   $("rankList").querySelectorAll(".rk b").forEach((b,i)=>b.textContent=rows[i].name);
 }
 document.querySelectorAll("#menu .tabs button").forEach(b=>b.onclick=()=>{document.querySelectorAll("#menu .tabs button").forEach(x=>x.classList.toggle("on",x===b));
@@ -919,7 +946,7 @@ Object.assign(INFO,{
  curl:{so:["Normales Handtuch, ca. 1 m lang. Mit einem oder beiden Füßen mittig daraufstellen.","Die Enden mit beiden Händen greifen, Handflächen nach oben.","Ellbogen am Körper, Unterarme waagerecht (rechter Winkel).","Mit voller Kraft nach oben ziehen und halten."],key:"Der <b>Bizeps</b> arbeitet gegen dein eigenes Körpergewicht – das Handtuch gibt nicht nach.",wi:["Ellbogen bleiben eng am Körper","Aufrecht stehen, Bauch fest","Handgelenke gerade"],fe:["Schultern hochziehen","Ins Hohlkreuz lehnen"],lv:"Schwerer: Handtuch kürzer greifen. Auch einarmig möglich."},
  tpull:{so:["Normales Handtuch (ca. 1 m lang) schulterbreit greifen, Arme vor der Brust, Ellbogen leicht gebeugt.","Mit voller Kraft auseinanderziehen, als wolltest du es zerreißen.","Schulterblätter zusammenziehen und halten."],key:"Trainiert <b>hintere Schulter und oberen Rücken</b> – das Gegenstück zum Hände pressen.",wi:["Schultern unten lassen","Brust raus","Weiteratmen"],fe:["Nur mit den Händen ziehen statt aus dem Rücken","Schultern zu den Ohren"],lv:"Variante: Handtuch über dem Kopf auseinanderziehen."}
 });
-function renderExList(){const seen={};$("exList").innerHTML=Object.keys(EX).filter(k=>{const s=SKMAP[k];if(seen[s])return false;return seen[s]=1}).map(k=>'<div data-k="'+k+'"><svg class="sk exsk" data-k="'+k+'" viewBox="0 0 200 110">'+skSvg(k,"s")+'</svg><b>'+EX[k].n.replace(/ – .*/,"")+'</b><small>Erklärung ›</small></div>').join("");
+function renderExList(){const seen={};$("exList").innerHTML=Object.keys(EX).filter(k=>{if(EX[k].lib)return false;const s=SKMAP[k];if(seen[s])return false;return seen[s]=1}).map(k=>'<div data-k="'+k+'"><svg class="sk exsk" data-k="'+k+'" viewBox="0 0 200 110">'+skSvg(k,"s")+'</svg><b>'+EX[k].n.replace(/ – .*/,"")+'</b><small>Erklärung ›</small></div>').join("");
   $("exList").querySelectorAll("div[data-k]").forEach(el=>el.onclick=()=>showDetail(el.dataset.k))}
 const li=a=>a.map(x=>'<li>'+x+'</li>').join("");
 let exdLoop=0;
@@ -936,7 +963,7 @@ function showDetail(k){const I=INFO[SKMAP[k]],e=EX[k];if(!I)return;
 $("exdX").onclick=$("exdX2").onclick=()=>{$("exd").style.display="none";cancelAnimationFrame(exdLoop)};
 $("runSk").onclick=()=>{const st=steps[idx];if(running&&st)showDetail(st.ex)};
 function singleSec(k){for(const w of ["A","B","K"]){const f=W[w].s.find(x=>x[0]===k);if(f)return f[1]}return 30}
-function renderPick(){$("pickList").innerHTML=Object.keys(EX).map(k=>'<div data-k="'+k+'"><svg class="sk pksk" data-k="'+k+'" viewBox="0 0 200 110">'+skSvg(k,"e")+'</svg><b>'+EX[k].n+'</b><small><span data-i="'+k+'">ℹ️ Erklärung</span> · '+singleSec(k)+' s</small></div>').join("");
+function renderPick(){$("pickList").innerHTML=Object.keys(EX).filter(k=>!EX[k].lib).map(k=>'<div data-k="'+k+'"><svg class="sk pksk" data-k="'+k+'" viewBox="0 0 200 110">'+skSvg(k,"e")+'</svg><b>'+EX[k].n+'</b><small><span data-i="'+k+'">ℹ️ Erklärung</span> · '+singleSec(k)+' s</small></div>').join("");
   $("pickList").querySelectorAll("div[data-k]").forEach(el=>el.onclick=ev=>{const k=el.dataset.k;if(ev.target.dataset&&ev.target.dataset.i){showDetail(k);return}
     $("pick").style.display="none";const sec=singleSec(k);W.X={t:"Einzelübung",chair:k==="dips",s:k==="burst"?[["burst",5,15],["burst",5,15],["burst",5,0]]:[[k,sec,0]]};startChk("X")})}
 $("bSingle").onclick=()=>{renderPick();$("pick").style.display="block";$("pick").scrollTop=0};$("pickX").onclick=()=>{$("pick").style.display="none"};
@@ -1029,7 +1056,7 @@ async function start(k,np){
   lock();
   await p;
   enter();
-  lastTick=Date.now();clearInterval(timer);timer=setInterval(tick,100);history.pushState({cyf:1},"");saveRun();
+  lastTick=Date.now();clearInterval(timer);timer=setInterval(tick,100);backGuard();saveRun();
 }
 function enter(){
   const st=steps[idx];said={};remain=st.sec;total=st.sec;
@@ -1054,14 +1081,38 @@ function once(k,f){if(!said[k]){said[k]=1;f()}}
 // ---------- Schutz: Workout überlebt Neuladen, Zurück-Taste und versehentliches Schließen ----------
 let sidV,lastSave=0;
 function saveRun(){if(!running)return;lastSave=Date.now();lsSet("run",{d:todayK(),at:Date.now(),k:curW,steps,idx,remain,easy,noPts,chal:curW==="C"?curChal:null,sid:sidV,net:!!sidP||sidV!==undefined})}
-function clearRun(){try{localStorage.removeItem("run")}catch(e){}if(history.state&&history.state.cyf)history.back()}
+function clearRun(){try{localStorage.removeItem("run")}catch(e){}}
 function pauseNow(){if(running&&!paused){paused=true;musOn(false);$("bPause").textContent="Weiter ▶";say([],true)}saveRun()}
 function unpause(){paused=false;lastTick=Date.now();$("bPause").textContent="Pause";musOn(steps[idx]&&steps[idx].type==="work")}
 function confirmStop(){if(!running)return;const was=paused;pauseNow();
   ask(curW==="C"?"Challenge <b>nicht geschafft</b>? Dann gibt es keine Punkte – du kannst es später nochmal versuchen.":"⚠️ <b>Workout wirklich abbrechen?</b><br>Dann ist dein Fortschritt weg und das Workout zählt nicht.",
    stop,()=>{if(!was)unpause()},curW==="C"?"Ja, nicht geschafft":"Ja, abbrechen","Nein, weitermachen")}
 window.addEventListener("beforeunload",e=>{if(running){saveRun();e.preventDefault();e.returnValue=""}});
-window.addEventListener("popstate",()=>{if(running){history.pushState({cyf:1},"");confirmStop()}});
+// ---------- Android-Zurück-Taste: erst Fenster schließen, dann Startseite, dann 2× zum Beenden ----------
+let exitArm=null;
+function backGuard(){try{if(!(history.state&&history.state.cyf))history.pushState({cyf:1},"")}catch(e){}}
+function isOpen(id){const el=$(id);return !!el&&getComputedStyle(el).display!=="none"}
+function toast(t){let el=$("toast");if(!el){el=document.createElement("div");el.id="toast";el.style.cssText="position:fixed;left:50%;bottom:28px;transform:translateX(-50%);background:#2a2e37;color:#fff;padding:10px 16px;border-radius:20px;font-size:14px;z-index:99;box-shadow:0 4px 14px rgba(0,0,0,.5);transition:opacity .3s;pointer-events:none";document.body.appendChild(el)}
+  el.textContent=t;el.style.opacity="1";clearTimeout(el._t);el._t=setTimeout(()=>el.style.opacity="0",2200)}
+function backStep(){
+  if(isOpen("modal")){$("mNo").click();return true}
+  if(isOpen("rr")){if(typeof RR!=="undefined"&&RR){toast("Rekordversuch läuft – zum Abbrechen den Knopf unten nutzen");return true}
+    if($("rrQ"))$("rrQ").click();else $("rr").style.display="none";return true}
+  const X=[["exd","exdX"],["rekd","rekdX"],["rek","rekX"],["sv","svX"],["fb","fbX"],["rem","remX"],["acc","accX"],["pv","pvX"],["pick","pickX"],["help","helpX"]];
+  for(const [o,x] of X)if(isOpen(o)){if($(x))$(x).click();else $(o).style.display="none";return true}
+  if(isOpen("login"))return false;
+  if(isOpen("done")){$("bBack").click();return true}
+  const tb=document.querySelector('#menu .tabs button[data-t="train"]');
+  if(tb&&!tb.classList.contains("on")){tb.click();window.scrollTo(0,0);return true}
+  if(window.scrollY>200){window.scrollTo({top:0,behavior:"smooth"});return true}
+  return false}
+window.addEventListener("popstate",()=>{
+  if(exitArm){clearTimeout(exitArm);exitArm=null}
+  if(running){backGuard();confirmStop();return}
+  if(backStep()){backGuard();return}
+  // Startseite: einmal Hinweis, beim zweiten Druck schließt Android die App
+  toast("Nochmal Zurück drücken zum Schließen");
+  exitArm=setTimeout(()=>{exitArm=null;backGuard()},2500)});
 function checkResume(){const r=ls("run",null);if(!r)return;
   if(!r.steps||r.d!==todayK()||Date.now()-r.at>6*3600e3||r.idx>=r.steps.length){clearRun();return}
   const w=r.steps.filter(x=>x.type==="work").length,dn=r.steps.slice(0,r.idx).filter(x=>x.type==="work").length;
@@ -1073,7 +1124,7 @@ async function resumeRun(r){curW=r.k;steps=r.steps;idx=r.idx;easy=r.easy||0;noPt
   $("bEasy").style.display=isPlan(curW)&&!easy?"block":"none";$("bStop").textContent=curW==="C"?"❌ Nicht geschafft":"Stopp";
   running=true;paused=true;$("bPause").textContent="Weiter ▶";
   $("menu").style.display="none";$("done").style.display="none";$("run").style.display="block";
-  history.pushState({cyf:1},"");lock();await p;
+  backGuard();lock();await p;
   enter();say([],true);musOn(false);remain=Math.max(1,r.remain);render();
   lastTick=Date.now();clearInterval(timer);timer=setInterval(tick,100);saveRun();
   if(noPts)setSync("⚠️ Start nicht beim Server angekommen – dieses Workout zählt nicht.")}
@@ -1104,8 +1155,8 @@ function tick(){
 function finish(){
   running=false;clearRun();musStop();clearInterval(timer);beep(1000,.2);setTimeout(()=>beep(1300,.4),250);
   try{if(wl)wl.release()}catch(e){}
-  const p0=compute().pts,ez=easy&&isPlan(curW)?1:0;
-  const r=(curW==="X"?{txt:"🎯 Einzelübung – zählt nicht für Punkte."}:noPts?{txt:"📡 Ohne Verbindung trainiert – zählt nicht für Punkte. Stark war es trotzdem."}:curW==="C"?chalDone():markDay(curW))||{};
+  const c0=compute(),p0=c0.pts,ez=easy&&isPlan(curW)?1:0;
+  const r=(curW==="X"?{txt:W.X.dt||"🎯 Einzelübung – zählt nicht für Punkte."}:noPts?{txt:"📡 Ohne Verbindung trainiert – zählt nicht für Punkte. Stark war es trotzdem."}:curW==="C"?chalDone():markDay(curW))||{};
   setTimeout(()=>syncFinish(ez),300);
   const st=compute(),gain=st.pts-p0,gs=(gain>=0?"+":"")+gain+(Math.abs(gain)===1?" Punkt":" Punkte");
   easy=0;
@@ -1115,6 +1166,8 @@ function finish(){
   else if(r.kind==="nach"){txt="↺ Gestern nachgeholt: <b>"+gs+" zurückgeholt</b> (aus −3 wird +1)"+(ez?" (leichte Variante)":"");voice=["nach"]}
   else if(r.kind==="extra")txt="Extra-Runde! Zählt nicht doppelt, aber macht stärker. 💪";
   else txt="Probelauf – ab "+MYS().split("-").reverse().join(".")+" zählen die Punkte.";
+  if(st.cb.c>c0.cb.c)txt+="<br>🔁 <b>Comeback-Mission geschafft: +3 zurück!</b> (in den Punkten schon drin)";
+  else if(st.cb.on&&(r.kind==="today"||r.kind==="nach"))txt+="<br>🔁 Comeback-Mission: <b>"+st.cb.n+" von 3</b> – dranbleiben, dann gibt's +3 zurück.";
   txt+="<br>Punktestand: <b>"+st.pts+"</b> · Serie: <b>"+flame(st.streak)+"</b>"+(st.streak<3?" (ab 3 in Folge gibt’s 🔥)":"");
   voice.push(V("pr",pk("pr_")));
   if(r.egg)voice.push({t:"Neues Abzeichen: "+r.egg.t+"!",k:["ms"]});
@@ -1154,28 +1207,31 @@ function pvFromForm(px,n){const o=pvGet(n);o.sex=$(px+"Sex").value;["H","W0","Wz
 function pvHash(){try{const o={};for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(/^pv_/.test(k))o[k]=ls(k,null)}if(!Object.keys(o).length)return"";return"&p="+encodeURIComponent(btoa(unescape(encodeURIComponent(JSON.stringify(o)))))}catch(e){return""}}
 const f1=x=>x==null?"–":String(x).replace(".",",");
 function pvDiff(a,b,u,goodDown){if(a==null||b==null)return"";const d=Math.round((b-a)*10)/10;if(!d)return' <span class="note">(±0)</span>';const good=goodDown?d<0:d>0;return' <b style="color:var(--'+(good?"acc":"warn")+')">('+(d>0?"+":"−")+f1(Math.abs(d))+" "+u+")</b>"}
+// Plank Start/Bestwert aus Fitness-Test (rek.js) bzw. Rekorden – keine manuelle Eingabe mehr nötig
+function pvPlank(){try{const T=typeof myTst==="function"?myTst():{},R=typeof myRec==="function"?myRec():{},r=R.plank||{},t0=T.t0&&T.t0.plank,t1=T.t1&&T.t1.plank;
+  const st=t0!=null?+t0:(r.f!=null?+r.f:null),vs=[t0,t1,r.b].filter(v=>v!=null).map(Number),be=vs.length?Math.max(...vs):null;return[st,be]}catch(e){return[null,null]}}
 function pvRender(){const o=pvGet(),L=o.log||[],last=k=>{for(let i=L.length-1;i>=0;i--)if(L[i][k]!=null)return L[i][k];return null};
-  ["Sex","H","W0","Wz","B0","P0"].forEach(k=>{const v=o[k==="Sex"?"sex":k.toLowerCase()];$("pv"+k).value=v==null?"":String(v).replace(".",",")});
-  const w=last("w"),b=last("b"),pl=last("p");let s="<h3>📊 Vorher – Nachher</h3>";
-  if(!o.w0&&!o.b0&&!o.p0&&!L.length)s+='<p class="note" style="margin:0">Noch keine Werte. Trag unten deine Startwerte ein – dann siehst du hier deinen Fortschritt.</p>';
+  ["Sex","H","W0","Wz","B0"].forEach(k=>{const v=o[k==="Sex"?"sex":k.toLowerCase()];$("pv"+k).value=v==null?"":String(v).replace(".",",")});
+  const w=last("w"),b=last("b"),pk=pvPlank(),p0=pk[0]!=null?pk[0]:o.p0,pl=pk[1]!=null?pk[1]:last("p");let s="<h3>📊 Vorher – Nachher</h3>";
+  if(!o.w0&&!o.b0&&p0==null&&pl==null&&!L.length)s+='<p class="note" style="margin:0">Noch keine Werte. Trag unten deine Startwerte ein – dann siehst du hier deinen Fortschritt.</p>';
   else{s+='<table class="pvt"><tr><td></td><td>Start</td><td>Aktuell</td></tr>'+
     '<tr><td>⚖️ Gewicht</td><td>'+f1(o.w0)+' kg</td><td>'+f1(w)+' kg'+pvDiff(o.w0,w,"kg",o.wz==null||o.w0==null||o.wz<o.w0)+'</td></tr>'+
     '<tr><td>📏 Bauch</td><td>'+f1(o.b0)+' cm</td><td>'+f1(b)+' cm'+pvDiff(o.b0,b,"cm",true)+'</td></tr>'+
-    '<tr><td>⏱️ Plank</td><td>'+f1(o.p0)+' s</td><td>'+f1(pl)+' s'+pvDiff(o.p0,pl,"s",false)+'</td></tr></table>';
+    '<tr><td>⏱️ Plank</td><td>'+f1(p0)+' s</td><td>'+f1(pl)+' s'+pvDiff(p0,pl,"s",false)+'</td></tr></table>';
     const cw=w!=null?w:o.w0;
     if(o.wz&&cw)s+='<p class="note" style="margin:8px 0 0">🎯 Ziel '+f1(o.wz)+' kg – '+(Math.abs(cw-o.wz)<0.25?"erreicht! 🎉":"noch "+f1(Math.round(Math.abs(cw-o.wz)*10)/10)+" kg")+'</p>';
     if(o.h&&cw)s+='<p class="note" style="margin:4px 0 0">BMI: '+f1(Math.round(cw/((o.h/100)**2)*10)/10)+' (bei viel Muskeln nur grob aussagekräftig)</p>'}
   $("pvSum").innerHTML=s;
   $("pvLog").innerHTML=L.length?'<table class="pvt">'+L.slice().reverse().map((e,i)=>'<tr><td>'+e.d.split("-").reverse().slice(0,2).join(".")+'</td><td>'+(e.w!=null?f1(e.w)+" kg":"")+'</td><td>'+(e.b!=null?f1(e.b)+" cm":"")+'</td><td>'+(e.p!=null?f1(e.p)+" s":"")+'</td><td><button class="chip" data-i="'+(L.length-1-i)+'" style="padding:2px 8px">✕</button></td></tr>').join("")+'</table>':'<p class="note" style="margin:0">Noch keine Messwerte.</p>';
   $("pvLog").querySelectorAll("button[data-i]").forEach(bt=>bt.onclick=()=>{const o2=pvGet();o2.log.splice(+bt.dataset.i,1);pvSet(o2);pvRender()})}
-$("bPv").onclick=()=>{$("pvMsg").textContent="";["pvNW","pvNB","pvNP"].forEach(i=>$(i).value="");pvRender();$("pv").style.display="block";$("pv").scrollTop=0};
+$("bPv").onclick=()=>{$("pvMsg").textContent="";["pvNW","pvNB"].forEach(i=>$(i).value="");pvRender();$("pv").style.display="block";$("pv").scrollTop=0};
 $("pvX").onclick=()=>$("pv").style.display="none";
-["pvSex","pvH","pvW0","pvWz","pvB0","pvP0"].forEach(i=>$(i).onchange=()=>{pvFromForm("pv");pvRender()});
-$("pvAdd").onclick=()=>{const e={d:todayK(),w:num($("pvNW").value),b:num($("pvNB").value),p:num($("pvNP").value)};
-  if(e.w==null&&e.b==null&&e.p==null){$("pvMsg").textContent="Bitte mindestens einen Wert eintragen.";return}
+["pvSex","pvH","pvW0","pvWz","pvB0"].forEach(i=>$(i).onchange=()=>{pvFromForm("pv");pvRender()});
+$("pvAdd").onclick=()=>{const e={d:todayK(),w:num($("pvNW").value),b:num($("pvNB").value)};
+  if(e.w==null&&e.b==null){$("pvMsg").textContent="Bitte mindestens einen Wert eintragen.";return}
   const o=pvGet();o.log=(o.log||[]).filter(x=>x.d!==e.d);o.log.push(e);o.log.sort((a,b)=>a.d<b.d?-1:1);
-  if(o.w0==null&&e.w!=null)o.w0=e.w;if(o.b0==null&&e.b!=null)o.b0=e.b;if(o.p0==null&&e.p!=null)o.p0=e.p;if(!o.d0)o.d0=e.d;pvSet(o);
-  ["pvNW","pvNB","pvNP"].forEach(i=>$(i).value="");$("pvMsg").textContent="✅ Gespeichert (nur auf diesem Handy)";pvRender()};
+  if(o.w0==null&&e.w!=null)o.w0=e.w;if(o.b0==null&&e.b!=null)o.b0=e.b;if(!o.d0)o.d0=e.d;pvSet(o);
+  ["pvNW","pvNB"].forEach(i=>$(i).value="");$("pvMsg").textContent="✅ Gespeichert (nur auf diesem Handy)";pvRender()};
 // ---------- Feedback & Umfrage ----------
 const FBK=[["frage","❓ Frage"],["idee","💡 Idee"],["problem","🐞 Problem"],["lob","👍 Lob"]];
 let fbSel="idee";
@@ -1219,8 +1275,11 @@ $("bBack").onclick=()=>{$("done").style.display="none";$("menu").style.display="
 document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden"&&running){pauseNow()}
 if(document.visibilityState==="visible"){if(running)lock();else renderMenu()}});
 chips("music",[0,.35,.7],musVol,v=>v===0?"aus":v===.35?"leise":"mittel",v=>{musVol=v;lsSet("musvol",v);if(!v)musStop();else musApply()});
-try{if(history.state&&history.state.cyf)history.replaceState(null,"")}catch(e){}
+backGuard();document.addEventListener("pointerdown",backGuard,{once:true});
+if("serviceWorker"in navigator)navigator.serviceWorker.register("sw.js").catch(()=>{});
 setupVoice();renderMenu();initApi();checkResume();if(!API_URL&&!ls("helpSeen",0))showHelp();
 </script>
+<script src="rek.js?v=3"></script>
+<script src="soc.js?v=2"></script>
 </body>
 </html>
